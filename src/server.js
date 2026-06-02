@@ -4,17 +4,26 @@ import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, '..');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// ─── STATIC FILE SERVING ─── 
+// Serve public folder (HTML, CSS, images, etc.)
+app.use(express.static(path.join(projectRoot, 'public')));
+
+// Serve uploads folder
+app.use('/uploads', express.static(path.join(projectRoot, 'uploads')));
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -26,7 +35,6 @@ const transporter = nodemailer.createTransport({
 });
 
 // ─── PRICING CALCULATIONS ─── 
-// Calculate pricing based on service type and specifications
 app.post('/api/calculate-pricing', (req, res) => {
   try {
     const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
@@ -37,7 +45,7 @@ app.post('/api/calculate-pricing', (req, res) => {
 
     const pricingRates = {
       construction: {
-        economic: 450000,      // Ariary/m²
+        economic: 450000,
         standard: 750000,
         premium: 1200000
       },
@@ -47,7 +55,7 @@ app.post('/api/calculate-pricing', (req, res) => {
         premium: 850000
       },
       forage: {
-        economic: 800000,      // Per borehole
+        economic: 800000,
         standard: 1200000,
         premium: 1800000
       }
@@ -58,7 +66,6 @@ app.post('/api/calculate-pricing', (req, res) => {
       return res.status(400).json({ error: 'Invalid service type or finishing level' });
     }
 
-    // Apply location multiplier
     const locationMultiplier = {
       'diego-suarez': 1.0,
       'nosy-be': 1.15,
@@ -68,19 +75,15 @@ app.post('/api/calculate-pricing', (req, res) => {
     };
     const multiplier = locationMultiplier[location] || 1.0;
 
-    // Calculate total
     let totalPrice;
     if (serviceType === 'forage') {
-      totalPrice = basePrice * multiplier; // Fixed per borehole
+      totalPrice = basePrice * multiplier;
     } else {
       totalPrice = basePrice * squareMeters * multiplier;
     }
 
-    // Add contingency (10% for complexity)
     const contingency = totalPrice * 0.1;
     const estimatedTotal = totalPrice + contingency;
-
-    // Tax (20% VAT)
     const tax = estimatedTotal * 0.2;
     const grandTotal = estimatedTotal + tax;
 
@@ -105,12 +108,10 @@ app.post('/api/calculate-pricing', (req, res) => {
 });
 
 // ─── FORM SUBMISSION ─── 
-// Handle contact form submissions
 app.post('/api/contact', async (req, res) => {
   try {
     const { name, email, phone, projectType, budget, message, serviceType } = req.body;
 
-    // Validation
     if (!name || !email || !projectType || !message) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -120,7 +121,6 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Send email to admin
     const adminMailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
@@ -140,7 +140,6 @@ app.post('/api/contact', async (req, res) => {
       `
     };
 
-    // Send confirmation email to customer
     const customerMailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -162,7 +161,6 @@ app.post('/api/contact', async (req, res) => {
       `
     };
 
-    // Send both emails
     await transporter.sendMail(adminMailOptions);
     await transporter.sendMail(customerMailOptions);
 
@@ -179,7 +177,6 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // ─── QUOTE REQUEST ─── 
-// Generate and send detailed quote
 app.post('/api/request-quote', async (req, res) => {
   try {
     const { name, email, serviceType, details, location } = req.body;
@@ -232,9 +229,46 @@ app.post('/api/request-quote', async (req, res) => {
   }
 });
 
+// ─── IMAGE MANAGEMENT (optional - for future image uploads) ─── 
+app.get('/api/images', (req, res) => {
+  try {
+    const imagesPath = path.join(projectRoot, 'public', 'images');
+    const images = {};
+
+    // Scan image directories
+    const dirs = fs.readdirSync(imagesPath);
+    dirs.forEach(dir => {
+      const dirPath = path.join(imagesPath, dir);
+      if (fs.statSync(dirPath).isDirectory()) {
+        images[dir] = fs.readdirSync(dirPath).filter(f => /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(f));
+      }
+    });
+
+    res.json(images);
+  } catch (error) {
+    console.error('Image listing error:', error);
+    res.status(500).json({ error: 'Failed to list images' });
+  }
+});
+
 // ─── HEALTH CHECK ─── 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Server is running', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// ─── CATCH-ALL FOR SPA (returns index.html for unknown routes) ─── 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'public', 'index.html'));
+});
+
+// ─── ERROR HANDLING ─── 
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // ─── HELPER FUNCTION ─── 
@@ -250,14 +284,10 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// ─── ERROR HANDLING ─── 
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
 // Start server
 app.listen(PORT, () => {
   console.log(`✓ Nord Invest Madagascar server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✓ Static files served from: ./public`);
+  console.log(`✓ API endpoints available at: /api/*`);
 });
