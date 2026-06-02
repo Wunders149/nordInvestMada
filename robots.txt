@@ -1,0 +1,27 @@
+# Robots.txt for Nord Invest Madagascar
+# Allow search engines to crawl the site
+
+User-agent: *
+Allow: /
+Allow: /api/calculate-pricing
+Allow: /api/health
+Disallow: /node_modules/
+Disallow: /.env
+Disallow: /.env.example
+Disallow: /server.js
+Disallow: /package.json
+
+# Specify sitemap
+Sitemap: https://www.nordinvest.mg/sitemap.xml
+
+# Crawl delay (optional - in seconds)
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1

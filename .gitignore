@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment variables (NEVER commit these!)
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build/Dist
+dist/
+build/
+out/
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.eslintcache
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/

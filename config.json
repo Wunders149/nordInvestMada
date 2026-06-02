@@ -1,0 +1,129 @@
+{
+  "name": "Nord Invest Madagascar",
+  "version": "1.0.0",
+  "description": "Professional real estate and construction website",
+  "keywords": [
+    "immobilier",
+    "construction",
+    "madagascar",
+    "antsiranana",
+    "diego-suarez",
+    "forage",
+    "réhabilitation"
+  ],
+  "author": "Nord Invest Madagascar",
+  "contact": {
+    "phone": "+261328231280",
+    "email": "nordinvestmada@gmail.com",
+    "address": "Tanambao 1, Rue Comores, Antsiranana, Madagascar"
+  },
+  "social": {
+    "facebook": "https://www.facebook.com/nordinvest",
+    "instagram": "https://www.instagram.com/nordinvest"
+  },
+  "services": [
+    {
+      "id": "construction",
+      "name": "Construction Neuve",
+      "description": "Construction de bâtiments neufs, villas, résidences et immeubles"
+    },
+    {
+      "id": "rehabilitation",
+      "name": "Réhabilitation",
+      "description": "Rénovation et extension de bâtiments existants"
+    },
+    {
+      "id": "forage",
+      "name": "Forage d'Eau",
+      "description": "Forage géotechnique et approvisionnement en eau"
+    },
+    {
+      "id": "immobilier",
+      "name": "Vente & Achat Immobilier",
+      "description": "Services immobiliers complets"
+    },
+    {
+      "id": "suivi",
+      "name": "Suivi & Contrôle Qualité",
+      "description": "Suivi de chantier et contrôle qualité"
+    }
+  ],
+  "locations": [
+    {
+      "name": "Diego Suarez (Antsiranana)",
+      "code": "diego-suarez",
+      "region": "Diana",
+      "multiplier": 1.0
+    },
+    {
+      "name": "Nosy Be",
+      "code": "nosy-be",
+      "region": "Diana",
+      "multiplier": 1.15
+    },
+    {
+      "name": "Sambava",
+      "code": "sambava",
+      "region": "SAVA",
+      "multiplier": 1.05
+    },
+    {
+      "name": "Antalaha",
+      "code": "antalaha",
+      "region": "SAVA",
+      "multiplier": 1.08
+    }
+  ],
+  "pricing": {
+    "construction": {
+      "economic": {
+        "name": "Économique",
+        "pricePerM2": 450000,
+        "features": [
+          "Gros œuvre standard",
+          "Finitions basiques",
+          "Matériaux locaux"
+        ]
+      },
+      "standard": {
+        "name": "Standard",
+        "pricePerM2": 750000,
+        "features": [
+          "Gros œuvre renforcé",
+          "Finitions intermédiaires",
+          "Matériaux de qualité"
+        ]
+      },
+      "premium": {
+        "name": "Premium",
+        "pricePerM2": 1200000,
+        "features": [
+          "Gros œuvre haut de gamme",
+          "Finitions de luxe",
+          "Matériaux importés"
+        ]
+      }
+    },
+    "rehabilitation": {
+      "economic": 350000,
+      "standard": 550000,
+      "premium": 850000
+    },
+    "forage": {
+      "economic": 800000,
+      "standard": 1200000,
+      "premium": 1800000
+    }
+  },
+  "contingency_rate": 0.1,
+  "tax_rate": 0.2,
+  "team": {
+    "total_staff": 34,
+    "civil_engineers": 4,
+    "technicians": 30
+  },
+  "founded": 2015,
+  "experience_years": 10,
+  "projects_completed": 50,
+  "satisfaction_rate": 0.98
+}
