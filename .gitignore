@@ -39,6 +39,3 @@ coverage/
 # Temporary files
 tmp/
 temp/
-
-# Fichiers commandes
-*.pdf
