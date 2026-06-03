@@ -787,7 +787,7 @@
   <!-- Construction -->
   <div class="pricing-panel active" id="tab-construction">
     <div class="pricing-grid reveal">
-      <div class="price-card">
+      <div class="price-card" data-service="construction" data-tier="Économique" data-type="Gros Œuvre Simple" data-price="350000" data-budget="10-25">
         <div class="price-tier">Économique</div>
         <div class="price-type">Gros Œuvre Simple</div>
         <div class="price-val">
@@ -803,10 +803,10 @@
           <li>Sans finition intérieure</li>
         </ul>
         <div class="price-note">Idéal pour entrepôts, locaux simples, ossature brute à finir par le client.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
 
-      <div class="price-card featured">
+      <div class="price-card featured" data-service="construction" data-tier="Standard" data-type="Clé en Main Résidentiel" data-price="550000" data-budget="25-100">
         <div class="price-badge">Le plus demandé</div>
         <div class="price-tier">Standard</div>
         <div class="price-type">Clé en Main Résidentiel</div>
@@ -825,10 +825,10 @@
           <li>Suivi de chantier continu</li>
         </ul>
         <div class="price-note">Notre formule la plus populaire pour villas R+1, maisons individuelles et petits immeubles.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
 
-      <div class="price-card">
+      <div class="price-card" data-service="construction" data-tier="Premium" data-type="Finition Haut de Gamme" data-price="900000" data-budget="100+">
         <div class="price-tier">Premium</div>
         <div class="price-type">Finition Haut de Gamme</div>
         <div class="price-val">
@@ -847,7 +847,7 @@
           <li>Ingénieur dédié au projet</li>
         </ul>
         <div class="price-note">Résidences d'exception, villas de prestige, projets touristiques.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
     </div>
   </div>
@@ -855,7 +855,7 @@
   <!-- Réhabilitation -->
   <div class="pricing-panel" id="tab-rehab">
     <div class="pricing-grid reveal">
-      <div class="price-card">
+      <div class="price-card" data-service="rehabilitation" data-tier="Légère" data-type="Rafraîchissement" data-price="150000" data-budget="5-15">
         <div class="price-tier">Légère</div>
         <div class="price-type">Rafraîchissement</div>
         <div class="price-val">
@@ -870,10 +870,10 @@
           <li>Petites maçonneries</li>
         </ul>
         <div class="price-note">Pour redonner un coup de neuf à un logement sans toucher à la structure.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
 
-      <div class="price-card featured">
+      <div class="price-card featured" data-service="rehabilitation" data-tier="Intermédiaire" data-type="Rénovation Complète" data-price="280000" data-budget="15-50">
         <div class="price-badge">Recommandé</div>
         <div class="price-tier">Intermédiaire</div>
         <div class="price-type">Rénovation Complète</div>
@@ -891,10 +891,10 @@
           <li>Rapport de fin de travaux</li>
         </ul>
         <div class="price-note">La solution complète pour transformer totalement un espace existant.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
 
-      <div class="price-card">
+      <div class="price-card" data-service="rehabilitation" data-tier="Structurelle" data-type="Confortement & Extension" data-price="420000" data-budget="50+">
         <div class="price-tier">Structurelle</div>
         <div class="price-type">Confortement & Extension</div>
         <div class="price-val">
@@ -910,7 +910,7 @@
           <li>Ingénieur civil dédié</li>
         </ul>
         <div class="price-note">Pour les bâtiments nécessitant une intervention lourde sur la structure porteuse.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
     </div>
   </div>
@@ -918,7 +918,7 @@
   <!-- Forage -->
   <div class="pricing-panel" id="tab-forage">
     <div class="pricing-grid reveal">
-      <div class="price-card">
+      <div class="price-card" data-service="forage" data-tier="Étude" data-type="Géophysique Préalable" data-price="1200000" data-budget="">
         <div class="price-tier">Étude</div>
         <div class="price-type">Géophysique Préalable</div>
         <div class="price-val">
@@ -933,10 +933,10 @@
           <li>Recommandations de profondeur</li>
         </ul>
         <div class="price-note">Obligatoire avant tout forage pour maximiser les chances de succès et éviter les forages secs.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
 
-      <div class="price-card featured">
+      <div class="price-card featured" data-service="forage" data-tier="Forage Complet" data-type="Forage + Équipement" data-price="85000" data-budget="2.5-5">
         <div class="price-badge">Tout inclus</div>
         <div class="price-tier">Forage Complet</div>
         <div class="price-type">Forage + Équipement</div>
@@ -955,10 +955,10 @@
           <li>Rapport de forage certifié</li>
         </ul>
         <div class="price-note">Prix par mètre linéaire foré. Un forage résidentiel moyen fait entre 30 et 60 ml.</div>
-        <a href="#contact" class="price-cta">Demander un devis</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
       </div>
 
-      <div class="price-card">
+      <div class="price-card" data-service="forage" data-tier="Maintenance" data-type="Entretien & Réhabilitation" data-price="" data-budget="">
         <div class="price-tier">Maintenance</div>
         <div class="price-type">Entretien & Réhabilitation</div>
         <div class="price-val">
@@ -1175,13 +1175,67 @@
     event.target.classList.add('active');
   }
 
+  // Auto-fill contact form from pricing card
+  function fillContactForm(button) {
+    const card = button.closest('.price-card');
+    const service = card.getAttribute('data-service');
+    const tier = card.getAttribute('data-tier');
+    const type = card.getAttribute('data-type');
+    const price = card.getAttribute('data-price');
+    const budgetRange = card.getAttribute('data-budget');
+
+    // Map service to form values
+    const serviceMap = {
+      'construction': 'construction',
+      'rehabilitation': 'rehabilitation',
+      'forage': 'forage'
+    };
+
+    // Pre-fill form fields
+    const serviceSelect = document.getElementById('serviceType');
+    const projectInput = document.getElementById('projectType');
+    const budgetInput = document.getElementById('budget');
+    const messageTextarea = document.getElementById('message');
+
+    serviceSelect.value = serviceMap[service] || '';
+    projectInput.value = `${type} (${tier})`;
+
+    // Set budget estimate based on tier
+    if (budgetRange) {
+      const budgetLabel = {
+        '10-25': '10-25 millions Ar',
+        '25-100': '25-100 millions Ar',
+        '100+': '100+ millions Ar',
+        '5-15': '5-15 millions Ar',
+        '15-50': '15-50 millions Ar',
+        '50+': '50+ millions Ar',
+        '2.5-5': '2.5-5 millions Ar'
+      }[budgetRange] || '';
+      budgetInput.value = budgetLabel;
+    }
+
+    // Pre-fill message with pricing info
+    const serviceLabel = {
+      'construction': 'Construction Neuve',
+      'rehabilitation': 'Réhabilitation',
+      'forage': 'Forage d\'Eau'
+    }[service] || '';
+
+    messageTextarea.value = `Je suis intéressé par : ${type}\nFormule : ${tier}\nTarif référence : ${price ? price + ' Ar/m²' : 'Sur devis'}\n\nMerci de me contacter pour un devis détaillé.`;
+
+    // Scroll to contact form
+    setTimeout(() => {
+      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }
+
   // Form submit
   function handleSubmit(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
     const messageDiv = document.getElementById('formMessage');
     const form = document.getElementById('contactForm');
-    
+
     // Show loading state
     btn.textContent = '⏳ Envoi en cours...';
     btn.disabled = true;
@@ -1200,7 +1254,7 @@
 
     // Send to backend (or simulate if offline)
     const API_BASE = 'http://localhost:3000';
-    
+
     fetch(`${API_BASE}/api/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1214,7 +1268,7 @@
       messageDiv.style.display = 'block';
       messageDiv.style.color = '#2a7a4a';
       form.reset();
-      
+
       // Track with analytics
       if (typeof gtag !== 'undefined') {
         gtag('event', 'form_submission', {
