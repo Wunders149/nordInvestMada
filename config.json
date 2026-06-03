@@ -13,14 +13,16 @@
   ],
   "author": "Nord Invest Madagascar",
   "contact": {
-    "phone": "+261328231280",
+    "phone": "032 82 312 80 / 037 07 396 07",
     "email": "nordinvestmada@gmail.com",
-    "address": "Tanambao 1, Rue Comores, Antsiranana, Madagascar"
+    "address": "Tanambao 1 en face de Madahoufi, rue comores, Antsiranana, Madagascar"
   },
   "social": {
     "facebook": "https://www.facebook.com/nordinvest",
     "instagram": "https://www.instagram.com/nordinvest"
   },
+  "mission": "Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes.",
+  "vision": "Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique.",
   "services": [
     {
       "id": "construction",
