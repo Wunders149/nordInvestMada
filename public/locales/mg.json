@@ -1,0 +1,224 @@
+{
+  "nav": {
+    "about": "Momba anay",
+    "team": "Ekipa",
+    "services": "Serivisy",
+    "pricing": "Vidiny",
+    "projects": "Tetikasa",
+    "blog": "Blaogy",
+    "contact": "Mifandraisa"
+  },
+  "hero": {
+    "tag": "Trano sy Fananana — Madagasikara",
+    "title": "Manorina<br><em>fahaizana</em><br>any Avaratra.",
+    "subtitle": "Nanomboka tamin'ny 2015, Nord Invest Madagascar dia mamolavola sy manatanteraka ny tetikasanao momba ny fanorenana, fanamboarana, fandavahana rano ary varotra trano amin'ny fahaizana sy fahamalinana.",
+    "btnPricing": "Jereo ny vidiny",
+    "btnContact": "Mangataka tombana",
+    "stat1Val": "10+",
+    "stat1Label": "Taona niainana",
+    "stat2Val": "34",
+    "stat2Label": "Teknisianina",
+    "stat3Val": "2",
+    "stat3Label": "Toerana — Antsiranana & Nosy Be"
+  },
+  "about": {
+    "tag": "Momba anay",
+    "title": "Fahaizana<br>teknika ho an'ny<br>tetikasanao.",
+    "lead": "Niorina tamin'ny 2015 tao Antsiranana, Nord Invest Madagascar dia manam-pahaizana manokana amin'ny fanorenana, fandavahana rano ary varotra trano. Mampiasa ny fahaizanay izahay mba hiantohana ny fotodrafitrasa maoderina sy maharitra.",
+    "feat1Title": "Fankatoavana & Kalitao",
+    "feat1Desc": "Miara-miasa amin'ny arisitika voasoratra anarana izahay mba hiantohana ny fanarahana ny lalàna sy ny kalitaon'ny maritrano.",
+    "feat2Title": "Fiarovana (Safety First)",
+    "feat2Desc": "Ny fiarovana no laharam-pahamehana. Mampihatra tsara ny fenitra izahay mba hiantohana ny tontolo iasana azo antoka.",
+    "feat3Title": "Serivisy Teknika Avokoa",
+    "feat3Desc": "Fampiasana rindrambaiko matihanina (AutoCAD, ArchiCAD, Revit, Robot Structural) ho an'ny fandalinana marina sy mifanaraka amin'ny fenitra."
+  },
+  "vision": {
+    "title": "Ny Vinaninay",
+    "text": "\"Ho lasa mpisehatra malaza eo amin'ny sehatry ny fanorenana sy ny fananana any Madagasikara sy Afrika.\""
+  },
+  "mission": {
+    "title": "Ny Irakanay",
+    "text": "\"Manatanteraka fandalinana, fanorenana ary serivisy fananana amin'ny fahaizana, kalitao ary fanajana ny fenitra.\""
+  },
+  "standards": {
+    "tag": "Fenitra & Fiarovana",
+    "title": "Ny injeniera ao amin'ny<br>fon'ny tetikasa rehetra.",
+    "lead": "Mampihatra ny fenitra iraisam-pirenena sy eo an-toerana henjana indrindra izahay mba hiantohana ny faharetan'ny volanao.",
+    "item1Title": "Safety First",
+    "item1Desc": "Ny fiarovana no laharam-pahamehana. Faritra voamarika, fitaovana fiarovana tsy maintsy ampiasaina ary fanaraha-maso tsy tapaka.",
+    "item2Title": "Kajy Rafitra (VEx)",
+    "item2Desc": "Ny fandalinanay dia mampiditra ny fenitry ny <strong>Rivotra Mahery (VEx 1 à 4)</strong> eto Madagasikara. Ny rafitra tsirairay dia kajiana mba hahatanty ny rivodoza any Avaratra.",
+    "item2Badge": "Mifanaraka amin'i Madagasikara",
+    "item3Title": "Drafitra BIM",
+    "item3Desc": "Fampiasana rindrambaiko malaza: <strong>AutoCAD, Revit ary ArchiCAD</strong> ho an'ny drafitra, ary <strong>Robot Structural Analysis</strong> ho an'ny fankatoavana ny kajy enta-mavesatra.",
+    "item4Title": "Fankatoavana Ara-pitantanana",
+    "item4Desc": "Fanampiana amin'ny fahazoana alalana hanorina. Fiaraha-miasa tsy tapaka amin'ny arisitika ekena ao amin'ny Filankevitry ny Arisitika Nasionaly."
+  },
+  "services": {
+    "tag": "Ny Serivisynay",
+    "title": "Izao no<br>ataonay ho anao.",
+    "lead": "Tolotra feno, manomboka amin'ny drafitra ka hatramin'ny fanaterana, ho an'ny olon-tsotra, ONG, orinasa ary andrim-panjakana.",
+"card1Title": "Drafitra Maritrano sy Rafitra",
+"card1Desc": "Drafitra maritrano sy rafitra feno, drafitra fanatanterahana, modely BIM (Revit, ArchiCAD), kajy rafitra (Robot Structural). Manaja ny fenitra VEx eto Madagasikara.",
+"card2Title": "Fandalinana (STRUCTURE, VRD, AEP)",
+"card2Desc": "Fandalinana ara-teknika feno: rafitra beton/vy, lalana sy tambajotra (VRD), rano fisotro (AEP), fandalinana tany, habe sy tombana.",
+"card3Title": "Fanorenana Vaovao",
+"card3Desc": "Asa lehibe, asa faharoa, vonona tanteraka. Villa, trano fonenana, tranobe, trano andrim-panjakana. Fanaraha-maso ny toerana sy ny kalitao isaky ny dingana.",
+"card4Title": "Fanamboarana",
+"card4Desc": "Fanavaozana, fanitarana ary fampifanarahana ny tranobe efa misy. Fitsaboana ara-teknika, tolo-kevitra vahaolana ary famitana ara-potoana.",
+"card5Title": "Fandavahana Rano",
+"card5Desc": "Fandalinana géophysique, fandavahana, fitaovana ary fampandehanana. Fanomezana rano ho an'ny olon-tsotra, kaominina ary ONG manerana ny avaratr'i Madagasikara.",
+"card6Title": "Fividianana sy Fivarotana Trano",
+"card6Desc": "Fanampiana feno amin'ny fividianana sy fivarotana tany, trano ary tranobe. Fahaizana eo an-toerana, torohevitra ara-dalàna sy ara-pitantanana tafiditra.",
+"card7Title": "Fanaraha-maso & Kalitao",
+"card7Desc": "Fitsaboana ara-teknika isaky ny dingana. Fanamarinana ny fitaovana, fanajana ny drafitra sy ny fenitra. Injeniera sivily natokana ho an'ny tetikasanao."
+  },
+  "pricing": {
+    "tag": "Vidin'ny Serivisy",
+    "title": "Vidiny mazava,<br>isan'ny metatra toradroa.",
+    "lead": "Ny vidinay dia amin'ny Ariary (Ar) isan'ny m². Miovaova arakaraka ny karazana famaranana, ny fahasarotan'ny tetikasa ary ny toerana misy azy. Tombana manokana raha mangataka.",
+    "tab1": "Fanorenana Vaovao",
+    "tab2": "Fanamboarana",
+    "tab3": "Fandavahana Rano",
+    "cta": "Mangataka tombana",
+    "note": "<strong>Fanamarihana manan-danja:</strong> Ny vidiny aseho dia vidiny fototra tsy tafiditra ny hetra. Ny vidiny tena izy dia miankina amin'ny toerana, ny karazana tany, ny fitaovana eo an-toerana ary ny mampiavaka ny tetikasanao. <strong>Tombana maimaimpoana sy tsy misy fanoloran-tena dia atao aorian'ny fitsidihana ny toerana.</strong> Mifandraisa aminay amin'ny <strong>032 82 312 80</strong> na amin'ny mailaka."
+  },
+  "calculator": {
+    "tag": "Mpanisa",
+    "title": "Tombao<br>ny volanao amin'ny tsindry iray.",
+    "lead": "Fidio ny safidinao mba hahazoana tombana haingana mifototra amin'ny vidiny ankehitriny.",
+    "serviceLabel": "Karazana Serivisy",
+    "servicePlaceholder": "Misafidia serivisy",
+    "surfaceLabel": "Velarana tombanana (m²)",
+    "depthLabel": "Halalina tombanana (ML)",
+    "tierLabel": "Karazana Famaranana",
+    "locationLabel": "Toerana misy ny Tetikasa",
+    "btnCalculate": "Kajio ny tombana",
+    "resultTitle": "Tombana Mialoha",
+    "resultUnit": "Tafiditra ny Hetra rehetra",
+    "detailBase": "Fototra",
+    "detailSubtotal": "Totaliny Tsy Tafiditra Hetra",
+    "detailContingency": "Fiarovana (10%)",
+    "detailTax": "VAT (20%)",
+    "detailTotal": "Totaliny tombanana",
+    "resultNote": "* Tombana tsy misy fanoloran-tena ity. Tsy manolo ny tombana ofisialy aorian'ny fitsidihana ara-teknika.",
+    "resultCTA": "Mangataka tombana ofisialy",
+    "placeholder": "Ampifanaraho ny tetikasanao etsy ankavia mba hahazoana tombana mialoha.",
+    "loading": "Kajy ny tombanao...",
+    "error": "Tsy nahomby ny kajy. Andramo indray azafady."
+  },
+  "numbers": {
+    "exp": "Taona niainana",
+    "tech": "Teknisianina & injeniera",
+    "engineers": "Injeniera sivily",
+    "sites": "Toerana miasa"
+  },
+  "projects": {
+    "tag": "Tetikasa",
+    "title": "Ny asanay<br>no miteny ho anay.",
+    "lead": "Tantara fohy momba ny tetikasa vao haingana tany Antsiranana, Nosy Be ary manerana ny avaratr'i Madagasikara.",
+    "proj1Cat": "Fonenana · Diego Suarez",
+    "proj1Name": "Trano Palas Ramena",
+    "proj1Loc": "Ramena, Antsiranana",
+    "proj2Cat": "Fonenana · Nosy Be",
+    "proj2Name": "Trano R+1 roa",
+    "proj2Loc": "Mahatsinjo, Nosy Be",
+    "proj3Cat": "Andrim-panjakana · Sambava",
+    "proj3Name": "Ivontoerana Islamika Sambava",
+    "proj3Loc": "Sambava, SAVA",
+    "proj4Cat": "Asa Lehibe · Nosy Be",
+    "proj4Name": "Trano R+2",
+    "proj4Loc": "Djabala, Nosy Be",
+    "proj5Cat": "Agri-tourisme · Nosy Hara",
+    "proj5Name": "Dômes Géodésiques",
+    "proj5Loc": "Nosy Hara, Diana",
+    "proj6Cat": "Andrim-panjakana · Anjianjia",
+    "proj6Name": "Biraon'ny Kaominina",
+    "proj6Loc": "Anjianjia sy Mahalina"
+  },
+  "contact": {
+    "tag": "Mifandraisa",
+    "title": "Resaho<br>ny tetikasanao.",
+    "lead": "Tombana maimaimpoana tsy misy fanoloran-tena. Mamaly ao anatin'ny 24 ora izahay.",
+    "phoneLabel": "Telefaonina",
+    "phoneVal": "032 82 312 80 / 037 07 396 07",
+    "emailLabel": "Mailaka",
+    "emailVal": "nordinvestmada@gmail.com",
+    "addressLabel": "Foibe",
+    "addressVal": "Tanambao 1, eo anoloan'i Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)",
+    "officeLabel": "Sampana",
+    "officeVal": "Nosy Be",
+    "formName": "Anarana feno *",
+    "formEmail": "Mailaka *",
+    "formPhone": "Telefaonina",
+    "formService": "Serivisy ilaina *",
+    "formProject": "Karazana Tetikasa *",
+    "formBudget": "Volana tombanana",
+    "formMessage": "Famaritana ny Tetikasa *",
+    "formSubmit": "Alefaso ny Fangatahana",
+    "formSuccess": "Voaray ny fangatahanao. Hamaly ao anatin'ny 24 ora izahay.",
+    "formError": "Tsy nahomby ny fandefasana. Mifandraisa aminay amin'ny 032 82 312 80."
+  },
+  "footer": {
+    "copyright": "© 2025 Nord Invest Madagascar — Trano sy Fananana. Zo rehetra voatokana.",
+    "services": "Serivisy",
+    "pricing": "Vidiny",
+    "contact": "Mifandraisa"
+  },
+  "map": {
+    "title": "Ny Birainay",
+    "projects": "Ny Tetikasanay amin'ny Saritany"
+  },
+  "team": {
+    "tag": "Ny Ekipanay",
+    "title": "Manam-pahaizana<br>vonona hanampy anao.",
+    "lead": "Ekipa misy teknisianina sy injeniera 34, vonona ho an'ny tetikasanao manerana ny avaratr'i Madagasikara.",
+    "role1": "Tale Jeneraly",
+    "desc1": "15 taona traikefa amin'ny injenieria sivily sy fitantanana tetikasa.",
+    "role2": "Injeniera Lehibe",
+    "desc2": "Manam-pahaizana momba ny rafitra beton sy kajy horohoron-tany (VEx).",
+    "role3": "Mpanao Maritrano BIM",
+    "desc3": "Manampahaizana Revit, ArchiCAD ary drafitra maharitra.",
+    "role4": "Mpitantana Tetikasa",
+    "desc4": "Fandrindrana toerana, drafitra ary fanaraha-maso kalitao."
+  },
+  "values": {
+    "title1": "Kalitao & Fankatoavana",
+    "desc1": "Fanajana ny fenitra malagasy sy iraisam-pirenena. Fiaraha-miasa amin'ny arisitika ekena mba hahazoana trano maharitra sy mifanaraka.",
+    "title2": "Fiarovana Aloha",
+    "desc2": "Safety First no fitsipika fototra. Fitaovana fiarovana, faritra voamarika ary fanaraha-maso tsy tapaka.",
+    "title3": "Fiantraikany eo An-toerana",
+    "desc3": "Fanofanana sy fampiasana teknisianina eo an-toerana. Fampiasana fitaovana eo an-toerana hanohanana ny toekaren'i Diana sy SAVA."
+  },
+  "blog": {
+    "tag": "Blaogy",
+    "title": "Torohevitra &<br>vaovao momba ny fanorenana.",
+    "lead": "Fantaro ny torohevitra ara-teknika, ny torolalana ary ny vaovao momba ny fanorenana, ny fandavahana ary ny fananana eto Madagasikara.",
+    "date1": "15 Mey 2025",
+    "title1": "Ny fenitra VEx eto Madagasikara",
+    "excerpt1": "Fantaro ny fenitra Rivotra Mahery mihatra any avaratr'i Madagasikara sy ny maha-zava-dehibe azy amin'ny fanorenanao.",
+    "date2": "28 Aprily 2025",
+    "title2": "Torolàlana momba ny fandavahana rano",
+    "excerpt2": "Dingana lehibe, vidiny ary torohevitra hahombiazana ny fandavahana rano any Antsiranana, Nosy Be sy manerana ny faritra.",
+    "date3": "10 Aprily 2025",
+    "title3": "Fividianana tany any Diego",
+    "excerpt3": "Fomba fitantanana sy torohevitra azo ampiharina amin'ny fividianana tany any Antsiranana sy ny avaratr'i Madagasikara.",
+    "readmore": "Hamaky lahatsoratra"
+  },
+  "newsletter": {
+    "title": "Mahazoa vaovao",
+    "desc": "Raiso ny vaovao, torohevitra ara-teknika ary tolotra manokana amin'ny mailaka. Tsy misy spam, mialà amin'ny fotoana rehetra.",
+    "btn": "Misoratra anarana"
+  },
+  "lang": {
+    "fr": "Français",
+    "en": "English",
+    "mg": "Malagasy"
+  },
+  "gallery": {
+    "close": "Hidiana"
+  },
+  "whatsapp": {
+    "text": ""
+  }
+}

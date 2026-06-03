@@ -1,0 +1,224 @@
+{
+  "nav": {
+    "about": "About",
+    "team": "Team",
+    "services": "Services",
+    "pricing": "Pricing",
+    "projects": "Projects",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "tag": "Real Estate & Construction — Madagascar",
+    "title": "Building<br><em>excellence</em><br>in the North.",
+    "subtitle": "Since 2015, Nord Invest Madagascar designs and executes your construction, rehabilitation, water drilling and real estate projects with rigor and expertise.",
+    "btnPricing": "View pricing",
+    "btnContact": "Request a quote",
+    "stat1Val": "10+",
+    "stat1Label": "Years of exp.",
+    "stat2Val": "34",
+    "stat2Label": "Technicians",
+    "stat3Val": "2",
+    "stat3Label": "Sites — Antsiranana & Nosy Be"
+  },
+  "about": {
+    "tag": "About Us",
+    "title": "Technical<br>expertise at the<br>service of your projects.",
+    "lead": "Founded in 2015 in Antsiranana, Nord Invest Madagascar specializes in construction, water drilling and real estate. We apply our technical expertise to guarantee modern, sustainable and cost-effective infrastructure.",
+    "feat1Title": "Compliance & Quality",
+    "feat1Desc": "We work with registered architects to ensure regulatory compliance and architectural quality.",
+    "feat2Title": "Safety First",
+    "feat2Desc": "Safety is our absolute priority. We rigorously apply standards to guarantee a safe working environment.",
+    "feat3Title": "Advanced Technical Service",
+    "feat3Desc": "Use of professional software (AutoCAD, ArchiCAD, Revit, Robot Structural) for precise and compliant studies."
+  },
+  "vision": {
+    "title": "Our Vision",
+    "text": "\"To become a reference player in the building and real estate sector in Madagascar and Africa.\""
+  },
+  "mission": {
+    "title": "Our Mission",
+    "text": "\"To carry out studies, construction works and real estate services with professionalism, quality and respect for standards.\""
+  },
+  "standards": {
+    "tag": "Standards & Safety",
+    "title": "Engineering at the heart<br>of every structure.",
+    "lead": "We apply the most demanding international and local standards to guarantee the longevity of your investments.",
+    "item1Title": "Safety First",
+    "item1Desc": "Absolute priority to the safety of people and equipment. Marked work zones, mandatory PPE and regular procedure checks.",
+    "item2Title": "Structural Calculations (VEx)",
+    "item2Desc": "Our studies integrate Madagascar's <strong>Extreme Wind (VEx 1 to 4)</strong> standards. Every structure is calculated to withstand the specific cyclone conditions of the North.",
+    "item2Badge": "Madagascar Compliant",
+    "item3Title": "BIM Design",
+    "item3Desc": "Use of market-leading software: <strong>AutoCAD, Revit and ArchiCAD</strong> for design, and <strong>Robot Structural Analysis</strong> for load calculation validation.",
+    "item4Title": "Administrative Compliance",
+    "item4Desc": "Support for obtaining building permits. Systematic collaboration with approved architects registered with the National Order of Architects."
+  },
+  "services": {
+    "tag": "Our Services",
+    "title": "What we<br>deliver for you.",
+    "lead": "A complete offering, from design to delivery, for individuals, NGOs, companies and institutions.",
+"card1Title": "Architectural & Structural Design",
+"card1Desc": "Complete architectural and structural design, execution plans, BIM modeling (Revit, ArchiCAD), structural calculations (Robot Structural). Compliance with Madagascar's VEx standards.",
+"card2Title": "Study (STRUCTURE, VRD, AEP)",
+"card2Desc": "Complete technical studies: concrete/steel structure, roads and networks (VRD), drinking water supply (AEP), soil study, sizing and quantitative estimates.",
+"card3Title": "New Construction",
+"card3Desc": "Structural work, finishing, turnkey. Villas, residences, buildings, institutional buildings. Site monitoring and quality control at every stage.",
+"card4Title": "Rehabilitation",
+"card4Desc": "Renovation, extension and upgrading of existing buildings. Technical diagnosis, proposal of adapted solutions and completion within agreed deadlines.",
+"card5Title": "Water Drilling",
+"card5Desc": "Preliminary geophysical study, drilling, equipping and commissioning. Water supply for individuals, municipalities and NGOs throughout northern Madagascar.",
+"card6Title": "Real Estate Sales & Purchase",
+"card6Desc": "Full support for land, residence and building sales and purchases. Local expertise, legal and administrative advice included.",
+"card7Title": "Monitoring & Quality Control",
+"card7Desc": "Technical inspection at every stage of the site. Material verification, compliance with plans and standards. Dedicated civil engineers for your project supervision."
+  },
+  "pricing": {
+    "tag": "Price Grid",
+    "title": "Clear pricing,<br>per square meter.",
+    "lead": "Our prices are in Malagasy Ariary (Ar) per m². They vary according to the finishing grade, project complexity and location. Custom quote on request.",
+    "tab1": "New Construction",
+    "tab2": "Rehabilitation",
+    "tab3": "Water Drilling",
+    "cta": "Request a quote",
+    "note": "<strong>Important note:</strong> The prices shown are reference prices excluding taxes. The actual cost depends on site access conditions, soil type, available local materials and your project specifics. <strong>A free personalized quote with no obligation is provided after a site visit.</strong> Contact us at <strong>032 82 312 80</strong> or by email."
+  },
+  "calculator": {
+    "tag": "Simulator",
+    "title": "Estimate your<br>budget in one click.",
+    "lead": "Select your options to get an instant budget estimate based on our current rates.",
+    "serviceLabel": "Service Type",
+    "servicePlaceholder": "Select a service",
+    "surfaceLabel": "Estimated area (m²)",
+    "depthLabel": "Estimated depth (ML)",
+    "tierLabel": "Finishing Grade",
+    "locationLabel": "Project Location",
+    "btnCalculate": "Calculate estimate",
+    "resultTitle": "Preliminary Estimate",
+    "resultUnit": "All Taxes Included",
+    "detailBase": "Base",
+    "detailSubtotal": "Subtotal HT",
+    "detailContingency": "Safety margin (10%)",
+    "detailTax": "VAT (20%)",
+    "detailTotal": "Estimated total",
+    "resultNote": "* This estimate is provided for indicative purposes only. It does not replace a formal quote after a technical visit.",
+    "resultCTA": "Request official quote",
+    "placeholder": "Configure your project on the left to get a preliminary estimate.",
+    "loading": "Calculating your estimate...",
+    "error": "Calculation error. Please try again."
+  },
+  "numbers": {
+    "exp": "Years of experience",
+    "tech": "Technicians & engineers",
+    "engineers": "Civil engineers",
+    "sites": "Operating sites"
+  },
+  "projects": {
+    "tag": "Projects",
+    "title": "Our works<br>speak for themselves.",
+    "lead": "A glimpse of our recent projects in Antsiranana, Nosy Be and throughout northern Madagascar.",
+    "proj1Cat": "Residential · Diego Suarez",
+    "proj1Name": "Palas Ramena Residence",
+    "proj1Loc": "Ramena, Antsiranana",
+    "proj2Cat": "Residential · Nosy Be",
+    "proj2Name": "Two R+1 residential buildings",
+    "proj2Loc": "Mahatsinjo, Nosy Be",
+    "proj3Cat": "Institutional · Sambava",
+    "proj3Name": "Sambava Islamic Center",
+    "proj3Loc": "Sambava, SAVA",
+    "proj4Cat": "Structural · Nosy Be",
+    "proj4Name": "R+2 Residential Building",
+    "proj4Loc": "Djabala, Nosy Be",
+    "proj5Cat": "Agri-tourism · Nosy Hara",
+    "proj5Name": "Geodesic Domes",
+    "proj5Loc": "Nosy Hara, Diana",
+    "proj6Cat": "Institutional · Anjianjia",
+    "proj6Name": "Municipal Offices",
+    "proj6Loc": "Anjianjia and Mahalina"
+  },
+  "contact": {
+    "tag": "Contact",
+    "title": "Let's talk about<br>your project.",
+    "lead": "A free quote with no obligation. We respond within 24 business hours.",
+    "phoneLabel": "Phone",
+    "phoneVal": "032 82 312 80 / 037 07 396 07",
+    "emailLabel": "Email",
+    "emailVal": "nordinvestmada@gmail.com",
+    "addressLabel": "Head Office",
+    "addressVal": "Tanambao 1, facing Madahoufi, Comores Street<br>Antsiranana (Diego Suarez)",
+    "officeLabel": "Branch",
+    "officeVal": "Nosy Be",
+    "formName": "Full Name *",
+    "formEmail": "Email *",
+    "formPhone": "Phone",
+    "formService": "Requested Service *",
+    "formProject": "Project Type *",
+    "formBudget": "Estimated Budget",
+    "formMessage": "Project Description *",
+    "formSubmit": "Send Request",
+    "formSuccess": "Your request has been received. We will respond within 24 hours.",
+    "formError": "Error sending. Contact us at 032 82 312 80."
+  },
+  "footer": {
+    "copyright": "© 2025 Nord Invest Madagascar — Real Estate & Construction. All rights reserved.",
+    "services": "Services",
+    "pricing": "Pricing",
+    "contact": "Contact"
+  },
+  "map": {
+    "title": "Our Offices",
+    "projects": "Our Projects on the Map"
+  },
+  "team": {
+    "tag": "Our Team",
+    "title": "Experts<br>at your service.",
+    "lead": "A team of 34 passionate technicians and engineers, mobilized for your projects throughout northern Madagascar.",
+    "role1": "CEO",
+    "desc1": "15 years of experience in civil engineering and project management.",
+    "role2": "Chief Engineer",
+    "desc2": "Expert in concrete structures and seismic calculations (VEx).",
+    "role3": "BIM Architect",
+    "desc3": "Revit, ArchiCAD and sustainable design specialist.",
+    "role4": "Project Manager",
+    "desc4": "Site coordination, planning and quality control."
+  },
+  "values": {
+    "title1": "Quality & Compliance",
+    "desc1": "Strict compliance with Malagasy and international standards. Collaboration with approved architects for durable and compliant structures.",
+    "title2": "Safety First",
+    "desc2": "Safety is our golden rule. Protective equipment, marked zones and regular checks for accident-free sites.",
+    "title3": "Local Impact",
+    "desc3": "Employment and training of local technicians. Use of local materials to support the economy of the Diana and SAVA regions."
+  },
+  "blog": {
+    "tag": "Blog",
+    "title": "Tips &<br>construction news.",
+    "lead": "Discover our technical tips, practical guides and news about construction, drilling and real estate in Madagascar.",
+    "date1": "May 15, 2025",
+    "title1": "VEx Standards in Madagascar",
+    "excerpt1": "Understand the Extreme Wind standards that apply in northern Madagascar and why they are essential for your construction.",
+    "date2": "April 28, 2025",
+    "title2": "Water Drilling Guide",
+    "excerpt2": "Key steps, costs and tips for successful water drilling in Antsiranana, Nosy Be and throughout the region.",
+    "date3": "April 10, 2025",
+    "title3": "Buying Land in Diego",
+    "excerpt3": "Administrative procedures and practical advice for buying land in Antsiranana and northern Madagascar.",
+    "readmore": "Read article"
+  },
+  "newsletter": {
+    "title": "Stay Informed",
+    "desc": "Receive our news, technical tips and special offers by email. No spam, unsubscribe at any time.",
+    "btn": "Subscribe"
+  },
+  "lang": {
+    "fr": "Français",
+    "en": "English",
+    "mg": "Malagasy"
+  },
+  "gallery": {
+    "close": "Close"
+  },
+  "whatsapp": {
+    "text": ""
+  }
+}

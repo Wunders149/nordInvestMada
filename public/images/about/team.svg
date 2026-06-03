@@ -1,0 +1,14 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e0e7ee"/>
+      <stop offset="100%" style="stop-color:#cbd5e1"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <g transform="translate(400,300)">
+    <rect x="-40" y="-30" width="80" height="60" rx="4" fill="#94a3b8" opacity="0.5"/>
+    <circle cx="0" cy="-5" r="12" fill="#94a3b8" opacity="0.5"/>
+    <text text-anchor="middle" y="50" font-family="sans-serif" font-size="14" fill="#64748b">Équipe</text>
+  </g>
+</svg>

@@ -18,14 +18,14 @@
 <meta property="og:description" content="Bâtir l'excellence au Nord. Services immobiliers et construction depuis 2015 à Madagascar.">
 <meta property="og:type" content="business.business">
 <meta property="og:url" content="https://www.nordinvest.mg/">
-<meta property="og:image" content="https://www.nordinvest.mg/og-image.png">
+<meta property="og:image" content="/images/logo.jpeg">
 <meta property="og:locale" content="fr_FR">
 
 <!-- Twitter Card Meta Tags -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Nord Invest Madagascar — Immobilier & Construction">
 <meta name="twitter:description" content="Services immobiliers professionnels à Madagascar">
-<meta name="twitter:image" content="https://www.nordinvest.mg/og-image.png">
+<meta name="twitter:image" content="/images/logo.jpeg">
 
 <!-- Canonical URL -->
 <link rel="canonical" href="https://www.nordinvest.mg/">
@@ -36,6 +36,7 @@
 <!-- Preconnect to external resources -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
 <!-- Google Analytics -->
@@ -56,7 +57,7 @@
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "Nord Invest Madagascar",
-  "image": "https://www.nordinvest.mg/og-image.png",
+  "image": "/images/logo.jpeg",
   "description": "Services immobiliers, construction neuve, réhabilitation et forage d'eau à Madagascar",
   "url": "https://www.nordinvest.mg/",
   "telephone": "+261328231280",
@@ -115,20 +116,45 @@
 </head>
 <body>
 
+<!-- LOADER -->
+<div id="loader-overlay">
+  <div class="loader-content">
+    <img src="/images/logo.jpeg" alt="Nord Invest Madagascar" class="loader-logo">
+    <div class="loader-text">Nord Invest <span>Madagascar</span></div>
+    <div class="loader-bar"></div>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav>
-  <a href="#hero" class="nav-logo">Nord Invest <span>Madagascar</span></a>
+  <a href="#hero" class="nav-logo">
+    <img src="/images/logo.jpeg" alt="Nord Invest Madagascar" class="nav-logo-img">
+    Nord Invest <span>Madagascar</span>
+  </a>
   <button class="hamburger" id="hamburger">
     <span></span>
     <span></span>
     <span></span>
   </button>
   <ul class="nav-links" id="navLinks">
-    <li><a href="#about">À Propos</a></li>
-    <li><a href="#services">Services</a></li>
-    <li><a href="#pricing">Tarifs</a></li>
-    <li><a href="#projects">Réalisations</a></li>
-    <li><a href="#contact" class="nav-cta">Contact</a></li>
+    <li><a href="#about" data-i18n="nav.about">À Propos</a></li>
+    <li><a href="#team" data-i18n="nav.team">Équipe</a></li>
+    <li><a href="#services" data-i18n="nav.services">Services</a></li>
+    <li><a href="#pricing" data-i18n="nav.pricing">Tarifs</a></li>
+    <li><a href="#projects" data-i18n="nav.projects">Réalisations</a></li>
+    <li><a href="#blog" data-i18n="nav.blog">Blog</a></li>
+    <li class="nav-lang-selector">
+      <button class="lang-btn active" data-lang="fr" onclick="setLanguage('fr')">FR</button>
+      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+      <button class="lang-btn" data-lang="mg" onclick="setLanguage('mg')">MG</button>
+    </li>
+    <li>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+    </li>
+    <li><a href="#contact" class="nav-cta" data-i18n="nav.contact">Contact</a></li>
   </ul>
 </nav>
 
@@ -159,9 +185,7 @@
   </div>
   <div class="hero-right">
     <div class="hero-decor"></div>
-    <div style="width:100%;height:100%;background:linear-gradient(135deg,#2a1a0a 0%,#3a2a1a 50%,#1a0a0a 100%);display:flex;align-items:center;justify-content:center;">
-      <span style="font-size:8rem;opacity:0.08;">🏗️</span>
-    </div>
+    <img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1000&q=80" alt="Nord Invest Madagascar - Architecture" class="hero-img" loading="eager">
     <div class="hero-overlay"></div>
     <div class="hero-badge">
       <div class="hero-badge-year">2015</div>
@@ -173,17 +197,13 @@
 <!-- ABOUT -->
 <section id="about">
   <div class="about-image-wrap reveal">
-    <div style="width:100%;aspect-ratio:4/5;background:linear-gradient(160deg,#3a2a1a,#1a0a0a);border-radius:2px;display:flex;align-items:center;justify-content:center;">
-      <span style="font-size:6rem;opacity:0.15;">🏢</span>
-    </div>
-    <div style="position:absolute;bottom:-24px;right:-24px;width:45%;aspect-ratio:1;background:linear-gradient(135deg,#2a3a5a,#1a2030);border:4px solid white;border-radius:2px;display:flex;align-items:center;justify-content:center;">
-      <span style="font-size:3rem;opacity:0.2;">🔧</span>
-    </div>
+    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80" alt="Nord Invest Madagascar - Équipe technique" class="about-img" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1486321549086-f011cf174f00?auto=format&fit=crop&w=400&q=80" alt="Nord Invest Madagascar - Architecture" class="about-img-accent" loading="lazy">
   </div>
   <div class="reveal">
-    <div class="section-tag">À Propos</div>
-    <h2>Une expertise<br>technique au service<br>de vos projets.</h2>
-    <p class="section-lead">Fondée en 2015 à Antsiranana, Nord Invest Madagascar est spécialisée dans la construction, le forage d'eau et l'immobilier. Nous mettons en œuvre notre expertise technique pour garantir des infrastructures modernes, durables et économiques.</p>
+    <div class="section-tag" data-i18n="about.tag">À Propos</div>
+    <h2 data-i18n-html="about.title">Une expertise<br>technique au service<br>de vos projets.</h2>
+    <p class="section-lead" data-i18n="about.lead">Fondée en 2015 à Antsiranana, Nord Invest Madagascar est spécialisée dans la construction, le forage d'eau et l'immobilier. Nous mettons en œuvre notre expertise technique pour garantir des infrastructures modernes, durables et économiques.</p>
     <div class="about-features">
       <div class="feat">
         <div class="feat-icon">🏛️</div>
@@ -215,12 +235,12 @@
   <div class="calculator-container">
     <div class="vision-mission-grid">
       <div class="vm-card reveal">
-        <div class="vm-label">Notre Vision</div>
-        <div class="vm-text">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
+        <div class="vm-label" data-i18n="vision.title">Notre Vision</div>
+        <div class="vm-text" data-i18n="vision.text">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
       </div>
       <div class="vm-card mission reveal">
-        <div class="vm-label">Notre Mission</div>
-        <div class="vm-text">"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
+        <div class="vm-label" data-i18n="mission.title">Notre Mission</div>
+        <div class="vm-text" data-i18n="mission.text">"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
       </div>
     </div>
   </div>
@@ -229,9 +249,9 @@
 <!-- TECHNICAL STANDARDS & SAFETY -->
 <section id="technical-standards">
   <div class="reveal">
-    <div class="section-tag">Normes & Sécurité</div>
-    <h2>L'ingénierie au cœur<br>de chaque ouvrage.</h2>
-    <p class="section-lead">Nous appliquons les standards internationaux et locaux les plus exigeants pour garantir la pérennité de vos investissements.</p>
+        <div class="section-tag" data-i18n="standards.tag">Normes & Sécurité</div>
+    <h2 data-i18n-html="standards.title">L'ingénierie au cœur<br>de chaque ouvrage.</h2>
+    <p class="section-lead" data-i18n="standards.lead">Nous appliquons les standards internationaux et locaux les plus exigeants pour garantir la pérennité de vos investissements.</p>
   </div>
 
   <div class="standards-grid reveal">
@@ -270,12 +290,65 @@
   </div>
 </section>
 
+<!-- TEAM -->
+<section id="team">
+  <div class="reveal">
+    <div class="section-tag" data-i18n="team.tag">Notre Équipe</div>
+    <h2 data-i18n-html="team.title">Des experts<br>à votre service.</h2>
+    <p class="section-lead" data-i18n="team.lead">Une équipe de 34 techniciens et ingénieurs passionnés, mobilisés pour vos projets dans tout le nord de Madagascar.</p>
+  </div>
+  <div class="team-grid reveal">
+    <div class="team-card">
+      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Directeur" class="team-avatar" loading="lazy">
+      <div class="team-name">Jean Rakoto</div>
+      <div class="team-role" data-i18n="team.role1">Directeur Général</div>
+      <div class="team-desc" data-i18n="team.desc1">15 ans d'expérience en ingénierie civile et management de projets.</div>
+    </div>
+    <div class="team-card">
+      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80" alt="Ingénieur en chef" class="team-avatar" loading="lazy">
+      <div class="team-name">Mamy Andria</div>
+      <div class="team-role" data-i18n="team.role2">Ingénieur en Chef</div>
+      <div class="team-desc" data-i18n="team.desc2">Expert en structures béton et calculs sismiques (VEx).</div>
+    </div>
+    <div class="team-card">
+      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" alt="Architecte" class="team-avatar" loading="lazy">
+      <div class="team-name">Lala Rasoa</div>
+      <div class="team-role" data-i18n="team.role3">Architecte BIM</div>
+      <div class="team-desc" data-i18n="team.desc3">Spécialiste Revit, ArchiCAD et conception durable.</div>
+    </div>
+    <div class="team-card">
+      <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" alt="Chef de projet" class="team-avatar" loading="lazy">
+      <div class="team-name">Koto Rajaonah</div>
+      <div class="team-role" data-i18n="team.role4">Chef de Projet</div>
+      <div class="team-desc" data-i18n="team.desc4">Coordination chantier, planning et contrôle qualité.</div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section id="values">
+  <div class="vision-mission-grid reveal">
+    <div class="vm-card">
+      <div class="vm-label" data-i18n="values.title1">Qualité & Conformité</div>
+      <div class="vm-text" data-i18n="values.desc1">Respect strict des normes malgaches et internationales. Collaboration avec des architectes agréés pour des ouvrages durables et conformes.</div>
+    </div>
+    <div class="vm-card mission">
+      <div class="vm-label" data-i18n="values.title2">Sécurité Avant Tout</div>
+      <div class="vm-text" data-i18n="values.desc2">Safety First est notre règle d'or. Équipements de protection, zones balisées et contrôles réguliers pour un chantier sans accident.</div>
+    </div>
+    <div class="vm-card">
+      <div class="vm-label" data-i18n="values.title3">Impact Local</div>
+      <div class="vm-text" data-i18n="values.desc3">Employeurs et formation de techniciens locaux. Utilisation de matériaux locaux pour soutenir l'économie de la région Diana et SAVA.</div>
+    </div>
+  </div>
+</section>
+
 <!-- SERVICES -->
 <section id="services">
   <div class="reveal">
-    <div class="section-tag">Nos Services</div>
-    <h2 style="color:white;">Ce que nous<br>réalisons pour vous.</h2>
-    <p class="section-lead">Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.</p>
+    <div class="section-tag" data-i18n="services.tag">Nos Services</div>
+    <h2 style="color:white;" data-i18n-html="services.title">Ce que nous<br>réalisons pour vous.</h2>
+    <p class="section-lead" data-i18n="services.lead">Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.</p>
   </div>
   <div class="services-grid reveal">
     <div class="service-card">
@@ -320,7 +393,7 @@
 <!-- PRICING -->
 <section id="pricing">
   <div class="pricing-intro reveal">
-    <div class="section-tag">Grille Tarifaire</div>
+    <div class="section-tag" data-i18n="pricing.tag">Grille Tarifaire</div>
     <h2>Des tarifs clairs,<br>au mètre carré.</h2>
     <p class="section-lead">Nos prix sont exprimés en Ariary malgache (Ar) par m². Ils varient selon la gamme de finition, la complexité du projet et sa localisation. Devis personnalisé sur demande.</p>
   </div>
@@ -533,7 +606,7 @@
 <section id="calculator">
   <div class="calculator-container reveal">
     <div class="calculator-header">
-      <div class="section-tag">Simulateur</div>
+      <div class="section-tag" data-i18n="calculator.tag">Simulateur</div>
       <h2>Estimez votre<br>budget en un clic.</h2>
       <p class="section-lead">Sélectionnez vos options pour obtenir une estimation budgétaire instantanée basée sur nos tarifs actuels.</p>
     </div>
@@ -609,15 +682,13 @@
 <!-- PROJECTS -->
 <section id="projects">
   <div class="reveal">
-    <div class="section-tag">Réalisations</div>
-    <h2>Nos chantiers<br>parlent d'eux-mêmes.</h2>
-    <p class="section-lead">Un aperçu de nos projets récents à Antsiranana, Nosy Be et dans tout le nord de Madagascar.</p>
+    <div class="section-tag" data-i18n="projects.tag">Réalisations</div>
+    <h2 data-i18n-html="projects.title">Nos chantiers<br>parlent d'eux-mêmes.</h2>
+    <p class="section-lead" data-i18n="projects.lead">Un aperçu de nos projets récents à Antsiranana, Nosy Be et dans tout le nord de Madagascar.</p>
   </div>
   <div class="projects-grid reveal">
     <div class="project-card">
-      <div class="project-img proj-bg-1" style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:5rem;opacity:0.2;">🏨</span>
-      </div>
+      <img src="https://images.unsplash.com/photo-1564013799919-ab600027f9c8?auto=format&fit=crop&w=800&q=80" alt="Résidence Palas Ramena" class="project-img" loading="lazy">
       <div class="project-overlay">
         <div class="project-cat">Résidentiel · Diego Suarez</div>
         <div class="project-name">Résidence Palas Ramena</div>
@@ -625,9 +696,7 @@
       </div>
     </div>
     <div class="project-card">
-      <div class="project-img proj-bg-2" style="display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:4rem;opacity:0.2;">🏠</span>
-      </div>
+      <img src="https://images.unsplash.com/photo-1541888946425-d81bb192136f?auto=format&fit=crop&w=800&q=80" alt="Deux bâtiments d'habitation R+1" class="project-img" loading="lazy">
       <div class="project-overlay">
         <div class="project-cat">Résidentiel · Nosy Be</div>
         <div class="project-name">Deux bâtiments d'habitation R+1</div>
@@ -635,9 +704,7 @@
       </div>
     </div>
     <div class="project-card">
-      <div class="project-img proj-bg-3" style="display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:4rem;opacity:0.2;">🕌</span>
-      </div>
+      <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" alt="Centre Islamique de Sambava" class="project-img" loading="lazy">
       <div class="project-overlay">
         <div class="project-cat">Institutionnel · Sambava</div>
         <div class="project-name">Centre Islamique de Sambava</div>
@@ -645,9 +712,7 @@
       </div>
     </div>
     <div class="project-card">
-      <div class="project-img proj-bg-4" style="display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:4rem;opacity:0.2;">🏗️</span>
-      </div>
+      <img src="https://images.unsplash.com/photo-1497366751922-0e2234f8f4a4?auto=format&fit=crop&w=800&q=80" alt="Bâtiment Résidentiel R+2" class="project-img" loading="lazy">
       <div class="project-overlay">
         <div class="project-cat">Gros Œuvre · Nosy Be</div>
         <div class="project-name">Bâtiment Résidentiel R+2</div>
@@ -655,9 +720,7 @@
       </div>
     </div>
     <div class="project-card">
-      <div class="project-img proj-bg-5" style="display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:4rem;opacity:0.2;">⛺</span>
-      </div>
+      <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80" alt="Dômes Géodésiques" class="project-img" loading="lazy">
       <div class="project-overlay">
         <div class="project-cat">Agri-tourisme · Nosy Hara</div>
         <div class="project-name">Dômes Géodésiques</div>
@@ -665,9 +728,7 @@
       </div>
     </div>
     <div class="project-card">
-      <div class="project-img proj-bg-1" style="display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:4rem;opacity:0.2;">🏛️</span>
-      </div>
+      <img src="https://images.unsplash.com/photo-1431576901776-e539bd916ba2?auto=format&fit=crop&w=800&q=80" alt="Bureaux Communaux" class="project-img" loading="lazy">
       <div class="project-overlay">
         <div class="project-cat">Institutionnel · Anjianjia</div>
         <div class="project-name">Bureaux Communaux</div>
@@ -677,12 +738,50 @@
   </div>
 </section>
 
+<!-- BLOG -->
+<section id="blog">
+  <div class="reveal">
+    <div class="section-tag" data-i18n="blog.tag">Actualités</div>
+    <h2 data-i18n-html="blog.title">Conseils &<br>actualités du bâtiment.</h2>
+    <p class="section-lead" data-i18n="blog.lead">Découvrez nos conseils techniques, guides pratiques et actualités sur la construction, le forage et l'immobilier à Madagascar.</p>
+  </div>
+  <div class="blog-grid reveal">
+    <article class="blog-card">
+      <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800&q=80" alt="Construction" class="blog-img" loading="lazy">
+      <div class="blog-body">
+        <div class="blog-date" data-i18n="blog.date1">15 Mai 2025</div>
+        <div class="blog-title" data-i18n="blog.title1">Les normes VEx à Madagascar</div>
+        <div class="blog-excerpt" data-i18n="blog.excerpt1">Tout comprendre sur les normes Vent Extrême qui s'appliquent au nord de Madagascar et pourquoi elles sont essentielles pour votre construction.</div>
+        <a href="#" class="blog-link" data-i18n="blog.readmore">Lire l'article</a>
+      </div>
+    </article>
+    <article class="blog-card">
+      <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80" alt="Forage" class="blog-img" loading="lazy">
+      <div class="blog-body">
+        <div class="blog-date" data-i18n="blog.date2">28 Avril 2025</div>
+        <div class="blog-title" data-i18n="blog.title2">Guide du forage d'eau</div>
+        <div class="blog-excerpt" data-i18n="blog.excerpt2">Étapes clés, coûts et conseils pour réussir votre forage d'eau à Antsiranana, Nosy Be et dans toute la région.</div>
+        <a href="#" class="blog-link" data-i18n="blog.readmore">Lire l'article</a>
+      </div>
+    </article>
+    <article class="blog-card">
+      <img src="https://images.unsplash.com/photo-1486321549086-f011cf174f00?auto=format&fit=crop&w=800&q=80" alt="Immobilier" class="blog-img" loading="lazy">
+      <div class="blog-body">
+        <div class="blog-date" data-i18n="blog.date3">10 Avril 2025</div>
+        <div class="blog-title" data-i18n="blog.title3">Acheter un terrain à Diego</div>
+        <div class="blog-excerpt" data-i18n="blog.excerpt3">Les démarches administratives et conseils pratiques pour l'achat d'un terrain à Antsiranana et dans le nord de Madagascar.</div>
+        <a href="#" class="blog-link" data-i18n="blog.readmore">Lire l'article</a>
+      </div>
+    </article>
+  </div>
+</section>
+
 <!-- CONTACT -->
 <section id="contact">
   <div>
-    <div class="section-tag">Contact</div>
-    <h2>Parlons de<br>votre projet.</h2>
-    <p class="section-lead">Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.</p>
+    <div class="section-tag" data-i18n="contact.tag">Contact</div>
+    <h2 data-i18n-html="contact.title">Parlons de<br>votre projet.</h2>
+    <p class="section-lead" data-i18n="contact.lead">Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.</p>
     <div class="contact-info">
       <div class="contact-item">
         <div class="contact-icon">📞</div>
@@ -711,6 +810,50 @@
           <div class="contact-label">Antenne</div>
           <div class="contact-val">Nosy Be</div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-wrap reveal">
+    <h3 class="map-title" data-i18n="map.title">Nos Bureaux</h3>
+    <div class="map-container">
+      <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=49.2833%2C-12.2833%2C49.3833%2C-12.2167&amp;layer=mapnik&amp;marker=-12.25%2C49.3333" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Antsiranana Map"></iframe>
+    </div>
+    <div class="map-locations">
+      <div class="map-loc">
+        <strong>Antsiranana (Siège)</strong><br>
+        Tanambao 1, face Madahoufi, Rue Comores
+      </div>
+      <div class="map-loc">
+        <strong>Nosy Be (Antenne)</strong><br>
+        Mahatsinjo, Nosy Be
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT MAP -->
+  <div class="project-map-wrap reveal">
+    <h3 class="project-map-title" data-i18n="map.projects">Nos Projets sur la Carte</h3>
+    <div class="project-map-container">
+      <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=46.5%2C-14.5%2C51.0%2C-11.5&amp;layer=mapnik&amp;marker=-12.5%2C49.5" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte des projets Nord Invest Madagascar"></iframe>
+    </div>
+    <div class="project-map-pins">
+      <div class="project-pin">
+        <strong data-i18n="projects.proj1Name">Résidence Palas Ramena</strong>
+        <span data-i18n="projects.proj1Loc">Ramena, Antsiranana</span>
+      </div>
+      <div class="project-pin">
+        <strong data-i18n="projects.proj2Name">Bâtiments R+1</strong>
+        <span data-i18n="projects.proj2Loc">Mahatsinjo, Nosy Be</span>
+      </div>
+      <div class="project-pin">
+        <strong data-i18n="projects.proj3Name">Centre Islamique</strong>
+        <span data-i18n="projects.proj3Loc">Sambava, SAVA</span>
+      </div>
+      <div class="project-pin">
+        <strong data-i18n="projects.proj4Name">Bâtiment R+2</strong>
+        <span data-i18n="projects.proj4Loc">Djabala, Nosy Be</span>
       </div>
     </div>
   </div>
@@ -769,14 +912,29 @@
   </div>
 </section>
 
+<!-- NEWSLETTER -->
+<section id="newsletter">
+  <div class="newsletter-container reveal">
+    <div class="newsletter-title" data-i18n="newsletter.title">Restez informé</div>
+    <p class="newsletter-desc" data-i18n="newsletter.desc">Recevez nos actualités, conseils techniques et offres spéciales par email. Pas de spam, désabonnement à tout moment.</p>
+    <form class="newsletter-form" id="newsletterForm" onsubmit="handleNewsletter(event)">
+      <input type="email" id="newsletterEmail" class="newsletter-input" placeholder="votre@email.com" required>
+      <button type="submit" class="newsletter-btn" data-i18n="newsletter.btn">S'abonner</button>
+    </form>
+    <div class="newsletter-msg" id="newsletterMsg"></div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <a href="#hero" class="footer-logo">Nord Invest <span>Madagascar</span></a>
   <p class="footer-copy">© 2025 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.</p>
   <div class="footer-links">
-    <a href="#services">Services</a>
-    <a href="#pricing">Tarifs</a>
-    <a href="#contact">Contact</a>
+    <a href="#about" data-i18n="nav.about">À Propos</a>
+    <a href="#services" data-i18n="footer.services">Services</a>
+    <a href="#pricing" data-i18n="footer.pricing">Tarifs</a>
+    <a href="#blog" data-i18n="nav.blog">Blog</a>
+    <a href="#contact" data-i18n="footer.contact">Contact</a>
   </div>
 </footer>
 

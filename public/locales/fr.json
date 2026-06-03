@@ -1,0 +1,224 @@
+{
+  "nav": {
+    "about": "À Propos",
+    "team": "Équipe",
+    "services": "Services",
+    "pricing": "Tarifs",
+    "projects": "Réalisations",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "tag": "Immobilier & Construction — Madagascar",
+    "title": "Bâtir<br>l'<em>excellence</em><br>au Nord.",
+    "subtitle": "Depuis 2015, Nord Invest Madagascar conçoit et réalise vos projets de construction, réhabilitation, forage d'eau et transactions immobilières avec rigueur et expertise.",
+    "btnPricing": "Voir les tarifs",
+    "btnContact": "Demander un devis",
+    "stat1Val": "10+",
+    "stat1Label": "Années d'exp.",
+    "stat2Val": "34",
+    "stat2Label": "Techniciens",
+    "stat3Val": "2",
+    "stat3Label": "Sites — Antsiranana & Nosy Be"
+  },
+  "about": {
+    "tag": "À Propos",
+    "title": "Une expertise<br>technique au service<br>de vos projets.",
+    "lead": "Fondée en 2015 à Antsiranana, Nord Invest Madagascar est spécialisée dans la construction, le forage d'eau et l'immobilier. Nous mettons en œuvre notre expertise technique pour garantir des infrastructures modernes, durables et économiques.",
+    "feat1Title": "Conformité & Qualité",
+    "feat1Desc": "Nous collaborons avec des architectes inscrits à l'Ordre des Architectes pour assurer la conformité réglementaire et la qualité architecturale.",
+    "feat2Title": "Sécurité (Safety First)",
+    "feat2Desc": "La sécurité est notre priorité absolue. Nous appliquons rigoureusement les normes pour garantir un environnement de travail sûr.",
+    "feat3Title": "Service Technique de Pointe",
+    "feat3Desc": "Utilisation de logiciels professionnels (AutoCAD, ArchiCAD, Revit, Robot Structural) pour des études précises et conformes."
+  },
+  "vision": {
+    "title": "Notre Vision",
+    "text": "\"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique.\""
+  },
+  "mission": {
+    "title": "Notre Mission",
+    "text": "\"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes.\""
+  },
+  "standards": {
+    "tag": "Normes & Sécurité",
+    "title": "L'ingénierie au cœur<br>de chaque ouvrage.",
+    "lead": "Nous appliquons les standards internationaux et locaux les plus exigeants pour garantir la pérennité de vos investissements.",
+    "item1Title": "Safety First",
+    "item1Desc": "Priorité absolue à la sécurité des hommes et des équipements. Zones de travail balisées, équipements de protection individuels (EPI) obligatoires et contrôles réguliers des procédures.",
+    "item2Title": "Calculs Structurels (VEx)",
+    "item2Desc": "Nos études intègrent les normes de <strong>Vent Extrême (VEx 1 à 4)</strong> de Madagascar. Chaque structure est calculée pour résister aux conditions cycloniques spécifiques du Nord.",
+    "item2Badge": "Conformité Madagascar",
+    "item3Title": "Conception BIM",
+    "item3Desc": "Utilisation des logiciels leaders du marché : <strong>AutoCAD, Revit et ArchiCAD</strong> pour la conception, et <strong>Robot Structural Analysis</strong> pour la validation des calculs de charge.",
+    "item4Title": "Régularité Administrative",
+    "item4Desc": "Accompagnement pour l'obtention des permis de construire. Collaboration systématique avec des architectes agréés inscrits à l'Ordre National des Architectes."
+  },
+  "services": {
+    "tag": "Nos Services",
+    "title": "Ce que nous<br>réalisons pour vous.",
+    "lead": "Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.",
+"card1Title": "Conception Architecturale et Structurelle",
+"card1Desc": "Conception architecturale et structurale complète, plans d'exécution, modélisation BIM (Revit, ArchiCAD), calculs structurels (Robot Structural). Respect des normes VEx de Madagascar.",
+"card2Title": "Étude (STRUCTURE, VRD, AEP)",
+"card2Desc": "Études techniques complètes : structure béton/charpente, VRD (voirie et réseaux divers), AEP (alimentation en eau potable), étude de sol, dimensionnement et devis quantitatif.",
+"card3Title": "Construction Neuve",
+"card3Desc": "Gros œuvre, second œuvre, clé en main. Villas, résidences, immeubles, bâtiments institutionnels. Suivi de chantier et contrôle qualité à chaque étape.",
+"card4Title": "Réhabilitation",
+"card4Desc": "Rénovation, extension et mise aux normes de bâtiments existants. Diagnostic technique, proposition de solutions adaptées et réalisation dans les délais convenus.",
+"card5Title": "Forage d'Eau",
+"card5Desc": "Étude géophysique préalable, forage, équipement et mise en service. Approvisionnement en eau pour particuliers, communes et ONG dans tout le nord de Madagascar.",
+"card6Title": "Vente & Achat Immobilier",
+"card6Desc": "Accompagnement complet pour ventes et achats de terrains, résidences et immeubles. Expertise locale, conseils juridiques et administratifs inclus.",
+"card7Title": "Suivi & Contrôle Qualité",
+"card7Desc": "Contrôle technique à chaque étape du chantier. Vérification des matériaux, respect des plans et des normes. Ingénieurs civils dédiés au suivi de vos travaux."
+  },
+  "pricing": {
+    "tag": "Grille Tarifaire",
+    "title": "Des tarifs clairs,<br>au mètre carré.",
+    "lead": "Nos prix sont exprimés en Ariary malgache (Ar) par m². Ils varient selon la gamme de finition, la complexité du projet et sa localisation. Devis personnalisé sur demande.",
+    "tab1": "Construction Neuve",
+    "tab2": "Réhabilitation",
+    "tab3": "Forage d'Eau",
+    "cta": "Demander un devis",
+    "note": "<strong>Note importante :</strong> Les prix indiqués sont des tarifs de référence hors taxes. Le coût réel dépend des conditions d'accès au site, du type de sol, des matériaux locaux disponibles et des spécificités de votre projet. <strong>Un devis personnalisé gratuit et sans engagement est réalisé après visite du terrain.</strong> Contactez-nous au <strong>032 82 312 80</strong> ou par email."
+  },
+  "calculator": {
+    "tag": "Simulateur",
+    "title": "Estimez votre<br>budget en un clic.",
+    "lead": "Sélectionnez vos options pour obtenir une estimation budgétaire instantanée basée sur nos tarifs actuels.",
+    "serviceLabel": "Type de Service",
+    "servicePlaceholder": "Sélectionnez un service",
+    "surfaceLabel": "Surface estimée (m²)",
+    "depthLabel": "Profondeur estimée (ML)",
+    "tierLabel": "Gamme de Finition",
+    "locationLabel": "Localisation du Projet",
+    "btnCalculate": "Calculer l'estimation",
+    "resultTitle": "Estimation Prévisionnelle",
+    "resultUnit": "Toutes Taxes Comprises (TTC)",
+    "detailBase": "Base",
+    "detailSubtotal": "Sous-total HT",
+    "detailContingency": "Marge de sécurité (10%)",
+    "detailTax": "TVA (20%)",
+    "detailTotal": "Total estimé",
+    "resultNote": "* Cette estimation est fournie à titre indicatif. Elle ne remplace pas un devis formel après visite technique.",
+    "resultCTA": "Demander un devis officiel",
+    "placeholder": "Configurez votre projet ci-contre pour obtenir un chiffrage prévisionnel.",
+    "loading": "Calcul de votre estimation en cours...",
+    "error": "Erreur lors du calcul. Veuillez réessayer."
+  },
+  "numbers": {
+    "exp": "Années d'expérience",
+    "tech": "Techniciens & ingénieurs",
+    "engineers": "Ingénieurs génie civil",
+    "sites": "Sites d'opération"
+  },
+  "projects": {
+    "tag": "Réalisations",
+    "title": "Nos chantiers<br>parlent d'eux-mêmes.",
+    "lead": "Un aperçu de nos projets récents à Antsiranana, Nosy Be et dans tout le nord de Madagascar.",
+    "proj1Cat": "Résidentiel · Diego Suarez",
+    "proj1Name": "Résidence Palas Ramena",
+    "proj1Loc": "Ramena, Antsiranana",
+    "proj2Cat": "Résidentiel · Nosy Be",
+    "proj2Name": "Deux bâtiments d'habitation R+1",
+    "proj2Loc": "Mahatsinjo, Nosy Be",
+    "proj3Cat": "Institutionnel · Sambava",
+    "proj3Name": "Centre Islamique de Sambava",
+    "proj3Loc": "Sambava, SAVA",
+    "proj4Cat": "Gros Œuvre · Nosy Be",
+    "proj4Name": "Bâtiment Résidentiel R+2",
+    "proj4Loc": "Djabala, Nosy Be",
+    "proj5Cat": "Agri-tourisme · Nosy Hara",
+    "proj5Name": "Dômes Géodésiques",
+    "proj5Loc": "Nosy Hara, Diana",
+    "proj6Cat": "Institutionnel · Anjianjia",
+    "proj6Name": "Bureaux Communaux",
+    "proj6Loc": "Anjianjia et Mahalina"
+  },
+  "contact": {
+    "tag": "Contact",
+    "title": "Parlons de<br>votre projet.",
+    "lead": "Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.",
+    "phoneLabel": "Téléphone",
+    "phoneVal": "032 82 312 80 / 037 07 396 07",
+    "emailLabel": "Email",
+    "emailVal": "nordinvestmada@gmail.com",
+    "addressLabel": "Siège Social",
+    "addressVal": "Tanambao 1, en face de Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)",
+    "officeLabel": "Antenne",
+    "officeVal": "Nosy Be",
+    "formName": "Nom Complet *",
+    "formEmail": "Email *",
+    "formPhone": "Téléphone",
+    "formService": "Service Demandé *",
+    "formProject": "Type de Projet *",
+    "formBudget": "Budget Estimé",
+    "formMessage": "Description du Projet *",
+    "formSubmit": "Envoyer ma Demande",
+    "formSuccess": "Votre demande a été reçue. Nous vous répondrons sous 24h.",
+    "formError": "Erreur lors de l'envoi. Contactez-nous au 032 82 312 80."
+  },
+  "footer": {
+    "copyright": "© 2025 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.",
+    "services": "Services",
+    "pricing": "Tarifs",
+    "contact": "Contact"
+  },
+  "map": {
+    "title": "Nos Bureaux",
+    "projects": "Nos Projets sur la Carte"
+  },
+  "team": {
+    "tag": "Notre Équipe",
+    "title": "Des experts<br>à votre service.",
+    "lead": "Une équipe de 34 techniciens et ingénieurs passionnés, mobilisés pour vos projets dans tout le nord de Madagascar.",
+    "role1": "Directeur Général",
+    "desc1": "15 ans d'expérience en ingénierie civile et management de projets.",
+    "role2": "Ingénieur en Chef",
+    "desc2": "Expert en structures béton et calculs sismiques (VEx).",
+    "role3": "Architecte BIM",
+    "desc3": "Spécialiste Revit, ArchiCAD et conception durable.",
+    "role4": "Chef de Projet",
+    "desc4": "Coordination chantier, planning et contrôle qualité."
+  },
+  "values": {
+    "title1": "Qualité & Conformité",
+    "desc1": "Respect strict des normes malgaches et internationales. Collaboration avec des architectes agréés pour des ouvrages durables et conformes.",
+    "title2": "Sécurité Avant Tout",
+    "desc2": "Safety First est notre règle d'or. Équipements de protection, zones balisées et contrôles réguliers pour un chantier sans accident.",
+    "title3": "Impact Local",
+    "desc3": "Employeurs et formation de techniciens locaux. Utilisation de matériaux locaux pour soutenir l'économie de la région Diana et SAVA."
+  },
+  "blog": {
+    "tag": "Actualités",
+    "title": "Conseils &<br>actualités du bâtiment.",
+    "lead": "Découvrez nos conseils techniques, guides pratiques et actualités sur la construction, le forage et l'immobilier à Madagascar.",
+    "date1": "15 Mai 2025",
+    "title1": "Les normes VEx à Madagascar",
+    "excerpt1": "Tout comprendre sur les normes Vent Extrême qui s'appliquent au nord de Madagascar et pourquoi elles sont essentielles pour votre construction.",
+    "date2": "28 Avril 2025",
+    "title2": "Guide du forage d'eau",
+    "excerpt2": "Étapes clés, coûts et conseils pour réussir votre forage d'eau à Antsiranana, Nosy Be et dans toute la région.",
+    "date3": "10 Avril 2025",
+    "title3": "Acheter un terrain à Diego",
+    "excerpt3": "Les démarches administratives et conseils pratiques pour l'achat d'un terrain à Antsiranana et dans le nord de Madagascar.",
+    "readmore": "Lire l'article"
+  },
+  "newsletter": {
+    "title": "Restez informé",
+    "desc": "Recevez nos actualités, conseils techniques et offres spéciales par email. Pas de spam, désabonnement à tout moment.",
+    "btn": "S'abonner"
+  },
+  "lang": {
+    "fr": "Français",
+    "en": "English",
+    "mg": "Malagasy"
+  },
+  "gallery": {
+    "close": "Fermer"
+  },
+  "whatsapp": {
+    "text": ""
+  }
+}

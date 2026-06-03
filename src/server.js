@@ -172,6 +172,49 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+// ─── NEWSLETTER SUBSCRIPTION ─── 
+app.post('/api/newsletter', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email requis' });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Email invalide' });
+    }
+    // Store newsletter subscribers (append to a JSON file)
+    const subscribersPath = path.join(projectRoot, 'data', 'subscribers.json');
+    let subscribers = [];
+    try {
+      if (fs.existsSync(subscribersPath)) {
+        subscribers = JSON.parse(fs.readFileSync(subscribersPath, 'utf8'));
+      }
+    } catch {}
+    if (subscribers.find(s => s.email === email)) {
+      return res.json({ success: true, message: 'D\u00e9j\u00e0 inscrit' });
+    }
+    subscribers.push({ email, date: new Date().toISOString() });
+    const dir = path.dirname(subscribersPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers, null, 2));
+    // Optional: send admin notification
+    try {
+      const adminMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+        subject: 'Nouvel abonné newsletter',
+        html: `<p>Nouvel abonné : <strong>${escapeHtml(email)}</strong></p>`
+      };
+      await transporter.sendMail(adminMailOptions);
+    } catch {}
+    res.json({ success: true, message: 'Inscription réussie' });
+  } catch (error) {
+    console.error('Newsletter error:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // ─── QUOTE REQUEST ─── 
 app.post('/api/request-quote', async (req, res) => {
   try {
