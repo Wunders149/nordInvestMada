@@ -34,6 +34,15 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Load configuration
+const configPath = path.join(projectRoot, 'config.json');
+let config = {};
+try {
+  config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+} catch (error) {
+  console.error('Failed to load config.json:', error);
+}
+
 // ─── PRICING CALCULATIONS ─── 
 app.post('/api/calculate-pricing', (req, res) => {
   try {
@@ -43,48 +52,35 @@ app.post('/api/calculate-pricing', (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const pricingRates = {
-      construction: {
-        economic: 450000,
-        standard: 750000,
-        premium: 1200000
-      },
-      rehabilitation: {
-        economic: 350000,
-        standard: 550000,
-        premium: 850000
-      },
-      forage: {
-        economic: 800000,
-        standard: 1200000,
-        premium: 1800000
-      }
-    };
+    const pricingRates = config.pricing || {};
+    const servicePricing = pricingRates[serviceType]?.[finishingLevel];
 
-    let basePrice = pricingRates[serviceType]?.[finishingLevel];
-    if (!basePrice) {
+    if (!servicePricing) {
       return res.status(400).json({ error: 'Invalid service type or finishing level' });
     }
 
-    const locationMultiplier = {
-      'diego-suarez': 1.0,
-      'nosy-be': 1.15,
-      'sambava': 1.05,
-      'antalaha': 1.08,
-      'other': 1.2
-    };
+    let basePrice = servicePricing.pricePerM2 || servicePricing.pricePerML || servicePricing.price;
+    const unit = servicePricing.unit || (servicePricing.pricePerML ? 'ml' : 'm²');
+
+    const locationMultiplier = {};
+    if (config.locations) {
+      config.locations.forEach(loc => {
+        locationMultiplier[loc.code] = loc.multiplier;
+      });
+    }
+
     const multiplier = locationMultiplier[location] || 1.0;
 
     let totalPrice;
-    if (serviceType === 'forage') {
+    if (unit === 'mission' || unit === 'intervention') {
       totalPrice = basePrice * multiplier;
     } else {
       totalPrice = basePrice * squareMeters * multiplier;
     }
 
-    const contingency = totalPrice * 0.1;
+    const contingency = totalPrice * (config.contingency_rate || 0.1);
     const estimatedTotal = totalPrice + contingency;
-    const tax = estimatedTotal * 0.2;
+    const tax = estimatedTotal * (config.tax_rate || 0.2);
     const grandTotal = estimatedTotal + tax;
 
     res.json({
@@ -249,6 +245,11 @@ app.get('/api/images', (req, res) => {
     console.error('Image listing error:', error);
     res.status(500).json({ error: 'Failed to list images' });
   }
+});
+
+// ─── CONFIGURATION ENDPOINT ─── 
+app.get('/api/config', (req, res) => {
+  res.json(config);
 });
 
 // ─── HEALTH CHECK ─── 

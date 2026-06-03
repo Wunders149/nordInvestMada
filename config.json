@@ -105,14 +105,65 @@
       }
     },
     "rehabilitation": {
-      "economic": 350000,
-      "standard": 550000,
-      "premium": 850000
+      "economic": {
+        "name": "Légère",
+        "pricePerM2": 350000,
+        "features": [
+          "Rafraîchissement peinture",
+          "Remplacement sols",
+          "Petites réparations"
+        ]
+      },
+      "standard": {
+        "name": "Intermédiaire",
+        "pricePerM2": 550000,
+        "features": [
+          "Rénovation complète",
+          "Plomberie & Électricité",
+          "Finitions soignées"
+        ]
+      },
+      "premium": {
+        "name": "Structurelle",
+        "pricePerM2": 850000,
+        "features": [
+          "Confortement & Extension",
+          "Mise aux normes",
+          "Suivi ingénieur dédié"
+        ]
+      }
     },
     "forage": {
-      "economic": 800000,
-      "standard": 1200000,
-      "premium": 1800000
+      "economic": {
+        "name": "Étude",
+        "price": 800000,
+        "unit": "mission",
+        "features": [
+          "Prospection géophysique",
+          "Rapport technique",
+          "Conseil localisation"
+        ]
+      },
+      "standard": {
+        "name": "Complet",
+        "pricePerML": 1200000,
+        "unit": "ml",
+        "features": [
+          "Forage rotary",
+          "Équipement complet",
+          "Analyse de l'eau"
+        ]
+      },
+      "premium": {
+        "name": "Maintenance",
+        "price": 1800000,
+        "unit": "intervention",
+        "features": [
+          "Nettoyage & Développement",
+          "Remplacement pompe",
+          "Contrat annuel"
+        ]
+      }
     }
   },
   "contingency_rate": 0.1,

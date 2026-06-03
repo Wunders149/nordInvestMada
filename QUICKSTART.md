@@ -123,18 +123,20 @@ console.log(result);
 
 ---
 
-## 📁 Project Files
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Main website (updated with SEO & analytics) |
-| `server.js` | Express backend with API endpoints |
-| `package.json` | Node.js dependencies |
-| `.env` | Your configuration (create from .env.example) |
-| `config.json` | App settings and pricing data |
+| `public/index.html` | Main website |
+| `public/css/style.css` | Professional styling (separated) |
+| `public/js/main.js` | Dynamic frontend logic (separated) |
+| `src/server.js` | Express backend with API endpoints |
+| `config.json` | Centralized settings and pricing data |
+| `package.json` | Node.js dependencies and scripts |
+| `.env` | Environment variables (Gmail, etc.) |
 | `sitemap.xml` | SEO sitemap for Google |
 | `robots.txt` | Crawl directives for search engines |
-| `README.md` | Full documentation |
+| `README.md` | Full project documentation |
 
 ---
 
