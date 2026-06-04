@@ -12,6 +12,8 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
+const dataDir = process.env.DATA_DIR || path.join(projectRoot, 'data');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(projectRoot, 'uploads');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -25,7 +27,29 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static(path.join(projectRoot, 'public')));
 
 // Serve uploads folder
-app.use('/uploads', express.static(path.join(projectRoot, 'uploads')));
+app.use('/uploads', express.static(uploadsDir));
+
+// Ensure persistent directories exist
+[dataDir, uploadsDir].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
+// Ensure image subdirectories exist on the volume mount
+const imagesSubdirs = ['hero', 'about', 'team', 'projects', 'blog', 'gallery', 'services', 'standards'];
+const imagesBase = path.join(projectRoot, 'public', 'images');
+imagesSubdirs.forEach(sub => {
+  const d = path.join(imagesBase, sub);
+  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
+});
+// Seed data files if volume is fresh
+const seedFiles = ['contacts.json', 'quotes.json', 'subscribers.json', 'image-slots.json'];
+seedFiles.forEach(f => {
+  const target = path.join(dataDir, f);
+  const source = path.join(projectRoot, 'data', f);
+  if (!fs.existsSync(target) && fs.existsSync(source)) {
+    fs.copyFileSync(source, target);
+    console.log(`Seeded ${f} to ${dataDir}`);
+  }
+});
 
 // Serve admin panel static files
 app.use('/admin', express.static(path.join(projectRoot, 'public', 'admin')));
@@ -123,7 +147,7 @@ app.post('/api/contact', async (req, res) => {
     }
 
     // Persist contact to JSON
-    const contactsPath = path.join(projectRoot, 'data', 'contacts.json');
+    const contactsPath = path.join(dataDir, 'contacts.json');
     let contacts = [];
     try {
       if (fs.existsSync(contactsPath)) {
@@ -216,7 +240,7 @@ app.post('/api/newsletter', async (req, res) => {
       return res.status(400).json({ error: 'Email invalide' });
     }
     // Store newsletter subscribers (append to a JSON file)
-    const subscribersPath = path.join(projectRoot, 'data', 'subscribers.json');
+    const subscribersPath = path.join(dataDir, 'subscribers.json');
     let subscribers = [];
     try {
       if (fs.existsSync(subscribersPath)) {
@@ -262,7 +286,7 @@ app.post('/api/request-quote', async (req, res) => {
     const createdDate = new Date().toLocaleDateString('fr-FR');
 
     // Persist quote to JSON
-    const quotesPath = path.join(projectRoot, 'data', 'quotes.json');
+    const quotesPath = path.join(dataDir, 'quotes.json');
     let quotes = [];
     try {
       if (fs.existsSync(quotesPath)) {

@@ -410,21 +410,59 @@ orinvestmada/
 ├── docs/                      # Documentation
 ├── config.json                # App configuration & metadata
 ├── package.json               # Dependencies
+├── render.yaml                # Render blueprint config
 ├── .env.example               # Environment template
 ├── .env                       # Local configuration (ignored by git)
+├── .dockerignore              # Files to exclude from Docker build
 └── README.md                  # This file
 ```
 
 ## 🌐 Deployment
 
-### Option 1: Railway.app / Render / Fly.io
-1. Connect GitHub repo to the platform
-2. Set build command: `npm install`
-3. Set start command: `npm start`
-4. Add environment variables from `.env.example`
-5. Deploy
+### Render (Recommended — No payment method required)
 
-### Option 2: Self-hosted (VPS/Dedicated)
+#### Quick Deploy (GitHub)
+1. Push this repo to GitHub
+2. Go to [dashboard.render.com](https://dashboard.render.com) → **New +** → **Web Service**
+3. Connect your GitHub repo
+4. Fill in:
+   - **Name**: `nord-invest-mada`
+   - **Region**: Frankfurt (closest to Madagascar)
+   - **Branch**: `main`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node src/server.js`
+   - **Plan**: **Free**
+5. Add environment variables (see table below)
+6. Click **Create Web Service**
+
+#### Using render.yaml (Blueprint)
+```bash
+# Push to GitHub, then:
+# 1. Go to dashboard.render.com → Blueprint → Connect repo
+# 2. Edit render.yaml to set your repo URL
+# 3. Add secret env vars via dashboard (EMAIL_USER, EMAIL_PASS, etc.)
+```
+
+> **⚠️ Render free tier notes:**
+> - Spins down after 15 min of inactivity (cold start ~30s)
+> - Filesystem is **ephemeral** — `data/` and `uploads/` content is lost on redeploy
+> - For persistence: add a [Render Disk](https://render.com/docs/disks) ($10/mo) or use external storage (MongoDB Atlas, Cloudinary)
+
+#### Environment Variables for Render
+
+| Variable | Required | Value |
+|----------|----------|-------|
+| `NODE_ENV` | Yes | `production` |
+| `SITE_URL` | Yes | `https://nord-invest-mada.onrender.com` |
+| `ADMIN_USER` | Yes | `admin` |
+| `ADMIN_PASS` | Yes | `nordinvest2026` |
+| `EMAIL_USER` | No | Your Gmail address |
+| `EMAIL_PASS` | No | Gmail App Password |
+| `ADMIN_EMAIL` | No | Where to receive contact alerts |
+| `GOOGLE_ANALYTICS_ID` | No | `G-XXXXXXXXXX` |
+
+### Self-hosted (VPS/Dedicated)
 ```bash
 # Install Node.js on server
 # Clone repository
@@ -494,4 +532,5 @@ pm2 save
 
 **Last Updated**: June 4, 2026  
 **Built with**: Node.js, Express.js, Vanilla JS, HTML5, CSS3  
-**Frontend Framework**: None (vanilla JavaScript)
+**Frontend Framework**: None (vanilla JavaScript)  
+**Deploy**: [Render](https://render.com) (recommended), or any Node.js host

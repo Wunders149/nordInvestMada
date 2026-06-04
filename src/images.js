@@ -6,8 +6,9 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
+const dataDir = process.env.DATA_DIR || path.join(projectRoot, 'data');
 const imagesDir = path.join(projectRoot, 'public', 'images');
-const slotsPath = path.join(projectRoot, 'data', 'image-slots.json');
+const slotsPath = path.join(dataDir, 'image-slots.json');
 
 const router = Router();
 

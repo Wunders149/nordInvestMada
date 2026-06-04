@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
+const dataDir = process.env.DATA_DIR || path.join(projectRoot, 'data');
 
 const router = Router();
 
@@ -76,7 +77,7 @@ router.post('/logout', requireAuth, (req, res) => {
 
 // ─── CONTACTS ───
 router.get('/contacts', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'contacts.json');
+  const filePath = path.join(dataDir, 'contacts.json');
   const contacts = readJSON(filePath);
   // Sort newest first
   contacts.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -84,7 +85,7 @@ router.get('/contacts', requireAuth, (req, res) => {
 });
 
 router.patch('/contacts/:id', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'contacts.json');
+  const filePath = path.join(dataDir, 'contacts.json');
   const contacts = readJSON(filePath);
   const idx = contacts.findIndex(c => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Contact non trouvé' });
@@ -98,7 +99,7 @@ router.patch('/contacts/:id', requireAuth, (req, res) => {
 });
 
 router.delete('/contacts/:id', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'contacts.json');
+  const filePath = path.join(dataDir, 'contacts.json');
   let contacts = readJSON(filePath);
   const idx = contacts.findIndex(c => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Contact non trouvé' });
@@ -109,14 +110,14 @@ router.delete('/contacts/:id', requireAuth, (req, res) => {
 
 // ─── QUOTES ───
 router.get('/quotes', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'quotes.json');
+  const filePath = path.join(dataDir, 'quotes.json');
   const quotes = readJSON(filePath);
   quotes.sort((a, b) => new Date(b.date) - new Date(a.date));
   res.json(quotes);
 });
 
 router.patch('/quotes/:id', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'quotes.json');
+  const filePath = path.join(dataDir, 'quotes.json');
   const quotes = readJSON(filePath);
   const idx = quotes.findIndex(q => q.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Devis non trouvé' });
@@ -129,7 +130,7 @@ router.patch('/quotes/:id', requireAuth, (req, res) => {
 });
 
 router.delete('/quotes/:id', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'quotes.json');
+  const filePath = path.join(dataDir, 'quotes.json');
   let quotes = readJSON(filePath);
   const idx = quotes.findIndex(q => q.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Devis non trouvé' });
@@ -140,14 +141,14 @@ router.delete('/quotes/:id', requireAuth, (req, res) => {
 
 // ─── SUBSCRIBERS ───
 router.get('/subscribers', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'subscribers.json');
+  const filePath = path.join(dataDir, 'subscribers.json');
   const subscribers = readJSON(filePath);
   subscribers.sort((a, b) => new Date(b.date) - new Date(a.date));
   res.json(subscribers);
 });
 
 router.delete('/subscribers/:email', requireAuth, (req, res) => {
-  const filePath = path.join(projectRoot, 'data', 'subscribers.json');
+  const filePath = path.join(dataDir, 'subscribers.json');
   let subscribers = readJSON(filePath);
   const idx = subscribers.findIndex(s => s.email === req.params.email);
   if (idx === -1) return res.status(404).json({ error: 'Abonné non trouvé' });
@@ -158,9 +159,9 @@ router.delete('/subscribers/:email', requireAuth, (req, res) => {
 
 // ─── STATS ───
 router.get('/stats', requireAuth, (req, res) => {
-  const contactsPath = path.join(projectRoot, 'data', 'contacts.json');
-  const quotesPath = path.join(projectRoot, 'data', 'quotes.json');
-  const subscribersPath = path.join(projectRoot, 'data', 'subscribers.json');
+  const contactsPath = path.join(dataDir, 'contacts.json');
+  const quotesPath = path.join(dataDir, 'quotes.json');
+  const subscribersPath = path.join(dataDir, 'subscribers.json');
 
   const contacts = readJSON(contactsPath);
   const quotes = readJSON(quotesPath);

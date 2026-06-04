@@ -1,0 +1,35 @@
+# fly.toml — Nord Invest Madagascar
+app = "nord-invest-mada"
+primary_region = "cdg"
+kill_signal = "SIGTERM"
+kill_timeout = "5"
+
+[experimental]
+  auto_rollback = true
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  processes = ["app"]
+
+[[mounts]]
+  source = "nim_data"
+  destination = "/app/data"
+
+[[mounts]]
+  source = "nim_uploads"
+  destination = "/app/uploads"
+
+[[mounts]]
+  source = "nim_images"
+  destination = "/app/public/images"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  DATA_DIR = "/app/data"
+  UPLOADS_DIR = "/app/uploads"
+  SITE_URL = "https://nord-invest-mada.fly.dev"

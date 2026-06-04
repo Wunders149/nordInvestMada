@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: nord-invest-mada
+    runtime: node
+    repo: https://github.com/your-username/orinvestmada
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: node src/server.js
+    healthCheckPath: /api/health
+    envVarGroups:
+      - name: app-config
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: SITE_URL
+        value: https://nord-invest-mada.onrender.com
+      - key: ADMIN_USER
+        value: admin
+      - key: ADMIN_PASS
+        value: nordinvest2026
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: GOOGLE_ANALYTICS_ID
+        sync: false
