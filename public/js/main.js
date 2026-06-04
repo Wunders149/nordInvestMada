@@ -8,6 +8,13 @@ function toggleTheme() {
   const next = current === 'light' ? 'dark' : 'light';
   html.setAttribute('data-theme', next);
   localStorage.setItem('nim_theme', next);
+  
+  // Sync checkbox
+  const checkbox = document.getElementById('checkbox');
+  if (checkbox) {
+    checkbox.checked = next === 'light';
+  }
+
   // Update GA tracking
   if (typeof gtag !== 'undefined') {
     gtag('event', 'theme_toggle', { 'theme': next });
@@ -16,11 +23,16 @@ function toggleTheme() {
 
 function initTheme() {
   const saved = localStorage.getItem('nim_theme');
+  let theme = 'dark';
   if (saved === 'light' || saved === 'dark') {
-    document.documentElement.setAttribute('data-theme', saved);
-  } else {
-    // Default dark
-    document.documentElement.setAttribute('data-theme', 'dark');
+    theme = saved;
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+  
+  // Sync checkbox on load
+  const checkbox = document.getElementById('checkbox');
+  if (checkbox) {
+    checkbox.checked = theme === 'light';
   }
 }
 
@@ -157,10 +169,19 @@ document.querySelectorAll('.nav-links a[href^="#"], .footer-links a[href^="#"]')
 // ═══════════════════════════════════════════════════════
 
 function switchTab(name) {
+  const panel = document.getElementById('tab-' + name);
+  if (!panel) return;
+
   document.querySelectorAll('.pricing-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
+  
+  panel.classList.add('active');
+  
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.getAttribute('onclick')?.includes(`'${name}'`)) {
+      b.classList.add('active');
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -329,7 +350,7 @@ async function runCalculation() {
   resultPanel.innerHTML = `
     <div class="result-placeholder">
       <div class="loading-spinner"></div>
-      <p style="color:rgba(255,255,255,0.6);">${loadingText}</p>
+      <p class="calc-placeholder-text">${loadingText}</p>
     </div>
   `;
 
@@ -421,6 +442,8 @@ function openGallery(index) {
   const modal = document.getElementById('galleryModal');
   const img = document.getElementById('galleryImg');
   const caption = document.getElementById('galleryCaption');
+  if (!modal || !img || !caption) return;
+  
   img.src = galleryImages[index].src;
   img.alt = galleryImages[index].alt;
   caption.textContent = galleryImages[index].alt;
@@ -431,7 +454,7 @@ function openGallery(index) {
 function closeGallery(e) {
   if (e && e.target !== e.currentTarget) return;
   const modal = document.getElementById('galleryModal');
-  modal.classList.remove('active');
+  if (modal) modal.classList.remove('active');
   document.body.style.overflow = '';
 }
 
@@ -439,6 +462,8 @@ function changeGallery(dir) {
   galleryIndex = (galleryIndex + dir + galleryImages.length) % galleryImages.length;
   const img = document.getElementById('galleryImg');
   const caption = document.getElementById('galleryCaption');
+  if (!img || !caption) return;
+  
   img.style.opacity = '0';
   setTimeout(() => {
     img.src = galleryImages[galleryIndex].src;
@@ -448,10 +473,15 @@ function changeGallery(dir) {
   }, 150);
 }
 
+// Attach click listeners to project cards
+document.querySelectorAll('.project-card').forEach((card, index) => {
+  card.addEventListener('click', () => openGallery(index));
+});
+
 // Keyboard support for gallery
 document.addEventListener('keydown', (e) => {
   const modal = document.getElementById('galleryModal');
-  if (!modal.classList.contains('active')) return;
+  if (!modal || !modal.classList.contains('active')) return;
   if (e.key === 'Escape') closeGallery();
   if (e.key === 'ArrowLeft') changeGallery(-1);
   if (e.key === 'ArrowRight') changeGallery(1);
@@ -563,10 +593,33 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => observer.observe(el));
 
 // ═══════════════════════════════════════════════════════
+// IMAGE SLOT SWAP — Replace SVG placeholders with uploaded images
+// ═══════════════════════════════════════════════════════
+
+async function loadImageSlots() {
+  try {
+    const res = await fetch('/api/images/slots');
+    if (!res.ok) return;
+    const slots = await res.json();
+    slots.forEach(slot => {
+      if (!slot.uploadedFile) return;
+      const img = document.querySelector(`[data-image-slot="${slot.id}"]`);
+      if (img) {
+        img.src = slot.currentUrl;
+        img.dataset.originalSrc = `/images/${slot.section}/${slot.originalFile}`;
+      }
+    });
+  } catch (err) {
+    // Silent fail — SVGs remain as fallbacks
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT — Load default language
 // ═══════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   loadTranslations(currentLang);
+  loadImageSlots();
 });

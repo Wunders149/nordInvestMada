@@ -1,14 +1,8 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-  <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e0e7ee"/>
-      <stop offset="100%" style="stop-color:#cbd5e1"/>
-    </linearGradient>
-  </defs>
-  <rect width="100" height="100" fill="url(#g)"/>
-  <g transform="translate(50,50)">
-    <rect x="-40" y="-30" width="80" height="60" rx="4" fill="#94a3b8" opacity="0.5"/>
-    <circle cx="0" cy="-5" r="12" fill="#94a3b8" opacity="0.5"/>
-    <text text-anchor="middle" y="50" font-family="sans-serif" font-size="14" fill="#64748b">Engineering</text>
-  </g>
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
+  <rect width="60" height="60" fill="#1a1a1a" rx="30"/>
+  <circle cx="30" cy="30" r="22" fill="#c0402a" opacity="0.2"/>
+  <rect x="20" y="16" width="20" height="28" rx="2" fill="none" stroke="#e8614a" stroke-width="2"/>
+  <line x1="24" y1="24" x2="36" y2="24" stroke="#c0402a" stroke-width="1.5"/>
+  <line x1="24" y1="30" x2="36" y2="30" stroke="#c0402a" stroke-width="1.5"/>
+  <line x1="24" y1="36" x2="30" y2="36" stroke="#c0402a" stroke-width="1.5"/>
 </svg>

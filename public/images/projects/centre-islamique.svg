@@ -1,14 +1,16 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-  <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e0e7ee"/>
-      <stop offset="100%" style="stop-color:#cbd5e1"/>
-    </linearGradient>
-  </defs>
-  <rect width="800" height="600" fill="url(#g)"/>
-  <g transform="translate(400,300)">
-    <rect x="-40" y="-30" width="80" height="60" rx="4" fill="#94a3b8" opacity="0.5"/>
-    <circle cx="0" cy="-5" r="12" fill="#94a3b8" opacity="0.5"/>
-    <text text-anchor="middle" y="50" font-family="sans-serif" font-size="14" fill="#64748b">Centre Islamique</text>
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#1a1a1a"/><stop offset="100%" style="stop-color:#0d0d0d"/></linearGradient></defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g transform="translate(400,200)">
+    <rect x="-80" y="-40" width="160" height="150" rx="2" fill="#2a2a2a"/>
+    <polygon points="0,-100 -70,-40 70,-40" fill="#333"/>
+    <circle cx="0" cy="-75" r="15" fill="#c0402a" opacity="0.3"/>
+    <rect x="-70" y="-30" width="60" height="35" rx="1" fill="#c0402a" opacity="0.2"/>
+    <rect x="10" y="-30" width="60" height="35" rx="1" fill="#e8614a" opacity="0.15"/>
+    <rect x="-70" y="15" width="60" height="35" rx="1" fill="#c0402a" opacity="0.2"/>
+    <rect x="10" y="15" width="60" height="35" rx="1" fill="#e8614a" opacity="0.15"/>
+    <rect x="-30" y="60" width="60" height="50" rx="0" fill="#c0402a" opacity="0.15"/>
+    <rect x="-400" y="110" width="800" height="200" fill="#0d0d0d"/>
+    <text x="0" y="145" text-anchor="middle" fill="#e8614a" font-family="sans-serif" font-size="13" opacity="0.5">Centre Islamique</text>
   </g>
 </svg>

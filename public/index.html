@@ -36,7 +36,6 @@
 <!-- Preconnect to external resources -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
 <!-- Google Analytics -->
@@ -98,7 +97,7 @@
   "@type": "Organization",
   "name": "Nord Invest Madagascar",
   "url": "https://www.nordinvest.mg/",
-  "logo": "https://www.nordinvest.mg/logo.png",
+  "logo": "https://www.nordinvest.mg/logo.jpeg",
   "description": "Immobilier & Construction - Madagascar",
   "foundingDate": "2015",
   "contactPoint": {
@@ -149,10 +148,15 @@
       <button class="lang-btn" data-lang="mg" onclick="setLanguage('mg')">MG</button>
     </li>
     <li>
-      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-      </button>
+      <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+          <input type="checkbox" id="checkbox" onchange="toggleTheme()" />
+          <div class="slider round">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          </div>
+        </label>
+      </div>
     </li>
     <li><a href="#contact" class="nav-cta" data-i18n="nav.contact">Contact</a></li>
   </ul>
@@ -185,7 +189,7 @@
   </div>
   <div class="hero-right">
     <div class="hero-decor"></div>
-    <img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1000&q=80" alt="Nord Invest Madagascar - Architecture" class="hero-img" loading="eager">
+    <img src="/images/hero/architecture.svg" alt="Nord Invest Madagascar - Architecture" class="hero-img" loading="eager" data-image-slot="hero">
     <div class="hero-overlay"></div>
     <div class="hero-badge">
       <div class="hero-badge-year">2015</div>
@@ -197,8 +201,8 @@
 <!-- ABOUT -->
 <section id="about">
   <div class="about-image-wrap reveal">
-    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80" alt="Nord Invest Madagascar - Équipe technique" class="about-img" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1486321549086-f011cf174f00?auto=format&fit=crop&w=400&q=80" alt="Nord Invest Madagascar - Architecture" class="about-img-accent" loading="lazy">
+    <img src="/images/about/team.svg" alt="Nord Invest Madagascar - Équipe technique" class="about-img" loading="lazy" data-image-slot="about-team">
+    <img src="/images/about/accent.svg" alt="Nord Invest Madagascar - Architecture" class="about-img-accent" loading="lazy" data-image-slot="about-accent">
   </div>
   <div class="reveal">
     <div class="section-tag" data-i18n="about.tag">À Propos</div>
@@ -231,7 +235,7 @@
 </section>
 
 <!-- VISION & MISSION -->
-<section id="vision-mission" style="background: var(--black); padding: 100px 60px;">
+<section id="vision-mission">
   <div class="calculator-container">
     <div class="vision-mission-grid">
       <div class="vm-card reveal">
@@ -299,25 +303,25 @@
   </div>
   <div class="team-grid reveal">
     <div class="team-card">
-      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Directeur" class="team-avatar" loading="lazy">
+      <img src="/images/team/director.svg" alt="Directeur" class="team-avatar" loading="lazy" data-image-slot="team-director">
       <div class="team-name">Jean Rakoto</div>
       <div class="team-role" data-i18n="team.role1">Directeur Général</div>
       <div class="team-desc" data-i18n="team.desc1">15 ans d'expérience en ingénierie civile et management de projets.</div>
     </div>
     <div class="team-card">
-      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80" alt="Ingénieur en chef" class="team-avatar" loading="lazy">
+      <img src="/images/team/engineer.svg" alt="Ingénieur en chef" class="team-avatar" loading="lazy" data-image-slot="team-engineer">
       <div class="team-name">Mamy Andria</div>
       <div class="team-role" data-i18n="team.role2">Ingénieur en Chef</div>
       <div class="team-desc" data-i18n="team.desc2">Expert en structures béton et calculs sismiques (VEx).</div>
     </div>
     <div class="team-card">
-      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" alt="Architecte" class="team-avatar" loading="lazy">
+      <img src="/images/team/architect.svg" alt="Architecte" class="team-avatar" loading="lazy" data-image-slot="team-architect">
       <div class="team-name">Lala Rasoa</div>
       <div class="team-role" data-i18n="team.role3">Architecte BIM</div>
       <div class="team-desc" data-i18n="team.desc3">Spécialiste Revit, ArchiCAD et conception durable.</div>
     </div>
     <div class="team-card">
-      <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" alt="Chef de projet" class="team-avatar" loading="lazy">
+      <img src="/images/team/pm.svg" alt="Chef de projet" class="team-avatar" loading="lazy" data-image-slot="team-pm">
       <div class="team-name">Koto Rajaonah</div>
       <div class="team-role" data-i18n="team.role4">Chef de Projet</div>
       <div class="team-desc" data-i18n="team.desc4">Coordination chantier, planning et contrôle qualité.</div>
@@ -347,7 +351,7 @@
 <section id="services">
   <div class="reveal">
     <div class="section-tag" data-i18n="services.tag">Nos Services</div>
-    <h2 style="color:white;" data-i18n-html="services.title">Ce que nous<br>réalisons pour vous.</h2>
+    <h2 data-i18n-html="services.title">Ce que nous<br>réalisons pour vous.</h2>
     <p class="section-lead" data-i18n="services.lead">Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.</p>
   </div>
   <div class="services-grid reveal">
@@ -583,6 +587,7 @@
         <div class="price-type">Entretien & Réhabilitation</div>
         <div class="price-val">
           <div class="price-num">1 800 000</div>
+          <div class="price-unit">Ar / intervention</div>
         </div>
         <hr class="price-divider">
         <ul class="price-features">
@@ -592,7 +597,7 @@
           <li>Contrat de maintenance annuel</li>
         </ul>
         <div class="price-note">Tarif base selon l'état du forage existant et les travaux à réaliser. Diagnostic préalable gratuit sur site.</div>
-        <a href="#contact" class="price-cta">Nous contacter</a>
+        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Nous contacter</a>
       </div>
     </div>
   </div>
@@ -652,7 +657,7 @@
       <div class="calc-result" id="calc-result-panel">
         <div class="result-placeholder">
           <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.2;">📊</div>
-          <p style="color: rgba(255,255,255,0.4); font-size: 0.9rem;">Configurez votre projet à gauche pour obtenir un chiffrage prévisionnel.</p>
+          <p class="calc-placeholder-text" data-i18n="calculator.placeholder">Configurez votre projet à gauche pour obtenir un chiffrage prévisionnel.</p>
         </div>
       </div>
     </div>
@@ -688,7 +693,7 @@
   </div>
   <div class="projects-grid reveal">
     <div class="project-card">
-      <img src="https://images.unsplash.com/photo-1564013799919-ab600027f9c8?auto=format&fit=crop&w=800&q=80" alt="Résidence Palas Ramena" class="project-img" loading="lazy">
+      <img src="/images/projects/palas-ramena.svg" alt="Résidence Palas Ramena" class="project-img" loading="lazy" data-image-slot="project-palas-ramena">
       <div class="project-overlay">
         <div class="project-cat">Résidentiel · Diego Suarez</div>
         <div class="project-name">Résidence Palas Ramena</div>
@@ -696,7 +701,7 @@
       </div>
     </div>
     <div class="project-card">
-      <img src="https://images.unsplash.com/photo-1541888946425-d81bb192136f?auto=format&fit=crop&w=800&q=80" alt="Deux bâtiments d'habitation R+1" class="project-img" loading="lazy">
+      <img src="/images/projects/r1-habitation.svg" alt="Deux bâtiments d'habitation R+1" class="project-img" loading="lazy" data-image-slot="project-r1-habitation">
       <div class="project-overlay">
         <div class="project-cat">Résidentiel · Nosy Be</div>
         <div class="project-name">Deux bâtiments d'habitation R+1</div>
@@ -704,7 +709,7 @@
       </div>
     </div>
     <div class="project-card">
-      <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" alt="Centre Islamique de Sambava" class="project-img" loading="lazy">
+      <img src="/images/projects/centre-islamique.svg" alt="Centre Islamique de Sambava" class="project-img" loading="lazy" data-image-slot="project-centre-islamique">
       <div class="project-overlay">
         <div class="project-cat">Institutionnel · Sambava</div>
         <div class="project-name">Centre Islamique de Sambava</div>
@@ -712,7 +717,7 @@
       </div>
     </div>
     <div class="project-card">
-      <img src="https://images.unsplash.com/photo-1497366751922-0e2234f8f4a4?auto=format&fit=crop&w=800&q=80" alt="Bâtiment Résidentiel R+2" class="project-img" loading="lazy">
+      <img src="/images/projects/r2-residentiel.svg" alt="Bâtiment Résidentiel R+2" class="project-img" loading="lazy" data-image-slot="project-r2-residentiel">
       <div class="project-overlay">
         <div class="project-cat">Gros Œuvre · Nosy Be</div>
         <div class="project-name">Bâtiment Résidentiel R+2</div>
@@ -720,7 +725,7 @@
       </div>
     </div>
     <div class="project-card">
-      <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80" alt="Dômes Géodésiques" class="project-img" loading="lazy">
+      <img src="/images/projects/domes-geodesiques.svg" alt="Dômes Géodésiques" class="project-img" loading="lazy" data-image-slot="project-domes-geodesiques">
       <div class="project-overlay">
         <div class="project-cat">Agri-tourisme · Nosy Hara</div>
         <div class="project-name">Dômes Géodésiques</div>
@@ -728,7 +733,7 @@
       </div>
     </div>
     <div class="project-card">
-      <img src="https://images.unsplash.com/photo-1431576901776-e539bd916ba2?auto=format&fit=crop&w=800&q=80" alt="Bureaux Communaux" class="project-img" loading="lazy">
+      <img src="/images/projects/bureaux-communaux.svg" alt="Bureaux Communaux" class="project-img" loading="lazy" data-image-slot="project-bureaux-communaux">
       <div class="project-overlay">
         <div class="project-cat">Institutionnel · Anjianjia</div>
         <div class="project-name">Bureaux Communaux</div>
@@ -747,7 +752,7 @@
   </div>
   <div class="blog-grid reveal">
     <article class="blog-card">
-      <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800&q=80" alt="Construction" class="blog-img" loading="lazy">
+      <img src="/images/blog/construction.svg" alt="Construction" class="blog-img" loading="lazy" data-image-slot="blog-construction">
       <div class="blog-body">
         <div class="blog-date" data-i18n="blog.date1">15 Mai 2025</div>
         <div class="blog-title" data-i18n="blog.title1">Les normes VEx à Madagascar</div>
@@ -756,7 +761,7 @@
       </div>
     </article>
     <article class="blog-card">
-      <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80" alt="Forage" class="blog-img" loading="lazy">
+      <img src="/images/blog/forage.svg" alt="Forage" class="blog-img" loading="lazy" data-image-slot="blog-forage">
       <div class="blog-body">
         <div class="blog-date" data-i18n="blog.date2">28 Avril 2025</div>
         <div class="blog-title" data-i18n="blog.title2">Guide du forage d'eau</div>
@@ -765,7 +770,7 @@
       </div>
     </article>
     <article class="blog-card">
-      <img src="https://images.unsplash.com/photo-1486321549086-f011cf174f00?auto=format&fit=crop&w=800&q=80" alt="Immobilier" class="blog-img" loading="lazy">
+      <img src="/images/blog/immobilier.svg" alt="Immobilier" class="blog-img" loading="lazy" data-image-slot="blog-immobilier">
       <div class="blog-body">
         <div class="blog-date" data-i18n="blog.date3">10 Avril 2025</div>
         <div class="blog-title" data-i18n="blog.title3">Acheter un terrain à Diego</div>
@@ -928,7 +933,7 @@
 <!-- FOOTER -->
 <footer>
   <a href="#hero" class="footer-logo">Nord Invest <span>Madagascar</span></a>
-  <p class="footer-copy">© 2025 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.</p>
+  <p class="footer-copy">© 2026 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.</p>
   <div class="footer-links">
     <a href="#about" data-i18n="nav.about">À Propos</a>
     <a href="#services" data-i18n="footer.services">Services</a>
@@ -937,6 +942,27 @@
     <a href="#contact" data-i18n="footer.contact">Contact</a>
   </div>
 </footer>
+
+<!-- GALLERY MODAL -->
+<div id="galleryModal" class="gallery-modal" onclick="closeGallery(event)">
+  <span class="gallery-close" onclick="closeGallery()">&times;</span>
+  <button class="gallery-nav gallery-prev" onclick="changeGallery(-1); event.stopPropagation();">&#10094;</button>
+  <button class="gallery-nav gallery-next" onclick="changeGallery(1); event.stopPropagation();">&#10095;</button>
+  <img id="galleryImg" class="gallery-content" src="" alt="">
+  <div id="galleryCaption" class="gallery-caption"></div>
+</div>
+
+<!-- WHATSAPP FLOATING -->
+<a href="https://wa.me/261328231280" target="_blank" rel="noopener" class="whatsapp-float" aria-label="Contact WhatsApp">
+  <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<!-- BACK TO TOP -->
+<button id="backToTop" class="back-to-top" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
 
 <script src="/js/main.js"></script>
 </body>

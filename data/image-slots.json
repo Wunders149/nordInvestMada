@@ -1,0 +1,132 @@
+{
+  "slots": [
+    {
+      "id": "hero",
+      "section": "hero",
+      "originalFile": "architecture.svg",
+      "label": "Hero - Architecture",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "about-team",
+      "section": "about",
+      "originalFile": "team.svg",
+      "label": "About - Équipe",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "about-accent",
+      "section": "about",
+      "originalFile": "accent.svg",
+      "label": "About - Accent",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "team-director",
+      "section": "team",
+      "originalFile": "director.svg",
+      "label": "Team - Directeur",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "team-engineer",
+      "section": "team",
+      "originalFile": "engineer.svg",
+      "label": "Team - Ingénieur",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "team-architect",
+      "section": "team",
+      "originalFile": "architect.svg",
+      "label": "Team - Architecte",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "team-pm",
+      "section": "team",
+      "originalFile": "pm.svg",
+      "label": "Team - Chef de projet",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "project-palas-ramena",
+      "section": "projects",
+      "originalFile": "palas-ramena.svg",
+      "label": "Projet - Palas Ramena",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "project-r1-habitation",
+      "section": "projects",
+      "originalFile": "r1-habitation.svg",
+      "label": "Projet - R+1 Habitation",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "project-centre-islamique",
+      "section": "projects",
+      "originalFile": "centre-islamique.svg",
+      "label": "Projet - Centre Islamique",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "project-r2-residentiel",
+      "section": "projects",
+      "originalFile": "r2-residentiel.svg",
+      "label": "Projet - R+2 Résidentiel",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "project-domes-geodesiques",
+      "section": "projects",
+      "originalFile": "domes-geodesiques.svg",
+      "label": "Projet - Dômes Géodésiques",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "project-bureaux-communaux",
+      "section": "projects",
+      "originalFile": "bureaux-communaux.svg",
+      "label": "Projet - Bureaux Communaux",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "blog-construction",
+      "section": "blog",
+      "originalFile": "construction.svg",
+      "label": "Blog - Construction",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "blog-forage",
+      "section": "blog",
+      "originalFile": "forage.svg",
+      "label": "Blog - Forage",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "blog-immobilier",
+      "section": "blog",
+      "originalFile": "immobilier.svg",
+      "label": "Blog - Immobilier",
+      "uploadedFile": null,
+      "updatedAt": null
+    }
+  ]
+}

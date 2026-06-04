@@ -1,14 +1,52 @@
 ﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e0e7ee"/>
-      <stop offset="100%" style="stop-color:#cbd5e1"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a1a"/>
+      <stop offset="100%" style="stop-color:#0d0d0d"/>
+    </linearGradient>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c0402a"/>
+      <stop offset="100%" style="stop-color:#8b2d1a"/>
     </linearGradient>
   </defs>
-  <rect width="800" height="600" fill="url(#g)"/>
-  <g transform="translate(400,300)">
-    <rect x="-40" y="-30" width="80" height="60" rx="4" fill="#94a3b8" opacity="0.5"/>
-    <circle cx="0" cy="-5" r="12" fill="#94a3b8" opacity="0.5"/>
-    <text text-anchor="middle" y="50" font-family="sans-serif" font-size="14" fill="#64748b">Équipe</text>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g transform="translate(400,280)">
+    <!-- Helmet silhouettes -->
+    <circle cx="-100" cy="-80" r="45" fill="#333" opacity="0.9"/>
+    <rect x="-130" y="-40" width="60" height="80" rx="8" fill="#333" opacity="0.9"/>
+    <path d="M-150,-35 Q-130,-60 -110,-35" stroke="#c0402a" stroke-width="2" fill="none" opacity="0.5"/>
+    <ellipse cx="-100" cy="-95" rx="35" ry="8" fill="#2a2a2a"/>
+    
+    <circle cx="0" cy="-90" r="45" fill="#333" opacity="0.9"/>
+    <rect x="-30" y="-50" width="60" height="80" rx="8" fill="#333" opacity="0.9"/>
+    <path d="M-50,-45 Q-30,-70 -10,-45" stroke="#c0402a" stroke-width="2" fill="none" opacity="0.5"/>
+    <ellipse cx="0" cy="-105" rx="35" ry="8" fill="#2a2a2a"/>
+    
+    <circle cx="100" cy="-80" r="45" fill="#333" opacity="0.9"/>
+    <rect x="70" y="-40" width="60" height="80" rx="8" fill="#333" opacity="0.9"/>
+    <path d="M50,-35 Q70,-60 90,-35" stroke="#c0402a" stroke-width="2" fill="none" opacity="0.5"/>
+    <ellipse cx="100" cy="-95" rx="35" ry="8" fill="#2a2a2a"/>
+
+    <!-- Plans -->
+    <rect x="-120" y="60" width="100" height="70" rx="2" fill="#c0402a" opacity="0.15"/>
+    <line x1="-110" y1="75" x2="-30" y2="75" stroke="#c0402a" stroke-width="1.5" opacity="0.4"/>
+    <line x1="-110" y1="85" x2="-30" y2="85" stroke="#c0402a" stroke-width="1" opacity="0.3"/>
+    <line x1="-110" y1="95" x2="-30" y2="95" stroke="#c0402a" stroke-width="1.5" opacity="0.4"/>
+    <line x1="-110" y1="105" x2="-60" y2="105" stroke="#c0402a" stroke-width="1" opacity="0.3"/>
+    
+    <rect x="20" y="60" width="100" height="70" rx="2" fill="#c0402a" opacity="0.15"/>
+    <line x1="30" y1="75" x2="110" y2="75" stroke="#c0402a" stroke-width="1.5" opacity="0.4"/>
+    <line x1="30" y1="85" x2="110" y2="85" stroke="#c0402a" stroke-width="1" opacity="0.3"/>
+    <line x1="30" y1="95" x2="80" y2="95" stroke="#c0402a" stroke-width="1.5" opacity="0.4"/>
+
+    <!-- Ground -->
+    <rect x="-400" y="150" width="800" height="200" fill="#1a1a1a"/>
+    <rect x="-400" y="148" width="800" height="3" fill="#c0402a" opacity="0.3"/>
+    
+    <!-- Building plan below -->
+    <rect x="-80" y="170" width="160" height="90" rx="1" fill="none" stroke="#c0402a" stroke-width="1" opacity="0.2"/>
+    <rect x="-60" y="185" width="40" height="40" rx="0" fill="none" stroke="#c0402a" stroke-width="0.5" opacity="0.15"/>
+    <rect x="-10" y="185" width="40" height="40" rx="0" fill="none" stroke="#c0402a" stroke-width="0.5" opacity="0.15"/>
+    <rect x="35" y="185" width="40" height="40" rx="0" fill="none" stroke="#c0402a" stroke-width="0.5" opacity="0.15"/>
   </g>
 </svg>

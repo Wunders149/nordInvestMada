@@ -1,14 +1,15 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-  <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e0e7ee"/>
-      <stop offset="100%" style="stop-color:#cbd5e1"/>
-    </linearGradient>
-  </defs>
-  <rect width="800" height="600" fill="url(#g)"/>
-  <g transform="translate(400,300)">
-    <rect x="-40" y="-30" width="80" height="60" rx="4" fill="#94a3b8" opacity="0.5"/>
-    <circle cx="0" cy="-5" r="12" fill="#94a3b8" opacity="0.5"/>
-    <text text-anchor="middle" y="50" font-family="sans-serif" font-size="14" fill="#64748b">Dômes Géodésiques</text>
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#1a1a1a"/><stop offset="100%" style="stop-color:#0d0d0d"/></linearGradient></defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g transform="translate(400,200)">
+    <path d="M-100,80 Q-100,-40 0,-60 Q100,-40 100,80 Z" fill="#2a2a2a"/>
+    <path d="M-90,75 Q-90,-30 0,-50 Q90,-30 90,75 Z" fill="#333"/>
+    <line x1="-70" y1="20" x2="70" y2="20" stroke="#c0402a" stroke-width="1" opacity="0.3"/>
+    <line x1="-50" y1="-15" x2="50" y2="-15" stroke="#e8614a" stroke-width="1" opacity="0.3"/>
+    <line x1="0" y1="-60" x2="0" y2="80" stroke="#c0402a" stroke-width="1" opacity="0.2"/>
+    <line x1="-60" y1="-25" x2="60" y2="-25" stroke="#c0402a" stroke-width="0.5" opacity="0.2"/>
+    <path d="M-80,80 Q-80,-10 0,-25 Q80,-10 80,80 Z" fill="none" stroke="#e8614a" stroke-width="0.5" opacity="0.4"/>
+    <rect x="-400" y="80" width="800" height="200" fill="#0d0d0d"/>
+    <text x="0" y="125" text-anchor="middle" fill="#e8614a" font-family="sans-serif" font-size="13" opacity="0.5">Dômes Géodésiques</text>
   </g>
 </svg>

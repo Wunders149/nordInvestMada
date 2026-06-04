@@ -5,6 +5,8 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { adminRouter } from './admin.js';
+import { imageRouter } from './images.js';
 
 dotenv.config();
 
@@ -24,6 +26,9 @@ app.use(express.static(path.join(projectRoot, 'public')));
 
 // Serve uploads folder
 app.use('/uploads', express.static(path.join(projectRoot, 'uploads')));
+
+// Serve admin panel static files
+app.use('/admin', express.static(path.join(projectRoot, 'public', 'admin')));
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -117,6 +122,29 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
+    // Persist contact to JSON
+    const contactsPath = path.join(projectRoot, 'data', 'contacts.json');
+    let contacts = [];
+    try {
+      if (fs.existsSync(contactsPath)) {
+        contacts = JSON.parse(fs.readFileSync(contactsPath, 'utf8'));
+      }
+    } catch {}
+    const contactEntry = {
+      id: `contact_${Date.now()}`,
+      name, email, phone: phone || '',
+      projectType, budget: budget || '', message,
+      serviceType: serviceType || projectType,
+      date: new Date().toISOString(),
+      read: false,
+      resolved: false,
+      notes: ''
+    };
+    contacts.unshift(contactEntry);
+    const dir = path.dirname(contactsPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(contactsPath, JSON.stringify(contacts, null, 2));
+
     const adminMailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
@@ -157,8 +185,12 @@ app.post('/api/contact', async (req, res) => {
       `
     };
 
-    await transporter.sendMail(adminMailOptions);
-    await transporter.sendMail(customerMailOptions);
+    try {
+      await transporter.sendMail(adminMailOptions);
+      await transporter.sendMail(customerMailOptions);
+    } catch (mailErr) {
+      console.warn('Email sending failed (contact saved locally):', mailErr.message);
+    }
 
     res.json({
       success: true,
@@ -198,7 +230,7 @@ app.post('/api/newsletter', async (req, res) => {
     const dir = path.dirname(subscribersPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(subscribersPath, JSON.stringify(subscribers, null, 2));
-    // Optional: send admin notification
+    // Optional: send admin notification (best-effort)
     try {
       const adminMailOptions = {
         from: process.env.EMAIL_USER,
@@ -207,7 +239,9 @@ app.post('/api/newsletter', async (req, res) => {
         html: `<p>Nouvel abonné : <strong>${escapeHtml(email)}</strong></p>`
       };
       await transporter.sendMail(adminMailOptions);
-    } catch {}
+    } catch (mailErr) {
+      console.warn('Newsletter email notification failed:', mailErr.message);
+    }
     res.json({ success: true, message: 'Inscription réussie' });
   } catch (error) {
     console.error('Newsletter error:', error);
@@ -226,6 +260,28 @@ app.post('/api/request-quote', async (req, res) => {
 
     const quoteNumber = `NIM-${Date.now()}`;
     const createdDate = new Date().toLocaleDateString('fr-FR');
+
+    // Persist quote to JSON
+    const quotesPath = path.join(projectRoot, 'data', 'quotes.json');
+    let quotes = [];
+    try {
+      if (fs.existsSync(quotesPath)) {
+        quotes = JSON.parse(fs.readFileSync(quotesPath, 'utf8'));
+      }
+    } catch {}
+    const quoteEntry = {
+      id: `quote_${Date.now()}`,
+      quoteNumber, name, email,
+      serviceType: serviceType || '',
+      details, location: location || '',
+      date: new Date().toISOString(),
+      status: 'pending',
+      notes: ''
+    };
+    quotes.unshift(quoteEntry);
+    const qDir = path.dirname(quotesPath);
+    if (!fs.existsSync(qDir)) fs.mkdirSync(qDir, { recursive: true });
+    fs.writeFileSync(quotesPath, JSON.stringify(quotes, null, 2));
 
     const quoteMailOptions = {
       from: process.env.EMAIL_USER,
@@ -255,7 +311,11 @@ app.post('/api/request-quote', async (req, res) => {
       `
     };
 
-    await transporter.sendMail(quoteMailOptions);
+    try {
+      await transporter.sendMail(quoteMailOptions);
+    } catch (mailErr) {
+      console.warn('Email sending failed (quote saved locally):', mailErr.message);
+    }
 
     res.json({
       success: true,
@@ -268,32 +328,16 @@ app.post('/api/request-quote', async (req, res) => {
   }
 });
 
-// ─── IMAGE MANAGEMENT (optional - for future image uploads) ─── 
-app.get('/api/images', (req, res) => {
-  try {
-    const imagesPath = path.join(projectRoot, 'public', 'images');
-    const images = {};
-
-    // Scan image directories
-    const dirs = fs.readdirSync(imagesPath);
-    dirs.forEach(dir => {
-      const dirPath = path.join(imagesPath, dir);
-      if (fs.statSync(dirPath).isDirectory()) {
-        images[dir] = fs.readdirSync(dirPath).filter(f => /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(f));
-      }
-    });
-
-    res.json(images);
-  } catch (error) {
-    console.error('Image listing error:', error);
-    res.status(500).json({ error: 'Failed to list images' });
-  }
-});
-
 // ─── CONFIGURATION ENDPOINT ─── 
 app.get('/api/config', (req, res) => {
   res.json(config);
 });
+
+// ─── ADMIN API ───
+app.use('/api/admin', adminRouter);
+
+// ─── IMAGE MANAGEMENT API ───
+app.use('/api', imageRouter);
 
 // ─── HEALTH CHECK ─── 
 app.get('/api/health', (req, res) => {
@@ -304,8 +348,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── CATCH-ALL FOR SPA (returns index.html for unknown routes) ─── 
+// ─── CATCH-ALL FOR SPA (returns index.html for unknown non-admin routes) ───
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/admin')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
   res.sendFile(path.join(projectRoot, 'public', 'index.html'));
 });
 
