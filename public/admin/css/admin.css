@@ -812,9 +812,18 @@ td a:hover { text-decoration: underline; }
   cursor: pointer;
   padding: 0.25rem;
   line-height: 1;
-  transition: color var(--transition);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.modal-close:hover { color: var(--gray-700); }
+.modal-close:hover {
+  color: var(--gray-700);
+  background: var(--gray-100);
+}
 .detail-body { padding: 1.25rem 1.5rem; max-height: 55vh; overflow-y: auto; }
 .detail-grid {
   display: grid;
@@ -839,6 +848,7 @@ td a:hover { text-decoration: underline; }
   padding: 1rem;
   border: 1px solid var(--gray-100);
 }
+.detail-btn { width: auto; padding: 0.5rem 1.25rem; font-size: 0.8rem; }
 .detail-notes-header {
   display: flex;
   align-items: center;
@@ -1194,7 +1204,8 @@ td a:hover { text-decoration: underline; }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
   z-index: 500;
   align-items: center;
   justify-content: center;
@@ -1222,9 +1233,154 @@ td a:hover { text-decoration: underline; }
 .modal-box .modal-icon.danger { background: var(--danger-light); color: var(--danger); }
 .modal-box h3 { font-size: 1.125rem; color: var(--gray-900); margin-bottom: 0.5rem; }
 .modal-box p { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 1.5rem; }
+.tab-title { flex: 1; font-size: 0.95rem; color: var(--gray-600); font-weight: 500; }
 .modal-box .modal-actions { display: flex; gap: 0.75rem; justify-content: center; }
 .modal-box .modal-actions .btn-primary { width: auto; padding: 0.6rem 1.5rem; }
 .modal-box .modal-actions .btn-secondary { width: auto; padding: 0.6rem 1.5rem; }
+
+/* ─── CRUD FORM MODAL ─── */
+.modal-box.crud-modal {
+  max-width: min(92vw, 580px);
+  text-align: left;
+  padding: 1.75rem;
+}
+
+.crud-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: 1.5rem;
+}
+.crud-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.01em;
+}
+.crud-modal .form-group {
+  margin-bottom: 1.125rem;
+}
+.crud-modal .form-group label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.35rem;
+}
+.crud-modal .search-input,
+.crud-modal .status-select,
+.crud-modal .detail-textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.875rem;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--gray-900);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.crud-modal .search-input:hover,
+.crud-modal .status-select:hover {
+  border-color: var(--gray-300);
+}
+.crud-modal .search-input:focus,
+.crud-modal .status-select:focus,
+.crud-modal .detail-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(192,64,42,0.1);
+}
+.crud-modal .detail-textarea {
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+.crud-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--gray-100);
+}
+.crud-modal-actions .btn-primary {
+  padding: 0.6rem 1.75rem;
+  font-weight: 600;
+}
+.crud-modal-actions .btn-secondary {
+  padding: 0.6rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .modal-box.crud-modal {
+    max-width: min(88vw, 660px);
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal-box.crud-modal {
+    max-width: min(85vw, 820px);
+    padding: 2.25rem;
+    border-radius: calc(var(--radius-xl) + 2px);
+  }
+  .crud-modal-header { padding-bottom: 1.125rem; margin-bottom: 1.75rem; }
+  .crud-modal-header h3 { font-size: 1.2rem; }
+
+  #crudFormBody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1.75rem;
+  }
+  #crudFormBody > .form-group { margin-bottom: 1rem; }
+  #crudFormBody > .form-group[data-field="textarea"],
+  #crudFormBody > .form-group[data-field="slot-select"],
+  #crudFormBody > .form-group[data-field="checkbox"] { grid-column: 1 / -1; }
+
+  .crud-modal .search-input,
+  .crud-modal .status-select { padding: 0.7rem 0.9rem; font-size: 0.9rem; }
+  .crud-modal .detail-textarea { padding: 0.75rem 0.9rem; font-size: 0.9rem; min-height: 140px; }
+  .crud-modal .form-group { margin-bottom: 0.875rem; }
+
+  .crud-modal-actions { margin-top: 1.75rem; padding-top: 1.25rem; gap: 1rem; }
+  .crud-modal-actions .btn-primary { padding: 0.7rem 2.25rem; font-size: 0.9rem; }
+  .crud-modal-actions .btn-secondary { padding: 0.7rem 1.75rem; font-size: 0.9rem; }
+}
+
+@media (min-width: 1400px) {
+  .modal-box.crud-modal {
+    max-width: min(80vw, 1000px);
+    padding: 2.5rem;
+    border-radius: calc(var(--radius-xl) + 4px);
+  }
+  .crud-modal-header { padding-bottom: 1.25rem; margin-bottom: 2rem; }
+  .crud-modal-header h3 { font-size: 1.3rem; }
+
+  #crudFormBody { gap: 0 2rem; }
+
+  .crud-modal .search-input,
+  .crud-modal .status-select { padding: 0.8rem 1rem; font-size: 0.95rem; }
+  .crud-modal .detail-textarea { padding: 0.85rem 1rem; font-size: 0.95rem; min-height: 170px; }
+  .crud-modal .form-group label { font-size: 0.85rem; }
+
+  .crud-modal-actions { margin-top: 2rem; padding-top: 1.5rem; gap: 1.25rem; }
+  .crud-modal-actions .btn-primary { padding: 0.8rem 2.75rem; font-size: 0.95rem; }
+  .crud-modal-actions .btn-secondary { padding: 0.8rem 2rem; font-size: 0.95rem; }
+}
+
+@media (min-width: 1800px) {
+  .modal-box.crud-modal {
+    max-width: min(70vw, 1160px);
+    padding: 2.75rem;
+  }
+  .crud-modal-header h3 { font-size: 1.4rem; }
+  #crudFormBody { gap: 0 2.5rem; }
+  .crud-modal .search-input,
+  .crud-modal .status-select { padding: 0.9rem 1.1rem; font-size: 1rem; }
+  .crud-modal .detail-textarea { padding: 0.95rem 1.1rem; font-size: 1rem; min-height: 200px; }
+}
 
 /* ─── ADMIN CARD GRID (Team, Services, Projects, Blog) ─── */
 .admin-card-grid {
@@ -1272,7 +1428,13 @@ td a:hover { text-decoration: underline; }
   border: 1px solid var(--gray-100);
 }
 .pricing-tier-header { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.pricing-tier-header .pricing-name { min-width: 140px; flex: 2; }
+.pricing-tier-header .pricing-price { min-width: 100px; flex: 1; }
+.pricing-tier-header .pricing-unit { min-width: 60px; flex: 0 0 80px; }
 .pricing-tier-features { display: flex; gap: 0.375rem; flex-wrap: wrap; align-items: center; }
+.pricing-feature { min-width: 160px; flex: 1; font-size: 0.75rem; }
+.pricing-rate { width: 80px; }
+.slot-preview { width: 80px; height: 80px; border-radius: 8px; overflow: hidden; background: var(--gray-100); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
 /* ─── SETTINGS EDITOR ─── */
 .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
@@ -1389,6 +1551,9 @@ td a:hover { text-decoration: underline; }
   .responsive-table td a { word-break: break-all; }
   .responsive-table .status-select { width: 100%; }
 
+  .detail-box { max-width: 100%; }
+  .detail-grid { grid-template-columns: 1fr; }
+
   th, td { padding: 0.5rem 0.75rem; }
   .msg-cell { max-width: 140px; }
 }
@@ -1454,10 +1619,20 @@ td a:hover { text-decoration: underline; }
   .toast { min-width: 0; max-width: none; width: 100%; padding: 0.625rem 0.75rem; font-size: 0.75rem; }
 
   .modal-overlay { padding: 1rem; align-items: flex-end; }
-  .modal-box { padding: 1.5rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .modal-box { padding: 1.5rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-width: 100%; }
   .modal-box .modal-icon { width: 48px; height: 48px; font-size: 1.25rem; }
   .modal-box h3 { font-size: 1rem; }
   .modal-box p { font-size: 0.8125rem; }
+  .modal-box.crud-modal { max-width: 100%; }
+  .crud-modal-header h3 { font-size: 0.95rem; }
+  .crud-modal .search-input,
+  .crud-modal .status-select,
+  .crud-modal .detail-textarea { font-size: 0.8125rem; padding: 0.5rem 0.625rem; }
+  .crud-modal .form-group { margin-bottom: 0.75rem; }
+  .crud-modal-actions { flex-direction: column; gap: 0.5rem; }
+  .crud-modal-actions .btn-primary,
+  .crud-modal-actions .btn-secondary { width: 100%; text-align: center; }
+  .slot-preview { width: 56px; height: 56px; font-size: 1.125rem; }
 }
 
 @media (max-width: 380px) {
@@ -1469,4 +1644,5 @@ td a:hover { text-decoration: underline; }
   .image-card .img-wrap { height: 90px; }
   .responsive-table td { font-size: 0.75rem; padding: 0.375rem 0.625rem; }
   .responsive-table td::before { min-width: 60px; font-size: 0.625rem; }
+  .slot-preview { width: 48px; height: 48px; font-size: 1rem; }
 }

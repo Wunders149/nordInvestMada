@@ -207,6 +207,16 @@ function switchTab(tabId) {
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').classList.remove('open');
   if (tabId === 'dashboard') renderDashboard();
+  else if (tabId === 'contacts') loadContacts();
+  else if (tabId === 'quotes') loadQuotes();
+  else if (tabId === 'subscribers') loadSubscribers();
+  else if (tabId === 'images') { loadSlots(); loadImages(); }
+  else if (tabId === 'team') loadEntity('team');
+  else if (tabId === 'services') loadEntity('services');
+  else if (tabId === 'projects') loadEntity('projects');
+  else if (tabId === 'blog') loadEntity('blog');
+  else if (tabId === 'pricing') loadPricing();
+  else if (tabId === 'settings') loadSettings();
 }
 
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
@@ -623,6 +633,7 @@ document.getElementById('imageUploadForm').addEventListener('submit', async (e) 
     fd.append('image', file);
 
     const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
+    if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
 
@@ -651,6 +662,7 @@ async function loadImages() {
   showSkeletonGrid('imageGrid', 6);
   try {
     const res = await fetch('/api/images', { headers: getHeaders() });
+    if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
     images = await res.json();
     renderImages();
   } catch (err) { console.error('Images error:', err); }
@@ -1002,6 +1014,7 @@ function entityLabel(entity) {
 async function loadEntity(entity) {
   const cfg = ENTITY_CONFIG[entity];
   if (!cfg) return;
+  showSkeletonGrid(`${entity}List`, 4);
   try {
     const res = await fetch(`${API_BASE}/${cfg.api}`, { headers: getHeaders() });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
@@ -1032,7 +1045,6 @@ function renderEntity(entity) {
 
   container.innerHTML = items.map(item => {
     const deleteFn = `confirmDeleteItem('${entity}', '${item.id}')`;
-    const editFn = `open${entityLabel(entity)}Form(${JSON.stringify(item).replace(/'/g, "\\'").replace(/"/g, '&quot;')})`;
     const title = item.name || item.title || item.label || 'Sans titre';
     const subtitle = item.role || item.location || '';
     const preview = item.description || item.excerpt || item.bio || '';
@@ -1074,7 +1086,7 @@ function openCrudForm(entity, editId) {
   let html = '';
   for (const field of cfg.fields) {
     const val = item[field.key] !== undefined ? item[field.key] : (field.default !== undefined ? field.default : '');
-    html += `<div class="form-group">`;
+    html += `<div class="form-group" data-field="${field.type}">`;
     html += `<label for="crud_${field.key}">${field.label}${field.required ? ' <span style="color:var(--danger)">*</span>' : ''}</label>`;
 
     if (field.type === 'textarea') {
@@ -1091,13 +1103,31 @@ function openCrudForm(entity, editId) {
       }
       html += `</select>`;
     } else if (field.type === 'slot-select') {
-      html += `<select id="crud_${field.key}" class="status-select" style="width:100%">`;
+      html += `<div style="display:flex;gap:0.75rem;align-items:start;flex-wrap:wrap">`;
+      html += `<div style="flex:1;min-width:160px">`;
+      html += `<select id="crud_${field.key}" class="status-select" style="width:100%" onchange="previewSlotImage(this)" data-section="${field.section}">`;
       html += `<option value="">— Aucune —</option>`;
       const sectionSlots = slots.filter(s => s.section === field.section);
       for (const s of sectionSlots) {
-        html += `<option value="${s.id}" ${val === s.id ? 'selected' : ''}>${escapeHtml(s.label)}</option>`;
+        const hasImg = s.uploadedFile ? ' 📷' : '';
+        html += `<option value="${s.id}" data-url="${escapeHtml(s.currentUrl || '')}" ${val === s.id ? 'selected' : ''}>${escapeHtml(s.label)}${hasImg}</option>`;
       }
       html += `</select>`;
+      html += `</div>`;
+      html += `<div id="crud_${field.key}_preview" class="slot-preview">`;
+      const currentSlot = sectionSlots.find(s => s.id === val);
+      if (currentSlot && currentSlot.currentUrl) {
+        html += `<img src="${currentSlot.currentUrl}" alt="aperçu" style="width:100%;height:100%;object-fit:cover">`;
+      } else {
+        html += `<span style="opacity:0.3">🖼</span>`;
+      }
+      html += `</div>`;
+      html += `</div>`;
+      html += `<div style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">`;
+      html += `<input type="file" id="crud_${field.key}_file" accept="image/*" style="font-size:0.75rem;flex:1;min-width:120px">`;
+      html += `<button type="button" class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem" onclick="uploadSlotImage('${field.key}', '${field.section}')">Upload</button>`;
+      html += `<span id="crud_${field.key}_status" style="font-size:0.75rem;color:var(--gray-500)"></span>`;
+      html += `</div>`;
     } else if (field.type === 'date') {
       const dateVal = val ? val.substring(0, 10) : '';
       html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
@@ -1109,7 +1139,65 @@ function openCrudForm(entity, editId) {
   }
 
   document.getElementById('crudFormBody').innerHTML = html;
+  // Preview initial selected slot
+  const sel = document.querySelector(`#crudFormBody select[onchange="previewSlotImage(this)"]`);
+  if (sel) previewSlotImage(sel);
   document.getElementById('crudModal').classList.add('open');
+}
+
+function previewSlotImage(sel) {
+  if (!sel) return;
+  const preview = document.getElementById(`${sel.id}_preview`);
+  if (!preview) return;
+  const opt = sel.options[sel.selectedIndex];
+  const url = opt ? opt.dataset.url : '';
+  preview.innerHTML = url
+    ? `<img src="${url}" alt="aperçu" style="width:100%;height:100%;object-fit:cover">`
+    : `<span style="opacity:0.3;font-size:1.5rem">🖼</span>`;
+}
+
+async function uploadSlotImage(fieldKey, section) {
+  const fileInput = document.getElementById(`crud_${fieldKey}_file`);
+  const file = fileInput.files[0];
+  const status = document.getElementById(`crud_${fieldKey}_status`);
+  if (!file) { status.textContent = 'Sélectionnez un fichier'; return; }
+  if (file.size > 10 * 1024 * 1024) { status.textContent = 'Max 10MB'; return; }
+
+  const select = document.getElementById(`crud_${fieldKey}`);
+  const slotId = select.value;
+  if (!slotId) { status.textContent = 'Choisissez un slot d\'abord'; return; }
+
+  status.textContent = 'Upload…';
+  const fd = new FormData();
+  fd.append('section', section);
+  fd.append('slotId', slotId);
+  fd.append('image', file);
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: fd
+    });
+    if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+    status.textContent = '✓ Uploadé';
+    status.style.color = 'var(--success)';
+    // Refresh slots and update preview
+    const sr = await fetch('/api/images/slots');
+    slots = await sr.json();
+    const updatedSlot = slots.find(s => s.id === slotId);
+    if (updatedSlot) {
+      const opt = select.querySelector(`option[value="${slotId}"]`);
+      if (opt) { opt.dataset.url = updatedSlot.currentUrl || ''; opt.textContent = updatedSlot.label + ' 📷'; }
+      previewSlotImage(select);
+    }
+    fileInput.value = '';
+  } catch (err) {
+    status.textContent = '✗ ' + err.message;
+    status.style.color = 'var(--danger)';
+  }
 }
 
 function closeCrudForm() {
@@ -1202,14 +1290,14 @@ function renderPricingEditor() {
     html += `<div class="pricing-cat"><h4>${catLabels[cat]}</h4>`;
     Object.keys(tiers).forEach(tier => {
       const t = tiers[tier];
-      html += `<div class="pricing-tier">
+      html += `<div class="pricing-tier" data-cat="${cat}" data-tier="${tier}">
         <div class="pricing-tier-header">
-          <input class="search-input" style="width:140px" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom">
-          <input class="search-input" style="width:120px" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix">
-          <input class="search-input" style="width:80px" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité">
+          <input class="search-input pricing-name" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom">
+          <input class="search-input pricing-price" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix">
+          <input class="search-input pricing-unit" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité">
         </div>
         <div class="pricing-tier-features">
-          ${(t.features || []).map((f, fi) => `<input class="search-input" style="width:220px;font-size:0.75rem" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}">`).join('')}
+          ${(t.features || []).map((f, fi) => `<input class="search-input pricing-feature" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}">`).join('')}
           <button class="btn-ghost" style="font-size:0.7rem;padding:0.25rem" onclick="addPricingFeature('${cat}','${tier}')">+ Ajouter option</button>
         </div>
       </div>`;
@@ -1220,8 +1308,8 @@ function renderPricingEditor() {
   // Rates
   html += `<div class="pricing-cat"><h4>Taux</h4>
     <div class="pricing-tier" style="display:flex;gap:1rem;flex-wrap:wrap">
-      <label style="font-size:0.8125rem">Marge sécurité (%): <input class="search-input" style="width:80px" type="number" id="pricingContingency" value="${(pricingData.contingency_rate || 0.1) * 100}"></label>
-      <label style="font-size:0.8125rem">TVA (%): <input class="search-input" style="width:80px" type="number" id="pricingTax" value="${(pricingData.tax_rate || 0.2) * 100}"></label>
+      <label style="font-size:0.8125rem">Marge sécurité (%): <input class="search-input pricing-rate" type="number" id="pricingContingency" value="${(pricingData.contingency_rate || 0.1) * 100}"></label>
+      <label style="font-size:0.8125rem">TVA (%): <input class="search-input pricing-rate" type="number" id="pricingTax" value="${(pricingData.tax_rate || 0.2) * 100}"></label>
     </div>
   </div>`;
 
@@ -1230,14 +1318,12 @@ function renderPricingEditor() {
 }
 
 function addPricingFeature(cat, tier) {
-  const container = document.querySelector(`[data-cat="${cat}"][data-tier="${tier}"][data-field^="feature_"]`);
-  const parent = container ? container.closest('.pricing-tier-features') : null;
-  if (!parent) return;
+  const parent = document.querySelector(`[data-cat="${cat}"][data-tier="${tier}"]`)?.closest('.pricing-tier')?.querySelector('.pricing-tier-features');
+  if (!parent) { showToast('Sélectionnez d\'abord un tier', 'error'); return; }
   const inputs = parent.querySelectorAll('[data-field^="feature_"]');
   const idx = inputs.length;
   const input = document.createElement('input');
-  input.className = 'search-input';
-  input.style.cssText = 'width:220px;font-size:0.75rem';
+  input.className = 'search-input pricing-feature';
   input.placeholder = `Option ${idx + 1}`;
   input.dataset.cat = cat;
   input.dataset.tier = tier;

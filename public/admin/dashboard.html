@@ -350,7 +350,7 @@
       <!-- ─── TEAM TAB ─── -->
       <section id="tab-team" class="tab-content">
         <div class="tab-toolbar">
-          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les membres de l'équipe</h3>
+          <h3 class="tab-title">Gérer les membres de l'équipe</h3>
           <button class="btn-secondary" onclick="openTeamForm()">+ Ajouter</button>
         </div>
         <div id="teamList" class="admin-card-grid"></div>
@@ -359,7 +359,7 @@
       <!-- ─── SERVICES TAB ─── -->
       <section id="tab-services" class="tab-content">
         <div class="tab-toolbar">
-          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les services</h3>
+          <h3 class="tab-title">Gérer les services</h3>
           <button class="btn-secondary" onclick="openServiceForm()">+ Ajouter</button>
         </div>
         <div id="servicesList" class="admin-card-grid"></div>
@@ -368,7 +368,7 @@
       <!-- ─── PROJECTS TAB ─── -->
       <section id="tab-projects" class="tab-content">
         <div class="tab-toolbar">
-          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les réalisations</h3>
+          <h3 class="tab-title">Gérer les réalisations</h3>
           <button class="btn-secondary" onclick="openProjectForm()">+ Ajouter</button>
         </div>
         <div id="projectsList" class="admin-card-grid"></div>
@@ -377,7 +377,7 @@
       <!-- ─── BLOG TAB ─── -->
       <section id="tab-blog" class="tab-content">
         <div class="tab-toolbar">
-          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les articles</h3>
+          <h3 class="tab-title">Gérer les articles</h3>
           <button class="btn-secondary" onclick="openBlogForm()">+ Ajouter</button>
         </div>
         <div id="blogList" class="admin-card-grid"></div>
@@ -386,7 +386,7 @@
       <!-- ─── PRICING TAB ─── -->
       <section id="tab-pricing" class="tab-content">
         <div class="tab-toolbar">
-          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Grille tarifaire</h3>
+          <h3 class="tab-title">Grille tarifaire</h3>
           <button class="btn-secondary" onclick="savePricing()" id="savePricingBtn">💾 Enregistrer</button>
         </div>
         <div id="pricingEditor"></div>
@@ -395,7 +395,7 @@
       <!-- ─── SETTINGS TAB ─── -->
       <section id="tab-settings" class="tab-content">
         <div class="tab-toolbar">
-          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Paramètres du site</h3>
+          <h3 class="tab-title">Paramètres du site</h3>
           <button class="btn-secondary" onclick="saveSettings()" id="saveSettingsBtn">💾 Enregistrer</button>
         </div>
         <div id="settingsEditor"></div>
@@ -480,24 +480,24 @@
         </div>
       </div>
       <div class="detail-footer">
-        <button class="btn-primary" id="detailMarkRead" style="width:auto;padding:0.5rem 1.25rem;font-size:0.8rem">✓ Marquer lu</button>
-        <button class="btn-secondary" id="detailMarkResolved" style="width:auto;padding:0.5rem 1.25rem;font-size:0.8rem">✓ Résoudre</button>
-        <button class="btn-secondary danger-hover" id="detailDelete" style="width:auto;padding:0.5rem 1.25rem;font-size:0.8rem">✕ Supprimer</button>
+        <button class="btn-primary detail-btn" id="detailMarkRead">✓ Marquer lu</button>
+        <button class="btn-secondary detail-btn" id="detailMarkResolved">✓ Résoudre</button>
+        <button class="btn-secondary danger-hover detail-btn" id="detailDelete">✕ Supprimer</button>
       </div>
     </div>
   </div>
 
   <!-- ─── CRUD FORM MODAL ─── -->
   <div class="modal-overlay" id="crudModal">
-    <div class="modal-box" style="max-width:580px;text-align:left">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-        <h3 id="crudModalTitle" style="font-size:1.05rem;font-weight:700;color:var(--gray-900)"></h3>
+    <div class="modal-box crud-modal">
+      <div class="crud-modal-header">
+        <h3 id="crudModalTitle"></h3>
         <button class="modal-close" onclick="closeCrudForm()">✕</button>
       </div>
       <div id="crudFormBody"></div>
-      <div class="modal-actions" style="margin-top:1.25rem">
+      <div class="modal-actions crud-modal-actions">
         <button class="btn-secondary" onclick="closeCrudForm()">Annuler</button>
-        <button class="btn-primary" id="crudSaveBtn" style="width:auto;padding:0.6rem 1.5rem" onclick="saveCrudItem()">Enregistrer</button>
+        <button class="btn-primary" id="crudSaveBtn" onclick="saveCrudItem()">Enregistrer</button>
       </div>
     </div>
   </div>
