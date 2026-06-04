@@ -40,8 +40,8 @@
   --border-light: rgba(0,0,0,0.08);
   --hero-overlay: linear-gradient(to right, rgba(250,248,245,0.95) 0%, transparent 50%);
 }
-/* Default: dark */
-html { --bg-primary: var(--black); --bg-secondary: var(--charcoal); --bg-card: rgba(255,255,255,0.04); --bg-elevated: var(--charcoal); --text-primary: var(--white); --text-secondary: rgba(255,255,255,0.7); --text-muted: rgba(255,255,255,0.4); --border-light: rgba(255,255,255,0.08); --hero-overlay: linear-gradient(to right, var(--black) 0%, transparent 50%); }
+/* Default: light */
+html { --bg-primary: #FAF8F5; --bg-secondary: #F0ECE6; --bg-card: #FFFFFF; --bg-elevated: #FFFFFF; --text-primary: #1A1A1A; --text-secondary: #555555; --text-muted: #999999; --border-light: rgba(0,0,0,0.08); --hero-overlay: linear-gradient(to right, rgba(250,248,245,0.95) 0%, transparent 50%); }
 
 /* ─── THEME SWITCH ─── */
 .theme-switch-wrapper {
@@ -192,8 +192,10 @@ nav.scrolled { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
   background: var(--rust-light);
   transition: transform 0.2s;
 }
-.nav-links a:hover { color: var(--rust-light); }
-.nav-links a:hover::after { transform: translateX(-50%) scaleX(1); }
+.nav-links a:hover,
+.nav-links a.active { color: var(--rust-light); }
+.nav-links a:hover::after,
+.nav-links a.active::after { transform: translateX(-50%) scaleX(1); }
 .nav-cta {
   background: var(--rust);
   color: white !important;

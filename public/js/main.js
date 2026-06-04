@@ -23,7 +23,7 @@ function toggleTheme() {
 
 function initTheme() {
   const saved = localStorage.getItem('nim_theme');
-  let theme = 'dark';
+  let theme = 'light';
   if (saved === 'light' || saved === 'dark') {
     theme = saved;
   }
@@ -96,6 +96,29 @@ function updateLangButtons() {
     btn.classList.toggle('active', btn.dataset.lang === currentLang);
   });
 }
+
+// ═══════════════════════════════════════════════════════
+// ACTIVE NAV LINK — highlight current section on scroll
+// ═══════════════════════════════════════════════════════
+
+const navAnchors = document.querySelectorAll('.nav-links a[href^="#"]');
+const sections = [];
+navAnchors.forEach(a => {
+  const id = a.getAttribute('href')?.replace('#', '');
+  const el = document.getElementById(id);
+  if (el) sections.push(el);
+});
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navAnchors.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => navObserver.observe(s));
 
 // ═══════════════════════════════════════════════════════
 // MOBILE MENU
