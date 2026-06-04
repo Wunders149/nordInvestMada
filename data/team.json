@@ -1,0 +1,38 @@
+[
+  {
+    "id": "director",
+    "name": "Jean Rakoto",
+    "role": "Directeur Général",
+    "bio": "15 ans d'expérience en génie civil et management de projets. Ingénieur diplômé de l'INTP, il supervise l'ensemble des opérations et garantit la conformité aux normes malgaches et internationales.",
+    "imageSlot": "team-director",
+    "order": 1,
+    "visible": true
+  },
+  {
+    "id": "engineer",
+    "name": "Mamy Andria",
+    "role": "Ingénieur en Chef",
+    "bio": "Expert en structures en béton armé et calculs aux normes VEx (cyclones). Il coordonne les études techniques et valide les notes de calcul pour chaque ouvrage.",
+    "imageSlot": "team-engineer",
+    "order": 2,
+    "visible": true
+  },
+  {
+    "id": "architect",
+    "name": "Lala Rasoa",
+    "role": "Architecte BIM",
+    "bio": "Architecte DPLG spécialisée en conception BIM (Revit, ArchiCAD). Elle allie performance énergétique et esthétique pour des projets résidentiels et institutionnels.",
+    "imageSlot": "team-architect",
+    "order": 3,
+    "visible": true
+  },
+  {
+    "id": "pm",
+    "name": "Koto Rajaonah",
+    "role": "Chef de Projet",
+    "bio": "Coordination de chantier, planification et contrôle qualité sur le terrain. Il assure le respect des délais, des budgets et des normes de sécurité.",
+    "imageSlot": "team-pm",
+    "order": 4,
+    "visible": true
+  }
+]

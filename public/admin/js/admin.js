@@ -6,6 +6,16 @@ let subscribers = [];
 let slots = [];
 let images = {};
 
+// Pagination state
+const PER_PAGE = 10;
+let contactPage = 1;
+let quotePage = 1;
+let contactDetailId = null;
+
+// Filter state
+let contactFilter = 'all';
+let quoteFilter = 'all';
+
 // ══════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════
@@ -41,6 +51,68 @@ function humanSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+// ══════════════════════════════════════════════
+// SKELETON LOADING
+// ══════════════════════════════════════════════
+
+function showSkeletonTable(id, cols, rows = 5) {
+  const tbody = document.getElementById(id);
+  tbody.innerHTML = Array(rows).fill(0).map(() =>
+    `<tr class="skeleton-row">${Array(cols).fill(0).map(() => '<td><div class="skeleton skeleton-cell"></div></td>').join('')}</tr>`
+  ).join('');
+}
+
+function showSkeletonStats() {
+  document.querySelectorAll('.stat-value').forEach(el => {
+    el.textContent = '—';
+    el.style.opacity = '0.3';
+  });
+}
+
+function showSkeletonGrid(id, count = 6) {
+  const grid = document.getElementById(id);
+  grid.innerHTML = Array(count).fill(0).map(() =>
+    `<div class="skeleton skeleton-card"></div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════
+// PAGINATION
+// ══════════════════════════════════════════════
+
+function renderPagination(id, page, total, perPage, onPage) {
+  const el = document.getElementById(id);
+  const totalPages = Math.ceil(total / perPage);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  html += `<button class="pagination-btn" ${page <= 1 ? 'disabled' : ''} onclick="window._pg_${onPage}(${page - 1})">‹</button>`;
+  const start = Math.max(1, page - 2);
+  const end = Math.min(totalPages, page + 2);
+  if (start > 1) html += `<button class="pagination-btn" onclick="window._pg_${onPage}(1)">1</button>${start > 2 ? '<span class="pagination-info">…</span>' : ''}`;
+  for (let i = start; i <= end; i++) {
+    html += `<button class="pagination-btn ${i === page ? 'active' : ''}" onclick="window._pg_${onPage}(${i})">${i}</button>`;
+  }
+  if (end < totalPages) html += `${end < totalPages - 1 ? '<span class="pagination-info">…</span>' : ''}<button class="pagination-btn" onclick="window._pg_${onPage}(${totalPages})">${totalPages}</button>`;
+  html += `<button class="pagination-btn" ${page >= totalPages ? 'disabled' : ''} onclick="window._pg_${onPage}(${page + 1})">›</button>`;
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+// EMPTY STATE
+// ══════════════════════════════════════════════
+
+function emptyState(icon, title, desc) {
+  return `
+    <tr><td colspan="99">
+      <div class="empty-state">
+        <div class="empty-icon">${icon}</div>
+        <div class="empty-title">${title}</div>
+        <div class="empty-desc">${desc}</div>
+      </div>
+    </td></tr>
+  `;
 }
 
 // ══════════════════════════════════════════════
@@ -120,18 +192,26 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
   document.getElementById('sidebarOverlay').classList.remove('open');
 });
 
+function switchTab(tabId) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-tab="${tabId}"]`).classList.add('active');
+  document.getElementById(`tab-${tabId}`).classList.add('active');
+  const titles = {
+    dashboard: 'Tableau de bord', contacts: 'Messages', quotes: 'Devis',
+    subscribers: 'Newsletter', images: 'Galerie',
+    team: 'Équipe', services: 'Services', projects: 'Projets',
+    blog: 'Blog', pricing: 'Tarifs', settings: 'Paramètres'
+  };
+  document.getElementById('pageTitle').innerHTML = `${titles[tabId] || tabId} <small>Gestion</small>`;
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  if (tabId === 'dashboard') renderDashboard();
+}
+
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    const tabId = btn.dataset.tab;
-    document.getElementById(`tab-${tabId}`).classList.add('active');
-    const titles = { contacts: 'Messages', quotes: 'Devis', subscribers: 'Newsletter', images: 'Galerie' };
-    document.getElementById('pageTitle').innerHTML = `${titles[tabId] || tabId} <small>Gestion</small>`;
-    // Close sidebar on mobile
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('open');
+    switchTab(btn.dataset.tab);
   });
 });
 
@@ -139,8 +219,8 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
 // SEARCH
 // ══════════════════════════════════════════════
 
-document.getElementById('contactSearch').addEventListener('input', renderContacts);
-document.getElementById('quoteSearch').addEventListener('input', renderQuotes);
+document.getElementById('contactSearch').addEventListener('input', () => { contactPage = 1; renderContacts(); });
+document.getElementById('quoteSearch').addEventListener('input', () => { quotePage = 1; renderQuotes(); });
 document.getElementById('subSearch').addEventListener('input', renderSubscribers);
 
 // ══════════════════════════════════════════════
@@ -148,6 +228,7 @@ document.getElementById('subSearch').addEventListener('input', renderSubscribers
 // ══════════════════════════════════════════════
 
 async function loadStats() {
+  showSkeletonStats();
   try {
     const res = await fetch(`${API_BASE}/stats`, { headers: getHeaders() });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
@@ -157,6 +238,7 @@ async function loadStats() {
     document.getElementById('statQuotes').textContent = data.totalQuotes;
     document.getElementById('statPending').textContent = data.pendingQuotes;
     document.getElementById('statSubscribers').textContent = data.totalSubscribers;
+    document.querySelectorAll('.stat-value').forEach(el => el.style.opacity = '');
     const badge = document.getElementById('navBadgeUnread');
     if (data.unreadContacts > 0) { badge.textContent = data.unreadContacts; badge.style.display = ''; }
     else { badge.style.display = 'none'; }
@@ -168,44 +250,92 @@ async function loadStats() {
 // CONTACTS CRUD
 // ══════════════════════════════════════════════
 
+function setContactFilter(filter) {
+  contactFilter = filter;
+  document.querySelectorAll('#contactFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`#contactFilterBar .filter-btn[data-filter="${filter}"]`).classList.add('active');
+  contactPage = 1;
+  renderContacts();
+}
+
+function setQuoteFilter(filter) {
+  quoteFilter = filter;
+  document.querySelectorAll('#quoteFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`#quoteFilterBar .filter-btn[data-filter="${filter}"]`).classList.add('active');
+  quotePage = 1;
+  renderQuotes();
+}
+
+async function markAllRead() {
+  const unread = contacts.filter(c => !c.read);
+  if (unread.length === 0) { showToast('Tous les messages sont déjà lus', 'info'); return; }
+  try {
+    await Promise.all(unread.map(c =>
+      fetch(`${API_BASE}/contacts/${c.id}`, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ read: true }) })
+    ));
+    unread.forEach(c => c.read = true);
+    renderContacts(); loadStats();
+    showToast(`${unread.length} message(s) marqué(s) comme lu`, 'success');
+  } catch (err) { showToast('Erreur', 'error'); }
+}
+
 async function loadContacts() {
+  showSkeletonTable('contactsBody', 7);
   try {
     const res = await fetch(`${API_BASE}/contacts`, { headers: getHeaders() });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
     contacts = await res.json();
+    contactPage = 1;
     renderContacts();
+    renderDashboard();
   } catch (err) { console.error('Contacts error:', err); }
 }
+
+window._pg_contact = (p) => { contactPage = p; renderContacts(); };
 
 function renderContacts() {
   const search = document.getElementById('contactSearch').value.toLowerCase();
   const tbody = document.getElementById('contactsBody');
-  const filtered = contacts.filter(c =>
+  let filtered = contacts.filter(c =>
     c.name.toLowerCase().includes(search) ||
     c.email.toLowerCase().includes(search) ||
     c.phone.toLowerCase().includes(search)
   );
+  if (contactFilter !== 'all') {
+    if (contactFilter === 'new') filtered = filtered.filter(c => !c.read);
+    else if (contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
+    else if (contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
+  }
+  // Update filter counts
+  const totalNew = contacts.filter(c => !c.read).length;
+  document.getElementById('filterContactNew').textContent = totalNew;
+  if (contactPage > Math.ceil(filtered.length / PER_PAGE)) contactPage = 1;
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Aucun message</td></tr>';
+    tbody.innerHTML = emptyState('✉', 'Aucun message', contactFilter === 'new' ? 'Aucun nouveau message.' : contactFilter === 'resolved' ? 'Aucun message résolu.' : 'Les messages de contact apparaîtront ici.');
+    document.getElementById('contactsPagination').innerHTML = '';
     return;
   }
-  tbody.innerHTML = filtered.map(c => `
-    <tr class="${!c.read ? 'unread' : ''}">
+  const total = filtered.length;
+  const start = (contactPage - 1) * PER_PAGE;
+  const page = filtered.slice(start, start + PER_PAGE);
+  tbody.innerHTML = page.map(c => `
+    <tr class="${!c.read ? 'unread' : ''}" style="cursor:pointer" onclick="openContactDetail('${c.id}')">
       <td data-label="Date">${formatDate(c.date)}</td>
       <td data-label="Nom"><strong>${escapeHtml(c.name)}</strong></td>
-      <td data-label="Email"><a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a></td>
+      <td data-label="Email"><a href="mailto:${escapeHtml(c.email)}" onclick="event.stopPropagation()">${escapeHtml(c.email)}</a></td>
       <td data-label="Projet">${escapeHtml(c.projectType)}${c.budget ? `<br><small style="color:var(--gray-400)">Budget: ${escapeHtml(c.budget)}</small>` : ''}</td>
       <td data-label="Message" class="msg-cell" title="${escapeHtml(c.message)}">${escapeHtml(c.message).substring(0, 80)}${c.message.length > 80 ? '...' : ''}</td>
       <td data-label="Statut">
         ${c.resolved ? '<span class="badge badge-success">Résolu</span>' : c.read ? '<span class="badge badge-info">Lu</span>' : '<span class="badge badge-warning">Nouveau</span>'}
       </td>
-      <td class="actions-cell">
+      <td class="actions-cell" onclick="event.stopPropagation()">
         ${!c.read ? `<button class="btn-icon success" onclick="markRead('${c.id}')" title="Marquer lu">✓</button>` : ''}
         ${!c.resolved ? `<button class="btn-icon info" onclick="markResolved('${c.id}')" title="Résoudre">✓</button>` : ''}
         <button class="btn-icon danger" onclick="confirmDeleteContact('${c.id}')" title="Supprimer">✕</button>
       </td>
     </tr>
   `).join('');
+  renderPagination('contactsPagination', contactPage, total, PER_PAGE, 'contact');
 }
 
 async function markRead(id) {
@@ -243,27 +373,43 @@ function confirmDeleteContact(id) {
 // ══════════════════════════════════════════════
 
 async function loadQuotes() {
+  showSkeletonTable('quotesBody', 8);
   try {
     const res = await fetch(`${API_BASE}/quotes`, { headers: getHeaders() });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
     quotes = await res.json();
+    quotePage = 1;
     renderQuotes();
+    renderDashboard();
   } catch (err) { console.error('Quotes error:', err); }
 }
+
+window._pg_quote = (p) => { quotePage = p; renderQuotes(); };
 
 function renderQuotes() {
   const search = document.getElementById('quoteSearch').value.toLowerCase();
   const tbody = document.getElementById('quotesBody');
-  const filtered = quotes.filter(q =>
+  let filtered = quotes.filter(q =>
     q.name.toLowerCase().includes(search) ||
     q.email.toLowerCase().includes(search) ||
     q.quoteNumber.toLowerCase().includes(search)
   );
+  if (quoteFilter !== 'all') {
+    filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
+  }
+  // Update filter counts
+  const totalPending = quotes.filter(q => (q.status || 'pending') === 'pending').length;
+  document.getElementById('filterQuotePending').textContent = totalPending;
+  if (quotePage > Math.ceil(filtered.length / PER_PAGE)) quotePage = 1;
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Aucun devis</td></tr>';
+    tbody.innerHTML = emptyState('📋', 'Aucun devis', quoteFilter === 'pending' ? 'Aucun devis en attente.' : 'Les demandes de devis apparaîtront ici.');
+    document.getElementById('quotesPagination').innerHTML = '';
     return;
   }
-  tbody.innerHTML = filtered.map(q => `
+  const total = filtered.length;
+  const start = (quotePage - 1) * PER_PAGE;
+  const page = filtered.slice(start, start + PER_PAGE);
+  tbody.innerHTML = page.map(q => `
     <tr>
       <td data-label="Date">${formatDate(q.date)}</td>
       <td data-label="N° Devis"><code>${escapeHtml(q.quoteNumber)}</code></td>
@@ -284,6 +430,7 @@ function renderQuotes() {
       </td>
     </tr>
   `).join('');
+  renderPagination('quotesPagination', quotePage, total, PER_PAGE, 'quote');
 }
 
 async function updateQuoteStatus(id, status) {
@@ -312,6 +459,7 @@ function confirmDeleteQuote(id) {
 // ══════════════════════════════════════════════
 
 async function loadSubscribers() {
+  showSkeletonTable('subscribersBody', 3, 4);
   try {
     const res = await fetch(`${API_BASE}/subscribers`, { headers: getHeaders() });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
@@ -325,7 +473,7 @@ function renderSubscribers() {
   const tbody = document.getElementById('subscribersBody');
   const filtered = subscribers.filter(s => s.email.toLowerCase().includes(search));
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" class="empty-row">Aucun abonné</td></tr>';
+    tbody.innerHTML = emptyState('📧', 'Aucun abonné', 'Les inscrits à la newsletter apparaîtront ici.');
     return;
   }
   tbody.innerHTML = filtered.map(s => `
@@ -367,6 +515,7 @@ function exportToCsv(filename, rows) {
   showToast('Fichier CSV téléchargé', 'success');
 }
 
+document.getElementById('markAllReadBtn').addEventListener('click', markAllRead);
 document.getElementById('exportContactsBtn').addEventListener('click', () => {
   exportToCsv('contacts.csv', contacts.map(c => [
     formatDate(c.date), c.name, c.email, c.phone,
@@ -499,6 +648,7 @@ document.getElementById('imageUploadForm').addEventListener('submit', async (e) 
 });
 
 async function loadImages() {
+  showSkeletonGrid('imageGrid', 6);
   try {
     const res = await fetch('/api/images', { headers: getHeaders() });
     images = await res.json();
@@ -515,7 +665,11 @@ function renderImages() {
     (images[section] || []).forEach(f => allFiles.push({ ...f, section }));
   });
   if (allFiles.length === 0) {
-    grid.innerHTML = '<p class="empty-row">Aucune image uploadée</p>';
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🖼</div>
+      <div class="empty-title">Aucune image</div>
+      <div class="empty-desc">Uploader des images via le formulaire ci-dessus.</div>
+    </div>`;
     return;
   }
   grid.innerHTML = allFiles.map(f => {
@@ -571,6 +725,115 @@ function confirmDeleteImage(section, filename) {
 document.getElementById('filterSection').addEventListener('change', renderImages);
 
 // ══════════════════════════════════════════════
+// CONTACT DETAIL MODAL
+// ══════════════════════════════════════════════
+
+function openContactDetail(id) {
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  contactDetailId = id;
+  document.getElementById('detailName').textContent = c.name;
+  document.getElementById('detailDate').textContent = formatDate(c.date);
+  document.getElementById('detailEmail').textContent = c.email;
+  document.getElementById('detailEmail').href = `mailto:${c.email}`;
+  document.getElementById('detailPhone').textContent = c.phone || 'Non fourni';
+  document.getElementById('detailProject').textContent = c.projectType;
+  document.getElementById('detailBudget').textContent = c.budget || 'Non spécifié';
+  document.getElementById('detailService').textContent = c.serviceType || c.projectType;
+  document.getElementById('detailMessage').textContent = c.message;
+  const statusEl = document.getElementById('detailStatus');
+  if (c.resolved) statusEl.innerHTML = '<span class="badge badge-success">Résolu</span>';
+  else if (c.read) statusEl.innerHTML = '<span class="badge badge-info">Lu</span>';
+  else statusEl.innerHTML = '<span class="badge badge-warning">Nouveau</span>';
+  const notesEl = document.getElementById('detailNotes');
+  const editor = document.getElementById('detailNotesEditor');
+  if (c.notes) {
+    notesEl.textContent = c.notes;
+    notesEl.style.display = '';
+  } else {
+    notesEl.textContent = 'Aucune note';
+    notesEl.style.display = '';
+  }
+  editor.classList.add('hidden');
+  document.getElementById('detailNotesTextarea').value = c.notes || '';
+
+  // Sync action buttons
+  const readBtn = document.getElementById('detailMarkRead');
+  const resolveBtn = document.getElementById('detailMarkResolved');
+  readBtn.style.display = c.read ? 'none' : '';
+  resolveBtn.style.display = c.resolved ? 'none' : '';
+
+  document.getElementById('contactDetailModal').classList.add('open');
+}
+
+function closeContactDetail() {
+  document.getElementById('contactDetailModal').classList.remove('open');
+  contactDetailId = null;
+}
+
+document.getElementById('detailClose').addEventListener('click', closeContactDetail);
+document.getElementById('contactDetailModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeContactDetail();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('contactDetailModal').classList.contains('open')) closeContactDetail();
+});
+
+// Detail modal actions
+document.getElementById('detailMarkRead').addEventListener('click', async () => {
+  if (!contactDetailId) return;
+  await markRead(contactDetailId);
+  const c = contacts.find(x => x.id === contactDetailId);
+  if (c) c.read = true;
+  openContactDetail(contactDetailId);
+  renderContacts();
+});
+
+document.getElementById('detailMarkResolved').addEventListener('click', async () => {
+  if (!contactDetailId) return;
+  await markResolved(contactDetailId);
+  const c = contacts.find(x => x.id === contactDetailId);
+  if (c) { c.read = true; c.resolved = true; }
+  openContactDetail(contactDetailId);
+  renderContacts();
+  loadStats();
+});
+
+document.getElementById('detailDelete').addEventListener('click', () => {
+  if (!contactDetailId) return;
+  const id = contactDetailId;
+  closeContactDetail();
+  confirmDeleteContact(id);
+});
+
+// Notes editing
+document.getElementById('detailNotesEdit').addEventListener('click', () => {
+  document.getElementById('detailNotes').style.display = 'none';
+  document.getElementById('detailNotesEditor').classList.remove('hidden');
+  document.getElementById('detailNotesTextarea').focus();
+});
+
+document.getElementById('detailNotesCancel').addEventListener('click', () => {
+  document.getElementById('detailNotesEditor').classList.add('hidden');
+  document.getElementById('detailNotes').style.display = '';
+});
+
+document.getElementById('detailNotesSave').addEventListener('click', async () => {
+  const notes = document.getElementById('detailNotesTextarea').value.trim();
+  if (!contactDetailId) return;
+  try {
+    const res = await fetch(`${API_BASE}/contacts/${contactDetailId}`, {
+      method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ notes })
+    });
+    if (!res.ok) throw new Error('Failed');
+    const c = contacts.find(x => x.id === contactDetailId);
+    if (c) c.notes = notes;
+    showToast('Notes enregistrées', 'success');
+    openContactDetail(contactDetailId);
+  } catch (err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
+});
+
+// ══════════════════════════════════════════════
 // LIGHTBOX
 // ══════════════════════════════════════════════
 
@@ -621,6 +884,571 @@ document.getElementById('newSlotSubmit').addEventListener('click', async () => {
 });
 
 // ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+
+function renderDashboard() {
+  renderDashContacts();
+  renderDashQuotes();
+}
+
+function renderDashContacts() {
+  const body = document.getElementById('dashContactsBody');
+  const recent = contacts.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+  if (recent.length === 0) {
+    body.innerHTML = '<div class="widget-empty">Aucun message pour le moment.</div>';
+    return;
+  }
+  body.innerHTML = recent.map(c => {
+    const dotClass = c.resolved ? 'resolved' : c.read ? 'read' : 'new';
+    const label = c.resolved ? 'Résolu' : c.read ? 'Lu' : 'Nouveau';
+    return `<div class="widget-item" onclick="openContactDetail('${c.id}')">
+      <span class="wi-dot ${dotClass}"></span>
+      <div class="wi-info">
+        <div class="wi-name">${escapeHtml(c.name)}</div>
+        <div class="wi-sub">${escapeHtml(c.message).substring(0, 60)}${c.message.length > 60 ? '…' : ''} · ${label}</div>
+      </div>
+      <span class="wi-date">${formatDateShort(c.date)}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderDashQuotes() {
+  const body = document.getElementById('dashQuotesBody');
+  const recent = quotes.filter(q => (q.status || 'pending') === 'pending').slice(0, 5);
+  if (recent.length === 0) {
+    body.innerHTML = '<div class="widget-empty">Aucun devis en attente.</div>';
+    return;
+  }
+  body.innerHTML = recent.map(q => `
+    <div class="widget-item" onclick="switchTab('quotes')">
+      <span class="wi-dot pending"></span>
+      <div class="wi-info">
+        <div class="wi-name">${escapeHtml(q.name)}</div>
+        <div class="wi-sub">${escapeHtml(q.serviceType)} · ${escapeHtml(q.location) || 'Non spécifié'}</div>
+      </div>
+      <span class="wi-date">${formatDateShort(q.date)}</span>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════
+// CONTENT MANAGEMENT (Team, Services, Projects, Blog)
+// ══════════════════════════════════════════════
+
+let teamData = [];
+let servicesData = [];
+let projectsData = [];
+let blogData = [];
+
+const ENTITY_CONFIG = {
+  team: {
+    label: 'Membre', labelPlural: 'Membres', api: 'team',
+    fields: [
+      { key: 'name', label: 'Nom', type: 'text', required: true },
+      { key: 'role', label: 'Rôle', type: 'text', required: true },
+      { key: 'bio', label: 'Biographie', type: 'textarea' },
+      { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'team' },
+      { key: 'order', label: 'Ordre', type: 'number', default: 1 },
+      { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
+    ]
+  },
+  services: {
+    label: 'Service', labelPlural: 'Services', api: 'services',
+    fields: [
+      { key: 'title', label: 'Titre', type: 'text', required: true },
+      { key: 'description', label: 'Description', type: 'textarea', required: true },
+      { key: 'icon', label: 'Icône (emoji)', type: 'text', default: '🔧' },
+      { key: 'order', label: 'Ordre', type: 'number', default: 1 },
+      { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
+    ]
+  },
+  projects: {
+    label: 'Projet', labelPlural: 'Projets', api: 'projects',
+    fields: [
+      { key: 'title', label: 'Titre', type: 'text', required: true },
+      { key: 'location', label: 'Localisation', type: 'text' },
+      { key: 'description', label: 'Description', type: 'textarea' },
+      { key: 'category', label: 'Catégorie', type: 'select', options: [
+        { value: 'construction', label: 'Construction' },
+        { value: 'rehabilitation', label: 'Réhabilitation' },
+        { value: 'forage', label: 'Forage' }
+      ]},
+      { key: 'order', label: 'Ordre', type: 'number', default: 1 },
+      { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
+    ]
+  },
+  blog: {
+    label: 'Article', labelPlural: 'Articles', api: 'blog',
+    fields: [
+      { key: 'title', label: 'Titre', type: 'text', required: true },
+      { key: 'slug', label: 'Slug (URL)', type: 'text' },
+      { key: 'date', label: 'Date', type: 'date' },
+      { key: 'excerpt', label: 'Extrait', type: 'textarea' },
+      { key: 'content', label: 'Contenu (HTML)', type: 'textarea' },
+      { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'blog' },
+      { key: 'published', label: 'Publié', type: 'checkbox', default: true }
+    ]
+  }
+};
+
+let currentEntity = null;
+let currentEditId = null;
+
+function entityLabel(entity) {
+  return entity.charAt(0).toUpperCase() + (entity.endsWith('s') ? entity.slice(1, -1) : entity.slice(1));
+}
+
+async function loadEntity(entity) {
+  const cfg = ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  try {
+    const res = await fetch(`${API_BASE}/${cfg.api}`, { headers: getHeaders() });
+    if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
+    const data = await res.json();
+    if (entity === 'team') teamData = data;
+    else if (entity === 'services') servicesData = data;
+    else if (entity === 'projects') projectsData = data;
+    else if (entity === 'blog') blogData = data;
+    renderEntity(entity);
+  } catch (err) { console.error(`${entity} load error:`, err); }
+}
+
+function renderEntity(entity) {
+  const cfg = ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  let items;
+  if (entity === 'team') items = teamData;
+  else if (entity === 'services') items = servicesData;
+  else if (entity === 'projects') items = projectsData;
+  else if (entity === 'blog') items = blogData;
+  const container = document.getElementById(`${entity}List`);
+  if (!container) return;
+
+  if (!items || items.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">Aucun ${cfg.label.toLowerCase()}</div><div class="empty-desc">Cliquez sur "Ajouter" pour créer le premier ${cfg.label.toLowerCase()}.</div></div>`;
+    return;
+  }
+
+  container.innerHTML = items.map(item => {
+    const deleteFn = `confirmDeleteItem('${entity}', '${item.id}')`;
+    const editFn = `open${entityLabel(entity)}Form(${JSON.stringify(item).replace(/'/g, "\\'").replace(/"/g, '&quot;')})`;
+    const title = item.name || item.title || item.label || 'Sans titre';
+    const subtitle = item.role || item.location || '';
+    const preview = item.description || item.excerpt || item.bio || '';
+    return `<div class="admin-card">
+      <div class="admin-card-body">
+        <div class="admin-card-title">${escapeHtml(title)}</div>
+        ${subtitle ? `<div class="admin-card-sub">${escapeHtml(subtitle)}</div>` : ''}
+        <div class="admin-card-desc">${escapeHtml(preview).substring(0, 120)}${preview.length > 120 ? '…' : ''}</div>
+      </div>
+      <div class="admin-card-actions">
+        <span class="badge ${item.visible !== false ? 'badge-success' : 'badge-warning'}">${item.visible !== false ? 'Visible' : 'Masqué'}</span>
+        <button class="btn-icon info" onclick="open${entityLabel(entity)}Form('${item.id}')" title="Modifier">✏</button>
+        <button class="btn-icon danger" onclick="${deleteFn}" title="Supprimer">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── CRUD Form ───
+
+function openCrudForm(entity, editId) {
+  const cfg = ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  currentEntity = entity;
+  currentEditId = editId || null;
+
+  let item = {};
+  if (editId) {
+    let items;
+    if (entity === 'team') items = teamData;
+    else if (entity === 'services') items = servicesData;
+    else if (entity === 'projects') items = projectsData;
+    else if (entity === 'blog') items = blogData;
+    item = items.find(i => i.id === editId) || {};
+  }
+
+  document.getElementById('crudModalTitle').textContent = editId ? `Modifier ${cfg.label}` : `Ajouter ${cfg.label}`;
+
+  let html = '';
+  for (const field of cfg.fields) {
+    const val = item[field.key] !== undefined ? item[field.key] : (field.default !== undefined ? field.default : '');
+    html += `<div class="form-group">`;
+    html += `<label for="crud_${field.key}">${field.label}${field.required ? ' <span style="color:var(--danger)">*</span>' : ''}</label>`;
+
+    if (field.type === 'textarea') {
+      html += `<textarea id="crud_${field.key}" class="detail-textarea" rows="4">${escapeHtml(String(val))}</textarea>`;
+    } else if (field.type === 'checkbox') {
+      html += `<label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-top:0.25rem">
+        <input type="checkbox" id="crud_${field.key}" ${val ? 'checked' : ''} style="width:auto;padding:0">
+        <span style="font-size:0.8125rem;color:var(--gray-600)">Afficher sur le site</span>
+      </label>`;
+    } else if (field.type === 'select') {
+      html += `<select id="crud_${field.key}" class="status-select" style="width:100%">`;
+      for (const opt of (field.options || [])) {
+        html += `<option value="${opt.value}" ${val === opt.value ? 'selected' : ''}>${opt.label}</option>`;
+      }
+      html += `</select>`;
+    } else if (field.type === 'slot-select') {
+      html += `<select id="crud_${field.key}" class="status-select" style="width:100%">`;
+      html += `<option value="">— Aucune —</option>`;
+      const sectionSlots = slots.filter(s => s.section === field.section);
+      for (const s of sectionSlots) {
+        html += `<option value="${s.id}" ${val === s.id ? 'selected' : ''}>${escapeHtml(s.label)}</option>`;
+      }
+      html += `</select>`;
+    } else if (field.type === 'date') {
+      const dateVal = val ? val.substring(0, 10) : '';
+      html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
+    } else {
+      html += `<input type="${field.type}" id="crud_${field.key}" class="search-input" value="${escapeHtml(String(val))}">`;
+    }
+
+    html += `</div>`;
+  }
+
+  document.getElementById('crudFormBody').innerHTML = html;
+  document.getElementById('crudModal').classList.add('open');
+}
+
+function closeCrudForm() {
+  document.getElementById('crudModal').classList.remove('open');
+  currentEntity = null;
+  currentEditId = null;
+}
+
+async function saveCrudItem() {
+  const cfg = ENTITY_CONFIG[currentEntity];
+  if (!cfg) return;
+
+  const body = {};
+  for (const field of cfg.fields) {
+    const el = document.getElementById(`crud_${field.key}`);
+    if (!el) continue;
+    if (field.type === 'checkbox') {
+      body[field.key] = el.checked;
+    } else if (field.type === 'number') {
+      body[field.key] = parseFloat(el.value) || 0;
+    } else {
+      body[field.key] = el.value;
+    }
+    if (field.required && !body[field.key]) {
+      showToast(`Le champ "${field.label}" est requis`, 'error');
+      return;
+    }
+  }
+
+  try {
+    let url = `${API_BASE}/${cfg.api}`;
+    let method = 'POST';
+    if (currentEditId) {
+      url += `/${currentEditId}`;
+      method = 'PATCH';
+    }
+    const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('Erreur');
+    closeCrudForm();
+    showToast(`${cfg.label} ${currentEditId ? 'modifié' : 'ajouté'} avec succès`, 'success');
+    loadEntity(currentEntity);
+  } catch (err) {
+    showToast('Erreur lors de l\'enregistrement', 'error');
+  }
+}
+
+function confirmDeleteItem(entity, id) {
+  const cfg = ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  showConfirm(`Supprimer ${cfg.label.toLowerCase()}`, `Cette action est irréversible.`, async () => {
+    try {
+      const res = await fetch(`${API_BASE}/${cfg.api}/${id}`, { method: 'DELETE', headers: getHeaders() });
+      if (!res.ok) throw new Error('Erreur');
+      showToast(`${cfg.label} supprimé`, 'success');
+      loadEntity(entity);
+    } catch (err) {
+      showToast('Erreur lors de la suppression', 'error');
+    }
+  });
+}
+
+// Convenience openers
+function openTeamForm(id) { openCrudForm('team', id); }
+function openServiceForm(id) { openCrudForm('services', id); }
+function openProjectForm(id) { openCrudForm('projects', id); }
+function openBlogForm(id) { openCrudForm('blog', id); }
+
+// ─── PRICING EDITOR ───
+
+let pricingData = null;
+
+async function loadPricing() {
+  try {
+    const res = await fetch(`${API_BASE}/pricing`, { headers: getHeaders() });
+    if (res.status === 401) return;
+    pricingData = await res.json();
+    renderPricingEditor();
+  } catch (err) { console.error('Pricing error:', err); }
+}
+
+function renderPricingEditor() {
+  const container = document.getElementById('pricingEditor');
+  if (!pricingData) { container.innerHTML = '<p class="empty-row">Chargement...</p>'; return; }
+
+  let html = '<div class="pricing-editor">';
+
+  ['construction', 'rehabilitation', 'forage'].forEach(cat => {
+    const tiers = pricingData[cat] || {};
+    const catLabels = { construction: 'Construction Neuve', rehabilitation: 'Réhabilitation', forage: 'Forage d\'Eau' };
+    html += `<div class="pricing-cat"><h4>${catLabels[cat]}</h4>`;
+    Object.keys(tiers).forEach(tier => {
+      const t = tiers[tier];
+      html += `<div class="pricing-tier">
+        <div class="pricing-tier-header">
+          <input class="search-input" style="width:140px" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom">
+          <input class="search-input" style="width:120px" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix">
+          <input class="search-input" style="width:80px" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité">
+        </div>
+        <div class="pricing-tier-features">
+          ${(t.features || []).map((f, fi) => `<input class="search-input" style="width:220px;font-size:0.75rem" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}">`).join('')}
+          <button class="btn-ghost" style="font-size:0.7rem;padding:0.25rem" onclick="addPricingFeature('${cat}','${tier}')">+ Ajouter option</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  // Rates
+  html += `<div class="pricing-cat"><h4>Taux</h4>
+    <div class="pricing-tier" style="display:flex;gap:1rem;flex-wrap:wrap">
+      <label style="font-size:0.8125rem">Marge sécurité (%): <input class="search-input" style="width:80px" type="number" id="pricingContingency" value="${(pricingData.contingency_rate || 0.1) * 100}"></label>
+      <label style="font-size:0.8125rem">TVA (%): <input class="search-input" style="width:80px" type="number" id="pricingTax" value="${(pricingData.tax_rate || 0.2) * 100}"></label>
+    </div>
+  </div>`;
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function addPricingFeature(cat, tier) {
+  const container = document.querySelector(`[data-cat="${cat}"][data-tier="${tier}"][data-field^="feature_"]`);
+  const parent = container ? container.closest('.pricing-tier-features') : null;
+  if (!parent) return;
+  const inputs = parent.querySelectorAll('[data-field^="feature_"]');
+  const idx = inputs.length;
+  const input = document.createElement('input');
+  input.className = 'search-input';
+  input.style.cssText = 'width:220px;font-size:0.75rem';
+  input.placeholder = `Option ${idx + 1}`;
+  input.dataset.cat = cat;
+  input.dataset.tier = tier;
+  input.dataset.field = `feature_${idx}`;
+  parent.insertBefore(input, parent.lastElementChild);
+}
+
+async function savePricing() {
+  const btn = document.getElementById('savePricingBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enregistrement...';
+  try {
+    const pricing = {};
+    ['construction', 'rehabilitation', 'forage'].forEach(cat => {
+      pricing[cat] = {};
+      document.querySelectorAll(`[data-cat="${cat}"]`).forEach(el => {
+        const tier = el.dataset.tier;
+        const field = el.dataset.field;
+        if (!tier) return;
+        if (!pricing[cat][tier]) pricing[cat][tier] = { features: [] };
+        if (field === 'name') pricing[cat][tier].name = el.value;
+        else if (field === 'price') {
+          const val = parseFloat(el.value);
+          if (cat === 'forage') {
+            if (tier === 'standard') pricing[cat][tier].pricePerML = val;
+            else pricing[cat][tier].price = val;
+          } else {
+            pricing[cat][tier].pricePerM2 = val;
+          }
+        }
+        else if (field === 'unit') pricing[cat][tier].unit = el.value;
+        else if (field.startsWith('feature_')) {
+          const idx = parseInt(field.replace('feature_', ''));
+          pricing[cat][tier].features[idx] = el.value;
+        }
+      });
+      // Clean up empty features
+      Object.keys(pricing[cat]).forEach(tier => {
+        pricing[cat][tier].features = pricing[cat][tier].features.filter(f => f && f.trim());
+      });
+    });
+
+    const contingency = parseFloat(document.getElementById('pricingContingency')?.value) || 10;
+    const tax = parseFloat(document.getElementById('pricingTax')?.value) || 20;
+
+    const payload = {
+      ...pricing,
+      contingency_rate: contingency / 100,
+      tax_rate: tax / 100
+    };
+
+    const res = await fetch(`${API_BASE}/pricing`, {
+      method: 'PUT', headers: getHeaders(), body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Erreur');
+    showToast('Tarifs enregistrés', 'success');
+  } catch (err) {
+    showToast('Erreur lors de l\'enregistrement', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Enregistrer';
+  }
+}
+
+// ─── SETTINGS EDITOR ───
+
+let settingsData = null;
+let contactInfoData = null;
+
+async function loadSettings() {
+  try {
+    const [settingsRes, contactRes] = await Promise.all([
+      fetch(`${API_BASE}/settings`, { headers: getHeaders() }),
+      fetch(`${API_BASE}/contact-info`, { headers: getHeaders() })
+    ]);
+    if (settingsRes.status === 401) return;
+    settingsData = await settingsRes.json();
+    contactInfoData = await contactRes.json();
+    renderSettingsEditor();
+  } catch (err) { console.error('Settings error:', err); }
+}
+
+function renderSettingsEditor() {
+  const container = document.getElementById('settingsEditor');
+  if (!settingsData || !contactInfoData) { container.innerHTML = '<p class="empty-row">Chargement...</p>'; return; }
+
+  container.innerHTML = `
+    <div class="settings-grid">
+      <div class="settings-section">
+        <h4>Coordonnées</h4>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input class="search-input" id="setPhone" value="${escapeHtml(contactInfoData.contact?.phone || '')}">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input class="search-input" id="setEmail" value="${escapeHtml(contactInfoData.contact?.email || '')}">
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          <input class="search-input" id="setAddress" value="${escapeHtml(contactInfoData.contact?.address || '')}">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Réseaux sociaux</h4>
+        <div class="form-group">
+          <label>Facebook</label>
+          <input class="search-input" id="setFacebook" value="${escapeHtml(contactInfoData.social?.facebook || '')}">
+        </div>
+        <div class="form-group">
+          <label>Instagram</label>
+          <input class="search-input" id="setInstagram" value="${escapeHtml(contactInfoData.social?.instagram || '')}">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Site</h4>
+        <div class="form-group">
+          <label>Google Analytics ID</label>
+          <input class="search-input" id="setGA" value="${escapeHtml(settingsData.googleAnalyticsId || '')}">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp (numéro)</label>
+          <input class="search-input" id="setWhatsApp" value="${escapeHtml(settingsData.whatsappNumber || '')}">
+        </div>
+        <div class="form-group">
+          <label>URL du site</label>
+          <input class="search-input" id="setSiteUrl" value="${escapeHtml(settingsData.siteUrl || '')}">
+        </div>
+      </div>
+      <div class="settings-section" style="grid-column:1/-1">
+        <h4>Vision & Mission</h4>
+        <div class="form-group">
+          <label>Mission</label>
+          <textarea class="detail-textarea" id="setMission" rows="3">${escapeHtml(contactInfoData.mission || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Vision</label>
+          <textarea class="detail-textarea" id="setVision" rows="3">${escapeHtml(contactInfoData.vision || '')}</textarea>
+        </div>
+      </div>
+      <div class="settings-section" style="grid-column:1/-1">
+        <h4>Statistiques (Hero)</h4>
+        <div class="settings-inline">
+          <div class="form-group">
+            <label>Années d'expérience</label>
+            <input class="search-input" type="number" id="setExpYears" value="${contactInfoData.experience_years || 10}">
+          </div>
+          <div class="form-group">
+            <label>Année de fondation</label>
+            <input class="search-input" type="number" id="setFounded" value="${contactInfoData.founded || 2015}">
+          </div>
+          <div class="form-group">
+            <label>Nombre de techniciens</label>
+            <input class="search-input" type="number" id="setStaff" value="${contactInfoData.team?.total_staff || 34}">
+          </div>
+          <div class="form-group">
+            <label>Ingénieurs civils</label>
+            <input class="search-input" type="number" id="setEngineers" value="${contactInfoData.team?.civil_engineers || 4}">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveSettings() {
+  const btn = document.getElementById('saveSettingsBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enregistrement...';
+  try {
+    const contactPayload = {
+      contact: {
+        phone: document.getElementById('setPhone')?.value || '',
+        email: document.getElementById('setEmail')?.value || '',
+        address: document.getElementById('setAddress')?.value || ''
+      },
+      social: {
+        facebook: document.getElementById('setFacebook')?.value || '',
+        instagram: document.getElementById('setInstagram')?.value || ''
+      },
+      mission: document.getElementById('setMission')?.value || '',
+      vision: document.getElementById('setVision')?.value || '',
+      experience_years: parseInt(document.getElementById('setExpYears')?.value) || 10,
+      founded: parseInt(document.getElementById('setFounded')?.value) || 2015,
+      team: {
+        total_staff: parseInt(document.getElementById('setStaff')?.value) || 34,
+        civil_engineers: parseInt(document.getElementById('setEngineers')?.value) || 4
+      }
+    };
+
+    const settingsPayload = {
+      googleAnalyticsId: document.getElementById('setGA')?.value || '',
+      whatsappNumber: document.getElementById('setWhatsApp')?.value || '',
+      siteUrl: document.getElementById('setSiteUrl')?.value || ''
+    };
+
+    await Promise.all([
+      fetch(`${API_BASE}/contact-info`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(contactPayload) }),
+      fetch(`${API_BASE}/settings`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(settingsPayload) })
+    ]);
+
+    showToast('Paramètres enregistrés', 'success');
+  } catch (err) {
+    showToast('Erreur lors de l\'enregistrement', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Enregistrer';
+  }
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 
@@ -631,5 +1459,12 @@ if (checkAuth()) {
   loadSubscribers();
   loadSlots();
   loadImages();
+  loadEntity('team');
+  loadEntity('services');
+  loadEntity('projects');
+  loadEntity('blog');
+  loadPricing();
+  loadSettings();
   setInterval(loadStats, 30000);
+  // Dashboard is the default tab — renders when data loads
 }

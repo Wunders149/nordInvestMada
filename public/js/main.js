@@ -644,6 +644,179 @@ async function loadImageSlots() {
 }
 
 // ═══════════════════════════════════════════════════════
+// DYNAMIC CONTENT LOADER — Fetch from API and render
+// ═══════════════════════════════════════════════════════
+
+const API_BASE = window.location.origin;
+
+async function loadTeam() {
+  try {
+    const res = await fetch(`${API_BASE}/api/team`);
+    const team = await res.json();
+    const grid = document.getElementById('teamGrid');
+    if (!grid) return;
+    grid.innerHTML = team.map(m => `
+      <div class="team-card">
+        <img src="/images/team/${m.imageSlot ? m.imageSlot.replace('team-', '') : 'director'}.svg" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy" data-image-slot="${m.imageSlot || ''}">
+        <div class="team-name">${escapeHtml(m.name)}</div>
+        <div class="team-role">${escapeHtml(m.role)}</div>
+        <div class="team-desc">${escapeHtml(m.bio)}</div>
+      </div>
+    `).join('');
+    loadImageSlots();
+  } catch (err) { console.warn('Team load error:', err); }
+}
+
+async function loadServices() {
+  try {
+    const res = await fetch(`${API_BASE}/api/services`);
+    const services = await res.json();
+    const grid = document.getElementById('servicesGrid');
+    if (!grid) return;
+    grid.innerHTML = services.map((s, i) => `
+      <div class="service-card">
+        <div class="service-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="service-icon">${s.icon || '🔧'}</div>
+        <div class="service-title">${escapeHtml(s.title)}</div>
+        <p class="service-desc">${escapeHtml(s.description)}</p>
+      </div>
+    `).join('');
+  } catch (err) { console.warn('Services load error:', err); }
+}
+
+async function loadProjects() {
+  try {
+    const res = await fetch(`${API_BASE}/api/projects`);
+    const projects = await res.json();
+    const grid = document.getElementById('projectsGrid');
+    if (!grid) return;
+    grid.innerHTML = projects.map(p => `
+      <div class="project-card">
+        <img src="/images/projects/${(p.images && p.images[0]) || 'placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img" loading="lazy" data-image-slot="project-${p.id}">
+        <div class="project-overlay">
+          <div class="project-cat">${escapeHtml(p.category || '')}</div>
+          <div class="project-name">${escapeHtml(p.title)}</div>
+          <div class="project-loc">📍 ${escapeHtml(p.location || '')}</div>
+        </div>
+      </div>
+    `).join('');
+    // Re-attach gallery click listeners
+    document.querySelectorAll('.project-card').forEach((card, index) => {
+      card.addEventListener('click', () => openGallery(index));
+    });
+    loadImageSlots();
+  } catch (err) { console.warn('Projects load error:', err); }
+}
+
+async function loadBlog() {
+  try {
+    const res = await fetch(`${API_BASE}/api/blog`);
+    const posts = await res.json();
+    const grid = document.getElementById('blogGrid');
+    if (!grid) return;
+    grid.innerHTML = posts.map(p => {
+      const date = new Date(p.date);
+      const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      return `
+      <article class="blog-card">
+        <img src="/images/blog/${p.image || 'construction.svg'}" alt="${escapeHtml(p.title)}" class="blog-img" loading="lazy" data-image-slot="${p.imageSlot || ''}">
+        <div class="blog-body">
+          <div class="blog-date">${dateStr}</div>
+          <div class="blog-title">${escapeHtml(p.title)}</div>
+          <div class="blog-excerpt">${escapeHtml(p.excerpt)}</div>
+          <a href="#" class="blog-link">Lire l'article</a>
+        </div>
+      </article>`;
+    }).join('');
+    loadImageSlots();
+  } catch (err) { console.warn('Blog load error:', err); }
+}
+
+async function loadPricingData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/pricing`);
+    const data = await res.json();
+    const pricing = data.pricing || {};
+    const categories = ['construction', 'rehabilitation', 'forage'];
+    categories.forEach(cat => {
+      const container = document.getElementById(`pricingGrid-${cat}`);
+      if (!container) return;
+      const tiers = pricing[cat] || {};
+      const tierKeys = Object.keys(tiers);
+      const catLabels = {
+        construction: { unit: 'm²', budgetMap: { economic: '10-25', standard: '25-100', premium: '100+' } },
+        rehabilitation: { unit: 'm²', budgetMap: { economic: '5-15', standard: '15-50', premium: '50+' } },
+        forage: { unit: 'ml', budgetMap: { economic: '', standard: '2.5-5', premium: '' } }
+      };
+      container.innerHTML = tierKeys.map((tier, ti) => {
+        const t = tiers[tier];
+        const price = t.pricePerM2 || t.pricePerML || t.price || 0;
+        const unit = t.unit || catLabels[cat]?.unit || 'm²';
+        const budget = catLabels[cat]?.budgetMap[tier] || '';
+        const typeMap = {
+          construction: { economic: 'Gros Œuvre Simple', standard: 'Clé en Main Résidentiel', premium: 'Finition Haut de Gamme' },
+          rehabilitation: { economic: 'Rafraîchissement', standard: 'Rénovation Complète', premium: 'Confortement & Extension' },
+          forage: { economic: 'Géophysique Préalable', standard: 'Forage + Équipement', premium: 'Entretien & Réhabilitation' }
+        };
+        const type = typeMap[cat]?.[tier] || t.name;
+        const isFeatured = ti === 1;
+        const priceStr = price.toLocaleString('fr-FR');
+        const badge = cat === 'construction' && tier === 'standard' ? 'Le plus demandé'
+          : cat === 'rehabilitation' && tier === 'standard' ? 'Recommandé'
+          : cat === 'forage' && tier === 'standard' ? 'Tout inclus' : '';
+        return `
+        <div class="price-card${isFeatured ? ' featured' : ''}" data-service="${cat}" data-tier="${tier}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
+          ${badge ? `<div class="price-badge">${badge}</div>` : ''}
+          <div class="price-tier">${escapeHtml(t.name)}</div>
+          <div class="price-type">${escapeHtml(type)}</div>
+          <div class="price-val">
+            <div class="price-num">${priceStr}</div>
+            <div class="price-unit">Ar / ${unit}</div>
+          </div>
+          <hr class="price-divider">
+          <ul class="price-features">
+            ${(t.features || []).map(f => `<li>${escapeHtml(f)}</li>`).join('')}
+          </ul>
+          <div class="price-note">Tarif de référence. Devis personnalisé après visite.</div>
+          <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
+        </div>`;
+      }).join('');
+    });
+  } catch (err) { console.warn('Pricing load error:', err); }
+}
+
+async function loadConfigData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/config`);
+    const cfg = await res.json();
+
+    // Hero stats
+    if (cfg.experience_years) document.getElementById('heroExpYears').textContent = cfg.experience_years;
+    if (cfg.team?.total_staff) document.getElementById('heroStaff').textContent = cfg.team.total_staff;
+
+    // Vision & Mission
+    if (cfg.vision) document.getElementById('visionText').textContent = `"${cfg.vision}"`;
+    if (cfg.mission) document.getElementById('missionText').textContent = `"${cfg.mission}"`;
+
+    // Contact info
+    if (cfg.contact?.phone) document.getElementById('contactPhone').textContent = cfg.contact.phone;
+    if (cfg.contact?.email) document.getElementById('contactEmail').textContent = cfg.contact.email;
+    if (cfg.contact?.address) document.getElementById('contactAddress').innerHTML = cfg.contact.address.replace(/\n/g, '<br>');
+
+    // Numbers section
+    if (cfg.experience_years) document.getElementById('numExpYears').textContent = cfg.experience_years;
+    if (cfg.team?.total_staff) document.getElementById('numStaff').textContent = cfg.team.total_staff;
+    if (cfg.team?.civil_engineers) document.getElementById('numEngineers').textContent = cfg.team.civil_engineers;
+  } catch (err) { console.warn('Config load error:', err); }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT — Load default language
 // ═══════════════════════════════════════════════════════
 
@@ -651,4 +824,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   loadTranslations(currentLang);
   loadImageSlots();
+  loadTeam();
+  loadServices();
+  loadProjects();
+  loadBlog();
+  loadPricingData();
+  loadConfigData();
 });

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "normes-vex",
+    "title": "Les normes VEx à Madagascar : ce qu'il faut savoir",
+    "slug": "normes-vex-madagascar",
+    "date": "2025-05-15T08:00:00.000Z",
+    "excerpt": "Madagascar est exposé à des cyclones tropicaux dévastateurs. Découvrez les normes VEx (Vent Extrême) qui régissent la construction parasismique et paracyclonique dans le pays.",
+    "content": "<p>Madagascar est exposé à des cyclones tropicaux dévastateurs. Les normes VEx (Vent Extrême) définissent les règles de construction parasismique et paracyclonique.</p><p>Ces normes classent les ouvrages selon 4 niveaux d'exposition au vent, de VEx 1 (zones abritées) à VEx 4 (zones côtières exposées). Chaque niveau impose des contraintes spécifiques sur les structures, les assemblages et les matériaux.</p><p>Chez Nord Invest Madagascar, tous nos projets sont conçus et calculés selon ces normes, avec des coefficients de sécurité renforcés pour les zones cycloniques du Nord et de l'Ouest.</p>",
+    "image": "construction.svg",
+    "imageSlot": "blog-construction",
+    "published": true
+  },
+  {
+    "id": "guide-forage",
+    "title": "Guide complet du forage d'eau à Madagascar",
+    "slug": "guide-forage-eau-madagascar",
+    "date": "2025-04-28T08:00:00.000Z",
+    "excerpt": "L'accès à l'eau potable est un enjeu majeur à Madagascar. Notre guide vous explique tout le processus du forage d'eau, de l'étude géophysique à la maintenance.",
+    "content": "<p>L'accès à l'eau potable est un enjeu majeur à Madagascar. Notre guide vous explique tout le processus du forage d'eau.</p><p>De l'étude géophysique préalable (prospection électrique) jusqu'à l'équipement en pompe immergée, chaque étape est cruciale pour garantir un approvisionnement en eau durable et de qualité.</p><p>Nos équipes réalisent des forages jusqu'à 80 mètres de profondeur, avec des débits garantis et une analyse bactériologique complète.</p>",
+    "image": "forage.svg",
+    "imageSlot": "blog-forage",
+    "published": true
+  },
+  {
+    "id": "acheter-terrain",
+    "title": "Acheter un terrain à Diego Suarez : guide 2025",
+    "slug": "acheter-terrain-diego-suarez",
+    "date": "2025-04-10T08:00:00.000Z",
+    "excerpt": "Vous cherchez un terrain à Antsiranana ? Notre guide vous aide à comprendre le marché foncier, les prix, les zones constructibles et les démarches administratives.",
+    "content": "<p>Vous cherchez un terrain à Antsiranana ? Notre guide vous aide à comprendre le marché foncier.</p><p>Les prix au m² varient considérablement selon les quartiers et la proximité des commodités. Les zones les plus recherchées sont le centre-ville, la route de Ramena et les hauteurs de la ville offrant une vue sur la baie.</p><p>Avant tout achat, vérifiez le titre foncier, le certificat d'urbanisme et les servitudes. Notre équipe vous accompagne dans toutes ces démarches.</p>",
+    "image": "immobilier.svg",
+    "imageSlot": "blog-immobilier",
+    "published": true
+  }
+]

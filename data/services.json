@@ -1,0 +1,50 @@
+[
+  {
+    "id": "etude",
+    "title": "Étude & Conception",
+    "description": "Conception architecturale et structurelle complète avec plans d'exécution, notes de calcul aux normes VEx, et dossiers de consultation des entreprises.",
+    "icon": "📐",
+    "order": 1,
+    "visible": true
+  },
+  {
+    "id": "construction",
+    "title": "Construction Neuve",
+    "description": "Construction de bâtiments neufs : villas, résidences, immeubles de standing, établissements recevant du public et locaux professionnels.",
+    "icon": "🏗️",
+    "order": 2,
+    "visible": true
+  },
+  {
+    "id": "rehabilitation",
+    "title": "Réhabilitation",
+    "description": "Rénovation complète, extension, surélévation, mise aux normes parasismiques et cycloniques, ravalement et modernisation des bâtiments existants.",
+    "icon": "🔨",
+    "order": 3,
+    "visible": true
+  },
+  {
+    "id": "forage",
+    "title": "Forage d'Eau",
+    "description": "Étude géophysique, forage rotary jusqu'à 80 m, équipement en pompe immergée, analyse bactériologique, et contrat de maintenance annuelle.",
+    "icon": "💧",
+    "order": 4,
+    "visible": true
+  },
+  {
+    "id": "immobilier",
+    "title": "Vente & Achat Immobilier",
+    "description": "Accompagnement personnalisé dans vos projets d'achat, vente ou location de biens immobiliers : estimation, recherche, négociation et actes.",
+    "icon": "🏠",
+    "order": 5,
+    "visible": true
+  },
+  {
+    "id": "suivi",
+    "title": "Suivi & Contrôle Qualité",
+    "description": "Inspection technique, contrôle des matériaux, suivi de chantier, réception des ouvrages et garantie de conformité aux normes en vigueur.",
+    "icon": "✅",
+    "order": 6,
+    "visible": true
+  }
+]

@@ -361,6 +361,47 @@ app.get('/api/config', (req, res) => {
   res.json(config);
 });
 
+// ─── PUBLIC CONTENT API ───
+function readJSON(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return [];
+    const data = fs.readFileSync(filePath, 'utf8');
+    return data.trim() ? JSON.parse(data) : [];
+  } catch { return []; }
+}
+
+app.get('/api/team', (req, res) => {
+  const items = readJSON(path.join(dataDir, 'team.json'));
+  res.json(items.filter(i => i.visible !== false).sort((a, b) => (a.order || 99) - (b.order || 99)));
+});
+
+app.get('/api/services', (req, res) => {
+  const items = readJSON(path.join(dataDir, 'services.json'));
+  res.json(items.filter(i => i.visible !== false).sort((a, b) => (a.order || 99) - (b.order || 99)));
+});
+
+app.get('/api/projects', (req, res) => {
+  const items = readJSON(path.join(dataDir, 'projects.json'));
+  res.json(items.filter(i => i.visible !== false).sort((a, b) => (a.order || 99) - (b.order || 99)));
+});
+
+app.get('/api/blog', (req, res) => {
+  const items = readJSON(path.join(dataDir, 'blog.json'));
+  res.json(items.filter(i => i.published !== false).sort((a, b) => new Date(b.date) - new Date(a.date)));
+});
+
+app.get('/api/pricing', (req, res) => {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    res.json({
+      pricing: cfg.pricing || {},
+      contingency_rate: cfg.contingency_rate || 0.1,
+      tax_rate: cfg.tax_rate || 0.2,
+      locations: cfg.locations || []
+    });
+  } catch { res.status(500).json({ error: 'Failed to load pricing' }); }
+});
+
 // ─── ADMIN API ───
 app.use('/api/admin', adminRouter);
 

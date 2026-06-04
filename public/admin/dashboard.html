@@ -21,8 +21,15 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
+        <div class="nav-section-title">Vue d'ensemble</div>
+        <button class="nav-btn active" data-tab="dashboard">
+          <span class="nav-icon">📊</span>
+          Tableau de bord
+        </button>
+      </div>
+      <div class="nav-section">
         <div class="nav-section-title">Gestion</div>
-        <button class="nav-btn active" data-tab="contacts">
+        <button class="nav-btn" data-tab="contacts">
           <span class="nav-icon">✉</span>
           Messages
           <span class="nav-badge" id="navBadgeUnread" style="display:none">0</span>
@@ -38,9 +45,36 @@
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Contenu</div>
+        <button class="nav-btn" data-tab="team">
+          <span class="nav-icon">👥</span>
+          Équipe
+        </button>
+        <button class="nav-btn" data-tab="services">
+          <span class="nav-icon">🔧</span>
+          Services
+        </button>
+        <button class="nav-btn" data-tab="projects">
+          <span class="nav-icon">🏗️</span>
+          Projets
+        </button>
+        <button class="nav-btn" data-tab="blog">
+          <span class="nav-icon">📝</span>
+          Blog
+        </button>
         <button class="nav-btn" data-tab="images">
           <span class="nav-icon">🖼</span>
           Galerie
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Configuration</div>
+        <button class="nav-btn" data-tab="pricing">
+          <span class="nav-icon">💰</span>
+          Tarifs
+        </button>
+        <button class="nav-btn" data-tab="settings">
+          <span class="nav-icon">⚙️</span>
+          Paramètres
         </button>
       </div>
     </nav>
@@ -60,6 +94,7 @@
   <div class="main-content">
     <header class="top-header">
       <h1 id="pageTitle">Tableau de bord <small>Vue d'ensemble</small></h1>
+      <div class="top-header-actions" id="topHeaderActions"></div>
       <div class="top-header-right">
         <span style="font-size:0.75rem;color:var(--gray-400)" id="lastUpdate"></span>
       </div>
@@ -105,14 +140,47 @@
         </div>
       </div>
 
+      <!-- ─── DASHBOARD TAB ─── -->
+      <section id="tab-dashboard" class="tab-content active">
+        <div class="dashboard-widgets">
+          <div class="widget-card" id="dashRecentContacts">
+            <div class="widget-header">
+              <h3>✉ Derniers messages</h3>
+              <a href="#" class="widget-link" onclick="switchTab('contacts'); return false">Voir tout</a>
+            </div>
+            <div class="widget-body" id="dashContactsBody">
+              <p class="empty-row">Chargement...</p>
+            </div>
+          </div>
+          <div class="widget-card" id="dashRecentQuotes">
+            <div class="widget-header">
+              <h3>📋 Devis en attente</h3>
+              <a href="#" class="widget-link" onclick="switchTab('quotes'); return false">Voir tout</a>
+            </div>
+            <div class="widget-body" id="dashQuotesBody">
+              <p class="empty-row">Chargement...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ─── CONTACTS TAB ─── -->
-      <section id="tab-contacts" class="tab-content active">
+      <section id="tab-contacts" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
             <span class="search-icon">🔍</span>
             <input type="text" id="contactSearch" class="search-input" placeholder="Rechercher par nom, email...">
           </div>
-          <button class="btn-secondary" id="exportContactsBtn">📥 Export CSV</button>
+          <div class="tab-toolbar-actions">
+            <button class="btn-secondary" id="markAllReadBtn" style="font-size:0.75rem;padding:0.4rem 0.75rem">✓ Tout marquer lu</button>
+            <button class="btn-secondary" id="exportContactsBtn">📥 Export CSV</button>
+          </div>
+        </div>
+        <div class="filter-bar" id="contactFilterBar">
+          <button class="filter-btn active" data-filter="all" onclick="setContactFilter('all')">Tous</button>
+          <button class="filter-btn" data-filter="new" onclick="setContactFilter('new')">Nouveaux <span class="filter-count" id="filterContactNew">0</span></button>
+          <button class="filter-btn" data-filter="read" onclick="setContactFilter('read')">Lus</button>
+          <button class="filter-btn" data-filter="resolved" onclick="setContactFilter('resolved')">Résolus</button>
         </div>
         <div class="table-wrapper responsive-table">
           <div class="table-scroll">
@@ -131,6 +199,7 @@
               <tbody id="contactsBody"></tbody>
             </table>
           </div>
+          <div class="pagination" id="contactsPagination"></div>
         </div>
       </section>
 
@@ -142,6 +211,13 @@
             <input type="text" id="quoteSearch" class="search-input" placeholder="Rechercher par nom, email...">
           </div>
           <button class="btn-secondary" id="exportQuotesBtn">📥 Export CSV</button>
+        </div>
+        <div class="filter-bar" id="quoteFilterBar">
+          <button class="filter-btn active" data-filter="all" onclick="setQuoteFilter('all')">Tous</button>
+          <button class="filter-btn" data-filter="pending" onclick="setQuoteFilter('pending')">En attente <span class="filter-count" id="filterQuotePending">0</span></button>
+          <button class="filter-btn" data-filter="in-progress" onclick="setQuoteFilter('in-progress')">En cours</button>
+          <button class="filter-btn" data-filter="completed" onclick="setQuoteFilter('completed')">Terminés</button>
+          <button class="filter-btn" data-filter="cancelled" onclick="setQuoteFilter('cancelled')">Annulés</button>
         </div>
         <div class="table-wrapper responsive-table">
           <div class="table-scroll">
@@ -161,6 +237,7 @@
               <tbody id="quotesBody"></tbody>
             </table>
           </div>
+          <div class="pagination" id="quotesPagination"></div>
         </div>
       </section>
 
@@ -269,6 +346,60 @@
           </div>
         </div>
       </section>
+
+      <!-- ─── TEAM TAB ─── -->
+      <section id="tab-team" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les membres de l'équipe</h3>
+          <button class="btn-secondary" onclick="openTeamForm()">+ Ajouter</button>
+        </div>
+        <div id="teamList" class="admin-card-grid"></div>
+      </section>
+
+      <!-- ─── SERVICES TAB ─── -->
+      <section id="tab-services" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les services</h3>
+          <button class="btn-secondary" onclick="openServiceForm()">+ Ajouter</button>
+        </div>
+        <div id="servicesList" class="admin-card-grid"></div>
+      </section>
+
+      <!-- ─── PROJECTS TAB ─── -->
+      <section id="tab-projects" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les réalisations</h3>
+          <button class="btn-secondary" onclick="openProjectForm()">+ Ajouter</button>
+        </div>
+        <div id="projectsList" class="admin-card-grid"></div>
+      </section>
+
+      <!-- ─── BLOG TAB ─── -->
+      <section id="tab-blog" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Gérer les articles</h3>
+          <button class="btn-secondary" onclick="openBlogForm()">+ Ajouter</button>
+        </div>
+        <div id="blogList" class="admin-card-grid"></div>
+      </section>
+
+      <!-- ─── PRICING TAB ─── -->
+      <section id="tab-pricing" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Grille tarifaire</h3>
+          <button class="btn-secondary" onclick="savePricing()" id="savePricingBtn">💾 Enregistrer</button>
+        </div>
+        <div id="pricingEditor"></div>
+      </section>
+
+      <!-- ─── SETTINGS TAB ─── -->
+      <section id="tab-settings" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 style="flex:1;font-size:0.95rem;color:var(--gray-600);font-weight:500">Paramètres du site</h3>
+          <button class="btn-secondary" onclick="saveSettings()" id="saveSettingsBtn">💾 Enregistrer</button>
+        </div>
+        <div id="settingsEditor"></div>
+      </section>
     </div>
   </div>
 
@@ -290,6 +421,83 @@
       <div class="modal-actions">
         <button class="btn-secondary" id="confirmCancel">Annuler</button>
         <button class="btn-primary" id="confirmOk" style="width:auto;padding:0.6rem 1.5rem;background:var(--danger)">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CONTACT DETAIL MODAL ─── -->
+  <div class="modal-overlay detail-modal" id="contactDetailModal">
+    <div class="modal-box detail-box">
+      <div class="detail-header">
+        <h3 id="detailName"></h3>
+        <span id="detailDate" class="detail-date"></span>
+        <button class="modal-close" id="detailClose">✕</button>
+      </div>
+      <div class="detail-body">
+        <div class="detail-grid">
+          <div class="detail-field">
+            <span class="detail-label">Email</span>
+            <a id="detailEmail" class="detail-value" href="#"></a>
+          </div>
+          <div class="detail-field">
+            <span class="detail-label">Téléphone</span>
+            <span id="detailPhone" class="detail-value">—</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-label">Type de projet</span>
+            <span id="detailProject" class="detail-value"></span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-label">Budget</span>
+            <span id="detailBudget" class="detail-value">Non spécifié</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-label">Service</span>
+            <span id="detailService" class="detail-value"></span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-label">Statut</span>
+            <span id="detailStatus" class="detail-value"></span>
+          </div>
+        </div>
+        <div class="detail-section">
+          <span class="detail-label">Message</span>
+          <p id="detailMessage" class="detail-message"></p>
+        </div>
+        <div class="detail-section">
+          <div class="detail-notes-header">
+            <span class="detail-label">Notes internes</span>
+            <button class="btn-ghost" id="detailNotesEdit" style="font-size:0.7rem;padding:0.25rem 0.5rem">✏ Modifier</button>
+          </div>
+          <p id="detailNotes" class="detail-notes">Aucune note</p>
+          <div id="detailNotesEditor" class="detail-notes-editor hidden">
+            <textarea id="detailNotesTextarea" class="detail-textarea" rows="3"></textarea>
+            <div class="detail-notes-actions">
+              <button class="btn-primary" id="detailNotesSave" style="width:auto;padding:0.4rem 1rem;font-size:0.75rem">Enregistrer</button>
+              <button class="btn-ghost" id="detailNotesCancel" style="font-size:0.75rem">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-footer">
+        <button class="btn-primary" id="detailMarkRead" style="width:auto;padding:0.5rem 1.25rem;font-size:0.8rem">✓ Marquer lu</button>
+        <button class="btn-secondary" id="detailMarkResolved" style="width:auto;padding:0.5rem 1.25rem;font-size:0.8rem">✓ Résoudre</button>
+        <button class="btn-secondary danger-hover" id="detailDelete" style="width:auto;padding:0.5rem 1.25rem;font-size:0.8rem">✕ Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CRUD FORM MODAL ─── -->
+  <div class="modal-overlay" id="crudModal">
+    <div class="modal-box" style="max-width:580px;text-align:left">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+        <h3 id="crudModalTitle" style="font-size:1.05rem;font-weight:700;color:var(--gray-900)"></h3>
+        <button class="modal-close" onclick="closeCrudForm()">✕</button>
+      </div>
+      <div id="crudFormBody"></div>
+      <div class="modal-actions" style="margin-top:1.25rem">
+        <button class="btn-secondary" onclick="closeCrudForm()">Annuler</button>
+        <button class="btn-primary" id="crudSaveBtn" style="width:auto;padding:0.6rem 1.5rem" onclick="saveCrudItem()">Enregistrer</button>
       </div>
     </div>
   </div>

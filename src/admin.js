@@ -181,4 +181,120 @@ router.get('/stats', requireAuth, (req, res) => {
   });
 });
 
+// ─── GENERIC CRUD HELPER ───
+function crudRoutes(entityName, fileName) {
+  const filePath = () => path.join(dataDir, fileName);
+
+  // LIST
+  router.get(`/${entityName}`, requireAuth, (req, res) => {
+    const items = readJSON(filePath());
+    items.sort((a, b) => (a.order || 99) - (b.order || 99));
+    res.json(items);
+  });
+
+  // CREATE
+  router.post(`/${entityName}`, requireAuth, (req, res) => {
+    const items = readJSON(filePath());
+    const newItem = {
+      id: `${entityName.slice(0, -1)}_${Date.now()}`,
+      ...req.body,
+      createdAt: new Date().toISOString()
+    };
+    items.push(newItem);
+    writeJSON(filePath(), items);
+    res.json({ success: true, item: newItem });
+  });
+
+  // UPDATE
+  router.patch(`/${entityName}/:id`, requireAuth, (req, res) => {
+    const items = readJSON(filePath());
+    const idx = items.findIndex(i => i.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    Object.assign(items[idx], req.body);
+    items[idx].updatedAt = new Date().toISOString();
+    writeJSON(filePath(), items);
+    res.json({ success: true, item: items[idx] });
+  });
+
+  // DELETE
+  router.delete(`/${entityName}/:id`, requireAuth, (req, res) => {
+    let items = readJSON(filePath());
+    const idx = items.findIndex(i => i.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    items.splice(idx, 1);
+    writeJSON(filePath(), items);
+    res.json({ success: true });
+  });
+}
+
+crudRoutes('team', 'team.json');
+crudRoutes('services', 'services.json');
+crudRoutes('projects', 'projects.json');
+crudRoutes('blog', 'blog.json');
+
+// ─── PRICING MANAGEMENT ───
+router.get('/pricing', requireAuth, (req, res) => {
+  const configPath = path.join(projectRoot, 'config.json');
+  const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  res.json(cfg.pricing || {});
+});
+
+router.put('/pricing', requireAuth, (req, res) => {
+  const configPath = path.join(projectRoot, 'config.json');
+  let cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  cfg.pricing = req.body;
+  writeJSON(configPath, cfg);
+  res.json({ success: true });
+});
+
+// ─── CONTACT INFO ───
+router.get('/contact-info', requireAuth, (req, res) => {
+  const configPath = path.join(projectRoot, 'config.json');
+  const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  res.json({
+    contact: cfg.contact || {},
+    social: cfg.social || {},
+    mission: cfg.mission || '',
+    vision: cfg.vision || '',
+    team: cfg.team || {},
+    founded: cfg.founded || 2015,
+    experience_years: cfg.experience_years || 10
+  });
+});
+
+router.put('/contact-info', requireAuth, (req, res) => {
+  const configPath = path.join(projectRoot, 'config.json');
+  let cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  if (req.body.contact) cfg.contact = req.body.contact;
+  if (req.body.social) cfg.social = req.body.social;
+  if (req.body.mission) cfg.mission = req.body.mission;
+  if (req.body.vision) cfg.vision = req.body.vision;
+  if (req.body.team) cfg.team = req.body.team;
+  if (req.body.experience_years) cfg.experience_years = req.body.experience_years;
+  if (req.body.founded) cfg.founded = req.body.founded;
+  writeJSON(configPath, cfg);
+  res.json({ success: true });
+});
+
+// ─── SITE SETTINGS (meta, GA, WhatsApp) ───
+router.get('/settings', requireAuth, (req, res) => {
+  const settingsPath = path.join(projectRoot, 'data', 'settings.json');
+  if (!fs.existsSync(settingsPath)) {
+    return res.json({
+      googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXXXXX',
+      whatsappNumber: '261328231280',
+      siteUrl: process.env.SITE_URL || 'https://nordinvest.mg',
+      seoDescription: "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, réhabilitation et vente immobilière.",
+      seoKeywords: ["immobilier", "construction", "madagascar", "antsiranana", "diego-suarez", "forage", "réhabilitation"]
+    });
+  }
+  res.json(readJSON(settingsPath));
+});
+
+router.put('/settings', requireAuth, (req, res) => {
+  const settingsPath = path.join(projectRoot, 'data', 'settings.json');
+  writeJSON(settingsPath, req.body);
+  res.json({ success: true });
+});
+
 export { router as adminRouter, escapeHtml, requireAuth, sessions };

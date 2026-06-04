@@ -172,13 +172,13 @@
       <a href="#pricing" class="btn-primary">Voir les tarifs</a>
       <a href="#contact" class="btn-outline">Demander un devis</a>
     </div>
-    <div class="hero-stats">
+    <div class="hero-stats" id="heroStats">
       <div>
-        <div class="stat-val">10<span>+</span></div>
+        <div class="stat-val"><span id="heroExpYears">10</span><span>+</span></div>
         <div class="stat-label">Années d'exp.</div>
       </div>
       <div>
-        <div class="stat-val">34<span></span></div>
+        <div class="stat-val"><span id="heroStaff">34</span></div>
         <div class="stat-label">Techniciens</div>
       </div>
       <div>
@@ -237,14 +237,14 @@
 <!-- VISION & MISSION -->
 <section id="vision-mission">
   <div class="calculator-container">
-    <div class="vision-mission-grid">
+    <div class="vision-mission-grid" id="visionMissionGrid">
       <div class="vm-card reveal">
         <div class="vm-label" data-i18n="vision.title">Notre Vision</div>
-        <div class="vm-text" data-i18n="vision.text">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
+        <div class="vm-text" id="visionText">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
       </div>
       <div class="vm-card mission reveal">
         <div class="vm-label" data-i18n="mission.title">Notre Mission</div>
-        <div class="vm-text" data-i18n="mission.text">"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
+        <div class="vm-text" id="missionText">"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
       </div>
     </div>
   </div>
@@ -301,32 +301,7 @@
     <h2 data-i18n-html="team.title">Des experts<br>à votre service.</h2>
     <p class="section-lead" data-i18n="team.lead">Une équipe de 34 techniciens et ingénieurs passionnés, mobilisés pour vos projets dans tout le nord de Madagascar.</p>
   </div>
-  <div class="team-grid reveal">
-    <div class="team-card">
-      <img src="/images/team/director.svg" alt="Directeur" class="team-avatar" loading="lazy" data-image-slot="team-director">
-      <div class="team-name">Jean Rakoto</div>
-      <div class="team-role" data-i18n="team.role1">Directeur Général</div>
-      <div class="team-desc" data-i18n="team.desc1">15 ans d'expérience en ingénierie civile et management de projets.</div>
-    </div>
-    <div class="team-card">
-      <img src="/images/team/engineer.svg" alt="Ingénieur en chef" class="team-avatar" loading="lazy" data-image-slot="team-engineer">
-      <div class="team-name">Mamy Andria</div>
-      <div class="team-role" data-i18n="team.role2">Ingénieur en Chef</div>
-      <div class="team-desc" data-i18n="team.desc2">Expert en structures béton et calculs sismiques (VEx).</div>
-    </div>
-    <div class="team-card">
-      <img src="/images/team/architect.svg" alt="Architecte" class="team-avatar" loading="lazy" data-image-slot="team-architect">
-      <div class="team-name">Lala Rasoa</div>
-      <div class="team-role" data-i18n="team.role3">Architecte BIM</div>
-      <div class="team-desc" data-i18n="team.desc3">Spécialiste Revit, ArchiCAD et conception durable.</div>
-    </div>
-    <div class="team-card">
-      <img src="/images/team/pm.svg" alt="Chef de projet" class="team-avatar" loading="lazy" data-image-slot="team-pm">
-      <div class="team-name">Koto Rajaonah</div>
-      <div class="team-role" data-i18n="team.role4">Chef de Projet</div>
-      <div class="team-desc" data-i18n="team.desc4">Coordination chantier, planning et contrôle qualité.</div>
-    </div>
-  </div>
+  <div id="teamGrid" class="team-grid reveal"></div>
 </section>
 
 <!-- VALUES -->
@@ -354,44 +329,7 @@
     <h2 data-i18n-html="services.title">Ce que nous<br>réalisons pour vous.</h2>
     <p class="section-lead" data-i18n="services.lead">Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.</p>
   </div>
-  <div class="services-grid reveal">
-    <div class="service-card">
-      <div class="service-num">01</div>
-      <div class="service-icon">📐</div>
-      <div class="service-title">Étude & Conception</div>
-      <p class="service-desc">Conception architecturale et structurale, plans d'exécution, étude de sol, devis quantitatif et estimatif. Respect des normes de vent extrême de Madagascar (VEx 1 à 4).</p>
-    </div>
-    <div class="service-card">
-      <div class="service-num">02</div>
-      <div class="service-icon">🏗️</div>
-      <div class="service-title">Construction Neuve</div>
-      <p class="service-desc">Gros œuvre, second œuvre, clé en main. Villas, résidences, immeubles, bâtiments institutionnels. Suivi de chantier et contrôle qualité à chaque étape.</p>
-    </div>
-    <div class="service-card">
-      <div class="service-num">03</div>
-      <div class="service-icon">🔨</div>
-      <div class="service-title">Réhabilitation</div>
-      <p class="service-desc">Rénovation, extension et mise aux normes de bâtiments existants. Diagnostic technique, proposition de solutions adaptées et réalisation dans les délais convenus.</p>
-    </div>
-    <div class="service-card">
-      <div class="service-num">04</div>
-      <div class="service-icon">💧</div>
-      <div class="service-title">Forage d'Eau</div>
-      <p class="service-desc">Étude géophysique préalable, forage, équipement et mise en service. Approvisionnement en eau pour particuliers, communes et ONG dans tout le nord de Madagascar.</p>
-    </div>
-    <div class="service-card">
-      <div class="service-num">05</div>
-      <div class="service-icon">🏡</div>
-      <div class="service-title">Vente & Achat Immobilier</div>
-      <p class="service-desc">Accompagnement complet pour ventes et achats de terrains, résidences et immeubles. Expertise locale, conseils juridiques et administratifs inclus.</p>
-    </div>
-    <div class="service-card">
-      <div class="service-num">06</div>
-      <div class="service-icon">📊</div>
-      <div class="service-title">Suivi & Contrôle Qualité</div>
-      <p class="service-desc">Contrôle technique à chaque étape du chantier. Vérification des matériaux, respect des plans et des normes. Ingénieurs civils dédiés au suivi de vos travaux.</p>
-    </div>
-  </div>
+  <div id="servicesGrid" class="services-grid reveal"></div>
 </section>
 
 <!-- PRICING -->
@@ -410,196 +348,17 @@
 
   <!-- Construction -->
   <div class="pricing-panel active" id="tab-construction">
-    <div class="pricing-grid reveal">
-      <div class="price-card" data-service="construction" data-tier="economic" data-type="Gros Œuvre Simple" data-price="450000" data-budget="10-25">
-        <div class="price-tier">Économique</div>
-        <div class="price-type">Gros Œuvre Simple</div>
-        <div class="price-val">
-          <div class="price-num">450 000</div>
-          <div class="price-unit">Ar / m²</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Fondations superficielles</li>
-          <li>Structure béton armé standard</li>
-          <li>Maçonnerie parpaing</li>
-          <li>Toiture tôle simple</li>
-          <li>Sans finition intérieure</li>
-        </ul>
-        <div class="price-note">Idéal pour entrepôts, locaux simples, ossature brute à finir par le client.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-
-      <div class="price-card featured" data-service="construction" data-tier="standard" data-type="Clé en Main Résidentiel" data-price="750000" data-budget="25-100">
-        <div class="price-badge">Le plus demandé</div>
-        <div class="price-tier">Standard</div>
-        <div class="price-type">Clé en Main Résidentiel</div>
-        <div class="price-val">
-          <div class="price-num">750 000</div>
-          <div class="price-unit">Ar / m²</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Conception architecturale incluse</li>
-          <li>Structure BA renforcée (norme VEx)</li>
-          <li>Enduit intérieur & extérieur</li>
-          <li>Carrelage sol (gamme standard)</li>
-          <li>Menuiseries aluminium</li>
-          <li>Plomberie & électricité de base</li>
-          <li>Suivi de chantier continu</li>
-        </ul>
-        <div class="price-note">Notre formule la plus populaire pour villas R+1, maisons individuelles et petits immeubles.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-
-      <div class="price-card" data-service="construction" data-tier="premium" data-type="Finition Haut de Gamme" data-price="1200000" data-budget="100+">
-        <div class="price-tier">Premium</div>
-        <div class="price-type">Finition Haut de Gamme</div>
-        <div class="price-val">
-          <div class="price-num">1 200 000</div>
-          <div class="price-unit">Ar / m²</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Architecture sur mesure (Revit/ArchiCAD)</li>
-          <li>Calcul structurel Robot Structural</li>
-          <li>Matériaux haut de gamme importés</li>
-          <li>Carrelage grand format / parquet</li>
-          <li>Menuiseries bois massif ou alu laqué</li>
-          <li>Domotique, climatisation inclus</li>
-          <li>Paysagisme & aménagements ext.</li>
-          <li>Ingénieur dédié au projet</li>
-        </ul>
-        <div class="price-note">Résidences d'exception, villas de prestige, projets touristiques.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-    </div>
+    <div id="pricingGrid-construction" class="pricing-grid reveal"></div>
   </div>
 
   <!-- Réhabilitation -->
   <div class="pricing-panel" id="tab-rehab">
-    <div class="pricing-grid reveal">
-      <div class="price-card" data-service="rehabilitation" data-tier="economic" data-type="Rafraîchissement" data-price="350000" data-budget="5-15">
-        <div class="price-tier">Légère</div>
-        <div class="price-type">Rafraîchissement</div>
-        <div class="price-val">
-          <div class="price-num">350 000</div>
-          <div class="price-unit">Ar / m²</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Peinture intérieure & extérieure</li>
-          <li>Remplacement revêtements sols</li>
-          <li>Réparations menuiseries</li>
-          <li>Petites maçonneries</li>
-        </ul>
-        <div class="price-note">Pour redonner un coup de neuf à un logement sans toucher à la structure.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-
-      <div class="price-card featured" data-service="rehabilitation" data-tier="standard" data-type="Rénovation Complète" data-price="550000" data-budget="15-50">
-        <div class="price-badge">Recommandé</div>
-        <div class="price-tier">Intermédiaire</div>
-        <div class="price-type">Rénovation Complète</div>
-        <div class="price-val">
-          <div class="price-num">550 000</div>
-          <div class="price-unit">Ar / m²</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Diagnostic technique préalable</li>
-          <li>Reprise structure si nécessaire</li>
-          <li>Nouveau réseau électrique</li>
-          <li>Nouveau réseau plomberie</li>
-          <li>Finitions complètes</li>
-          <li>Rapport de fin de travaux</li>
-        </ul>
-        <div class="price-note">La solution complète pour transformer totalement un espace existant.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-
-      <div class="price-card" data-service="rehabilitation" data-tier="premium" data-type="Confortement & Extension" data-price="850000" data-budget="50+">
-        <div class="price-tier">Structurelle</div>
-        <div class="price-type">Confortement & Extension</div>
-        <div class="price-val">
-          <div class="price-num">850 000</div>
-          <div class="price-unit">Ar / m²</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Étude structurelle complète</li>
-          <li>Reprise en sous-œuvre</li>
-          <li>Ajout de niveau ou extension</li>
-          <li>Mise aux normes sismiques/vent</li>
-          <li>Ingénieur civil dédié</li>
-        </ul>
-        <div class="price-note">Pour les bâtiments nécessitant une intervention lourde sur la structure porteuse.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-    </div>
+    <div id="pricingGrid-rehabilitation" class="pricing-grid reveal"></div>
   </div>
 
   <!-- Forage -->
   <div class="pricing-panel" id="tab-forage">
-    <div class="pricing-grid reveal">
-      <div class="price-card" data-service="forage" data-tier="economic" data-type="Géophysique Préalable" data-price="800000" data-budget="">
-        <div class="price-tier">Étude</div>
-        <div class="price-type">Géophysique Préalable</div>
-        <div class="price-val">
-          <div class="price-num">800 000</div>
-          <div class="price-unit">Ar / mission</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Prospection géophysique (résistivité)</li>
-          <li>Carte de localisation des forages</li>
-          <li>Rapport technique détaillé</li>
-          <li>Recommandations de profondeur</li>
-        </ul>
-        <div class="price-note">Obligatoire avant tout forage pour maximiser les chances de succès et éviter les forages secs.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-
-      <div class="price-card featured" data-service="forage" data-tier="standard" data-type="Forage + Équipement" data-price="1200000" data-budget="2.5-5">
-        <div class="price-badge">Tout inclus</div>
-        <div class="price-tier">Forage Complet</div>
-        <div class="price-type">Forage + Équipement</div>
-        <div class="price-val">
-          <div class="price-num">1 200 000</div>
-          <div class="price-unit">Ar / ml foré</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Forage rotary jusqu'à 80m</li>
-          <li>Tubage PVC alimentaire</li>
-          <li>Développement et essai de débit</li>
-          <li>Analyse bactériologique de l'eau</li>
-          <li>Pompe immergée et équipement</li>
-          <li>Dalle de protection en béton</li>
-          <li>Rapport de forage certifié</li>
-        </ul>
-        <div class="price-note">Prix indicatif par mètre linéaire foré. Un forage résidentiel moyen fait entre 30 et 60 ml.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
-      </div>
-
-      <div class="price-card" data-service="forage" data-tier="premium" data-type="Entretien & Réhabilitation" data-price="1800000" data-budget="">
-        <div class="price-tier">Maintenance</div>
-        <div class="price-type">Entretien & Réhabilitation</div>
-        <div class="price-val">
-          <div class="price-num">1 800 000</div>
-          <div class="price-unit">Ar / intervention</div>
-        </div>
-        <hr class="price-divider">
-        <ul class="price-features">
-          <li>Nettoyage et développement</li>
-          <li>Remplacement pompe</li>
-          <li>Réhabilitation forage existant</li>
-          <li>Contrat de maintenance annuel</li>
-        </ul>
-        <div class="price-note">Tarif base selon l'état du forage existant et les travaux à réaliser. Diagnostic préalable gratuit sur site.</div>
-        <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Nous contacter</a>
-      </div>
-    </div>
+    <div id="pricingGrid-forage" class="pricing-grid reveal"></div>
   </div>
 
   <div class="pricing-footer reveal">
@@ -667,15 +426,15 @@
 <!-- NUMBERS -->
 <div id="numbers">
   <div class="reveal">
-    <div class="num-val">10+</div>
+    <div class="num-val"><span id="numExpYears">10</span>+</div>
     <div class="num-label">Années d'expérience</div>
   </div>
   <div class="reveal">
-    <div class="num-val">34</div>
+    <div class="num-val"><span id="numStaff">34</span></div>
     <div class="num-label">Techniciens & ingénieurs</div>
   </div>
   <div class="reveal">
-    <div class="num-val">4</div>
+    <div class="num-val"><span id="numEngineers">4</span></div>
     <div class="num-label">Ingénieurs génie civil</div>
   </div>
   <div class="reveal">
@@ -691,56 +450,7 @@
     <h2 data-i18n-html="projects.title">Nos chantiers<br>parlent d'eux-mêmes.</h2>
     <p class="section-lead" data-i18n="projects.lead">Un aperçu de nos projets récents à Antsiranana, Nosy Be et dans tout le nord de Madagascar.</p>
   </div>
-  <div class="projects-grid reveal">
-    <div class="project-card">
-      <img src="/images/projects/palas-ramena.svg" alt="Résidence Palas Ramena" class="project-img" loading="lazy" data-image-slot="project-palas-ramena">
-      <div class="project-overlay">
-        <div class="project-cat">Résidentiel · Diego Suarez</div>
-        <div class="project-name">Résidence Palas Ramena</div>
-        <div class="project-loc">📍 Ramena, Antsiranana</div>
-      </div>
-    </div>
-    <div class="project-card">
-      <img src="/images/projects/r1-habitation.svg" alt="Deux bâtiments d'habitation R+1" class="project-img" loading="lazy" data-image-slot="project-r1-habitation">
-      <div class="project-overlay">
-        <div class="project-cat">Résidentiel · Nosy Be</div>
-        <div class="project-name">Deux bâtiments d'habitation R+1</div>
-        <div class="project-loc">📍 Mahatsinjo, Nosy Be</div>
-      </div>
-    </div>
-    <div class="project-card">
-      <img src="/images/projects/centre-islamique.svg" alt="Centre Islamique de Sambava" class="project-img" loading="lazy" data-image-slot="project-centre-islamique">
-      <div class="project-overlay">
-        <div class="project-cat">Institutionnel · Sambava</div>
-        <div class="project-name">Centre Islamique de Sambava</div>
-        <div class="project-loc">📍 Sambava, SAVA</div>
-      </div>
-    </div>
-    <div class="project-card">
-      <img src="/images/projects/r2-residentiel.svg" alt="Bâtiment Résidentiel R+2" class="project-img" loading="lazy" data-image-slot="project-r2-residentiel">
-      <div class="project-overlay">
-        <div class="project-cat">Gros Œuvre · Nosy Be</div>
-        <div class="project-name">Bâtiment Résidentiel R+2</div>
-        <div class="project-loc">📍 Djabala, Nosy Be</div>
-      </div>
-    </div>
-    <div class="project-card">
-      <img src="/images/projects/domes-geodesiques.svg" alt="Dômes Géodésiques" class="project-img" loading="lazy" data-image-slot="project-domes-geodesiques">
-      <div class="project-overlay">
-        <div class="project-cat">Agri-tourisme · Nosy Hara</div>
-        <div class="project-name">Dômes Géodésiques</div>
-        <div class="project-loc">📍 Nosy Hara, Diana</div>
-      </div>
-    </div>
-    <div class="project-card">
-      <img src="/images/projects/bureaux-communaux.svg" alt="Bureaux Communaux" class="project-img" loading="lazy" data-image-slot="project-bureaux-communaux">
-      <div class="project-overlay">
-        <div class="project-cat">Institutionnel · Anjianjia</div>
-        <div class="project-name">Bureaux Communaux</div>
-        <div class="project-loc">📍 Anjianjia et Mahalina</div>
-      </div>
-    </div>
-  </div>
+  <div id="projectsGrid" class="projects-grid reveal"></div>
 </section>
 
 <!-- BLOG -->
@@ -750,35 +460,7 @@
     <h2 data-i18n-html="blog.title">Conseils &<br>actualités du bâtiment.</h2>
     <p class="section-lead" data-i18n="blog.lead">Découvrez nos conseils techniques, guides pratiques et actualités sur la construction, le forage et l'immobilier à Madagascar.</p>
   </div>
-  <div class="blog-grid reveal">
-    <article class="blog-card">
-      <img src="/images/blog/construction.svg" alt="Construction" class="blog-img" loading="lazy" data-image-slot="blog-construction">
-      <div class="blog-body">
-        <div class="blog-date" data-i18n="blog.date1">15 Mai 2025</div>
-        <div class="blog-title" data-i18n="blog.title1">Les normes VEx à Madagascar</div>
-        <div class="blog-excerpt" data-i18n="blog.excerpt1">Tout comprendre sur les normes Vent Extrême qui s'appliquent au nord de Madagascar et pourquoi elles sont essentielles pour votre construction.</div>
-        <a href="#" class="blog-link" data-i18n="blog.readmore">Lire l'article</a>
-      </div>
-    </article>
-    <article class="blog-card">
-      <img src="/images/blog/forage.svg" alt="Forage" class="blog-img" loading="lazy" data-image-slot="blog-forage">
-      <div class="blog-body">
-        <div class="blog-date" data-i18n="blog.date2">28 Avril 2025</div>
-        <div class="blog-title" data-i18n="blog.title2">Guide du forage d'eau</div>
-        <div class="blog-excerpt" data-i18n="blog.excerpt2">Étapes clés, coûts et conseils pour réussir votre forage d'eau à Antsiranana, Nosy Be et dans toute la région.</div>
-        <a href="#" class="blog-link" data-i18n="blog.readmore">Lire l'article</a>
-      </div>
-    </article>
-    <article class="blog-card">
-      <img src="/images/blog/immobilier.svg" alt="Immobilier" class="blog-img" loading="lazy" data-image-slot="blog-immobilier">
-      <div class="blog-body">
-        <div class="blog-date" data-i18n="blog.date3">10 Avril 2025</div>
-        <div class="blog-title" data-i18n="blog.title3">Acheter un terrain à Diego</div>
-        <div class="blog-excerpt" data-i18n="blog.excerpt3">Les démarches administratives et conseils pratiques pour l'achat d'un terrain à Antsiranana et dans le nord de Madagascar.</div>
-        <a href="#" class="blog-link" data-i18n="blog.readmore">Lire l'article</a>
-      </div>
-    </article>
-  </div>
+  <div id="blogGrid" class="blog-grid reveal"></div>
 </section>
 
 <!-- CONTACT -->
@@ -787,26 +469,26 @@
     <div class="section-tag" data-i18n="contact.tag">Contact</div>
     <h2 data-i18n-html="contact.title">Parlons de<br>votre projet.</h2>
     <p class="section-lead" data-i18n="contact.lead">Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.</p>
-    <div class="contact-info">
+    <div class="contact-info" id="contactInfo">
       <div class="contact-item">
         <div class="contact-icon">📞</div>
         <div>
           <div class="contact-label">Téléphone</div>
-          <div class="contact-val">032 82 312 80 / 037 07 396 07</div>
+          <div class="contact-val" id="contactPhone">032 82 312 80 / 037 07 396 07</div>
         </div>
       </div>
       <div class="contact-item">
         <div class="contact-icon">✉️</div>
         <div>
           <div class="contact-label">Email</div>
-          <div class="contact-val">nordinvestmada@gmail.com</div>
+          <div class="contact-val" id="contactEmail">nordinvestmada@gmail.com</div>
         </div>
       </div>
       <div class="contact-item">
         <div class="contact-icon">📍</div>
         <div>
           <div class="contact-label">Siège Social</div>
-          <div class="contact-val">Tanambao 1, en face de Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)</div>
+          <div class="contact-val" id="contactAddress">Tanambao 1, en face de Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)</div>
         </div>
       </div>
       <div class="contact-item">
@@ -933,7 +615,7 @@
 <!-- FOOTER -->
 <footer>
   <a href="#hero" class="footer-logo">Nord Invest <span>Madagascar</span></a>
-  <p class="footer-copy">© 2026 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.</p>
+  <p class="footer-copy" id="footerCopy">© 2026 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.</p>
   <div class="footer-links">
     <a href="#about" data-i18n="nav.about">À Propos</a>
     <a href="#services" data-i18n="footer.services">Services</a>

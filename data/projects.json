@@ -1,0 +1,62 @@
+[
+  {
+    "id": "palas-ramena",
+    "title": "Résidence Palas Ramena",
+    "location": "Ramena, Antsiranana",
+    "description": "Villa moderne de 250 m² avec piscine à débordement sur la plage de Ramena. Conception bioclimatique, matériaux nobles et finitions haut de gamme.",
+    "images": ["palas-ramena.svg"],
+    "category": "construction",
+    "order": 1,
+    "visible": true
+  },
+  {
+    "id": "r1-habitation",
+    "title": "Deux bâtiments d'habitation R+1",
+    "location": "Mahatsinjo, Nosy Be",
+    "description": "Ensemble de 8 logements sociaux et intermédiaires (R+1) avec commerces en rez-de-chaussée. Structure BA aux normes VEx, finitions soignées.",
+    "images": ["r1-habitation.svg"],
+    "category": "construction",
+    "order": 2,
+    "visible": true
+  },
+  {
+    "id": "centre-islamique",
+    "title": "Centre Islamique de Sambava",
+    "location": "Sambava, SAVA",
+    "description": "Complexe cultuel et culturel de 600 m² comprenant une salle de prière, des salles d'étude, une bibliothèque et un logement de fonction.",
+    "images": ["centre-islamique.svg"],
+    "category": "construction",
+    "order": 3,
+    "visible": true
+  },
+  {
+    "id": "r2-residentiel",
+    "title": "Bâtiment Résidentiel R+2",
+    "location": "Djabala, Nosy Be",
+    "description": "Immeuble de standing R+2 avec 6 appartements, toit-terrasse et vue panoramique. Architecture moderne, ascenseur et parking souterrain.",
+    "images": ["r2-residentiel.svg"],
+    "category": "construction",
+    "order": 4,
+    "visible": true
+  },
+  {
+    "id": "domes-geodesiques",
+    "title": "Dômes Géodésiques",
+    "location": "Nosy Hara, Diana",
+    "description": "Hébergement touristique écologique composé de 5 dômes géodésiques. Structure légère autoportante, autonomie énergétique et intégration paysagère.",
+    "images": ["domes-geodesiques.svg"],
+    "category": "construction",
+    "order": 5,
+    "visible": true
+  },
+  {
+    "id": "bureaux-communaux",
+    "title": "Bureaux Communaux",
+    "location": "Anjianjia et Mahalina",
+    "description": "Construction de deux bâtiments administratifs communaux comprenant bureaux, salle de réunion et espace d'accueil du public.",
+    "images": ["bureaux-communaux.svg"],
+    "category": "construction",
+    "order": 6,
+    "visible": true
+  }
+]
