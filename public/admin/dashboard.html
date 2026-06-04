@@ -86,6 +86,7 @@
           <div class="user-role">Super Admin</div>
         </div>
       </div>
+      <button class="sidebar-logout" id="darkModeBtn" style="border-color:rgba(255,255,255,0.08);margin-bottom:0.25rem">🌙 Mode sombre</button>
       <button class="sidebar-logout" id="logoutBtn">← Se déconnecter</button>
     </div>
   </aside>
@@ -97,6 +98,7 @@
       <div class="top-header-actions" id="topHeaderActions"></div>
       <div class="top-header-right">
         <span style="font-size:0.75rem;color:var(--gray-400)" id="lastUpdate"></span>
+        <button class="btn-ghost" onclick="document.getElementById('shortcutsModal').classList.add('open')" title="Raccourcis clavier (?)" style="font-size:0.9rem;padding:0.25rem 0.5rem">⌨</button>
       </div>
     </header>
 
@@ -142,6 +144,26 @@
 
       <!-- ─── DASHBOARD TAB ─── -->
       <section id="tab-dashboard" class="tab-content active">
+        <div class="dashboard-charts">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Activité mensuelle</h3>
+              <span class="chart-hint">Messages reçus</span>
+            </div>
+            <div class="chart-body">
+              <canvas id="contactsChart" height="180"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Répartition des devis</h3>
+              <span class="chart-hint">Par statut</span>
+            </div>
+            <div class="chart-body">
+              <canvas id="quotesChart" height="180"></canvas>
+            </div>
+          </div>
+        </div>
         <div class="dashboard-widgets">
           <div class="widget-card" id="dashRecentContacts">
             <div class="widget-header">
@@ -182,11 +204,18 @@
           <button class="filter-btn" data-filter="read" onclick="setContactFilter('read')">Lus</button>
           <button class="filter-btn" data-filter="resolved" onclick="setContactFilter('resolved')">Résolus</button>
         </div>
+        <div class="bulk-bar hidden" id="contactBulkBar">
+          <span class="bulk-count" id="contactBulkCount">0 sélectionné(s)</span>
+          <button class="btn-secondary" onclick="bulkMarkRead()" style="font-size:0.75rem;padding:0.35rem 0.75rem">✓ Marquer lu</button>
+          <button class="btn-secondary" onclick="bulkDeleteContacts()" style="font-size:0.75rem;padding:0.35rem 0.75rem;color:var(--danger)">✕ Supprimer</button>
+          <button class="btn-ghost" onclick="clearContactSelection()" style="font-size:0.75rem">Annuler</button>
+        </div>
         <div class="table-wrapper responsive-table">
           <div class="table-scroll">
             <table id="contactsTable">
               <thead>
                 <tr>
+                  <th style="width:36px"><input type="checkbox" id="contactSelectAll" onchange="toggleAllContacts(this.checked)"></th>
                   <th>Date</th>
                   <th>Nom</th>
                   <th>Email</th>
@@ -219,11 +248,17 @@
           <button class="filter-btn" data-filter="completed" onclick="setQuoteFilter('completed')">Terminés</button>
           <button class="filter-btn" data-filter="cancelled" onclick="setQuoteFilter('cancelled')">Annulés</button>
         </div>
+        <div class="bulk-bar hidden" id="quoteBulkBar">
+          <span class="bulk-count" id="quoteBulkCount">0 sélectionné(s)</span>
+          <button class="btn-secondary" onclick="bulkDeleteQuotes()" style="font-size:0.75rem;padding:0.35rem 0.75rem;color:var(--danger)">✕ Supprimer</button>
+          <button class="btn-ghost" onclick="clearQuoteSelection()" style="font-size:0.75rem">Annuler</button>
+        </div>
         <div class="table-wrapper responsive-table">
           <div class="table-scroll">
             <table id="quotesTable">
               <thead>
                 <tr>
+                  <th style="width:36px"><input type="checkbox" id="quoteSelectAll" onchange="toggleAllQuotes(this.checked)"></th>
                   <th>Date</th>
                   <th>N° Devis</th>
                   <th>Nom</th>
@@ -407,6 +442,30 @@
   <div class="lightbox" id="lightbox">
     <button class="lightbox-close" id="lightboxClose">✕</button>
     <img id="lightboxImg" src="" alt="Preview">
+  </div>
+
+  <!-- ─── KEYBOARD SHORTCUTS MODAL ─── -->
+  <div class="modal-overlay" id="shortcutsModal">
+    <div class="modal-box shortcuts-box">
+      <h3>⌨️ Raccourcis clavier</h3>
+      <div class="shortcuts-grid">
+        <div class="shortcut-row"><kbd>1</kbd><span>Tableau de bord</span></div>
+        <div class="shortcut-row"><kbd>2</kbd><span>Messages</span></div>
+        <div class="shortcut-row"><kbd>3</kbd><span>Devis</span></div>
+        <div class="shortcut-row"><kbd>4</kbd><span>Newsletter</span></div>
+        <div class="shortcut-row"><kbd>5</kbd><span>Galerie</span></div>
+        <div class="shortcut-row"><kbd>6</kbd><span>Équipe</span></div>
+        <div class="shortcut-row"><kbd>7</kbd><span>Services</span></div>
+        <div class="shortcut-row"><kbd>8</kbd><span>Projets</span></div>
+        <div class="shortcut-row"><kbd>9</kbd><span>Blog</span></div>
+        <div class="shortcut-row"><kbd>0</kbd><span>Tarifs</span></div>
+        <div class="shortcut-row"><kbd>Escape</kbd><span>Fermer les modales</span></div>
+        <div class="shortcut-row"><kbd>?</kbd><span>Ce menu</span></div>
+      </div>
+      <div class="modal-actions" style="margin-top:1rem">
+        <button class="btn-secondary" onclick="document.getElementById('shortcutsModal').classList.remove('open')">Fermer</button>
+      </div>
+    </div>
   </div>
 
   <!-- ─── TOAST CONTAINER ─── -->

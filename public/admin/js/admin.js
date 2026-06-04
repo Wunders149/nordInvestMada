@@ -5,6 +5,8 @@ let quotes = [];
 let subscribers = [];
 let slots = [];
 let images = {};
+let selectedContactIds = new Set();
+let selectedQuoteIds = new Set();
 
 // Pagination state
 const PER_PAGE = 10;
@@ -179,6 +181,32 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   });
 });
 
+// ─── DARK MODE ───
+function initDarkMode() {
+  const saved = localStorage.getItem('adminDarkMode');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (saved === 'true' || (saved === null && prefersDark)) {
+    document.body.classList.add('dark');
+  }
+  updateDarkBtn();
+}
+
+function updateDarkBtn() {
+  const btn = document.getElementById('darkModeBtn');
+  if (!btn) return;
+  const isDark = document.body.classList.contains('dark');
+  btn.innerHTML = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
+}
+
+document.getElementById('darkModeBtn').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('adminDarkMode', isDark);
+  updateDarkBtn();
+  // Re-render charts with new theme
+  renderCharts();
+});
+
 // ══════════════════════════════════════════════
 // SIDEBAR NAVIGATION
 // ══════════════════════════════════════════════
@@ -236,6 +264,162 @@ document.getElementById('subSearch').addEventListener('input', renderSubscribers
 // ══════════════════════════════════════════════
 // STATS
 // ══════════════════════════════════════════════
+
+// ─── CHARTS ───
+function renderCharts() {
+  const isDark = document.body.classList.contains('dark');
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+  // Contacts bar chart
+  const ctx1 = document.getElementById('contactsChart');
+  if (ctx1) {
+    const canvas = ctx1;
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = 180 * 2;
+    const c = canvas.getContext('2d');
+    c.scale(2, 2);
+    const w = canvas.offsetWidth;
+    const h = 180;
+
+    c.clearRect(0, 0, w, h);
+
+    // Aggregate contacts by month
+    const monthly = {};
+    contacts.forEach(ct => {
+      const d = new Date(ct.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthly[key] = (monthly[key] || 0) + 1;
+    });
+    const months = Object.keys(monthly).sort().slice(-6);
+    const values = months.map(m => monthly[m] || 0);
+    const maxVal = Math.max(...values, 1);
+
+    if (months.length === 0) {
+      c.fillStyle = textColor;
+      c.font = '12px Inter, sans-serif';
+      c.textAlign = 'center';
+      c.fillText('Aucune donnée', w / 2, h / 2);
+      return;
+    }
+
+    const pad = { top: 10, bottom: 24, left: 4, right: 4 };
+    const chartW = w - pad.left - pad.right;
+    const chartH = h - pad.top - pad.bottom;
+    const barW = Math.min(40, chartW / months.length * 0.6);
+    const gap = chartW / months.length;
+
+    // Grid lines
+    for (let i = 0; i <= 3; i++) {
+      const y = pad.top + (chartH / 3) * i;
+      c.strokeStyle = gridColor;
+      c.lineWidth = 0.5;
+      c.beginPath();
+      c.moveTo(pad.left, y);
+      c.lineTo(w - pad.right, y);
+      c.stroke();
+    }
+
+    // Bars
+    months.forEach((m, i) => {
+      const x = pad.left + gap * i + (gap - barW) / 2;
+      const barH = (values[i] / maxVal) * chartH;
+      const y = pad.top + chartH - barH;
+
+      const grad = c.createLinearGradient(x, y, x, pad.top + chartH);
+      grad.addColorStop(0, '#8B4513');
+      grad.addColorStop(1, '#A0522D');
+      c.fillStyle = grad;
+      if (c.roundRect) {
+        c.beginPath();
+        c.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
+        c.fill();
+      } else {
+        c.fillRect(x, y, barW, barH);
+      }
+
+      // Label
+      c.fillStyle = textColor;
+      c.font = '8px Inter, sans-serif';
+      c.textAlign = 'center';
+      const label = m.split('-')[1] + '/' + m.split('-')[0].slice(2);
+      c.fillText(label, x + barW / 2, h - 4);
+    });
+  }
+
+  // Quotes donut chart
+  const ctx2 = document.getElementById('quotesChart');
+  if (ctx2) {
+    const canvas = ctx2;
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = 180 * 2;
+    const c = canvas.getContext('2d');
+    c.scale(2, 2);
+    const w = canvas.offsetWidth;
+    const h = 180;
+
+    c.clearRect(0, 0, w, h);
+
+    const statuses = ['pending', 'in-progress', 'completed', 'cancelled'];
+    const labels = ['En attente', 'En cours', 'Terminé', 'Annulé'];
+    const colors = ['#d97706', '#2563eb', '#059669', '#94a3b8'];
+    const counts = statuses.map(s => quotes.filter(q => (q.status || 'pending') === s).length);
+    const total = counts.reduce((a, b) => a + b, 0);
+
+    if (total === 0) {
+      c.fillStyle = textColor;
+      c.font = '12px Inter, sans-serif';
+      c.textAlign = 'center';
+      c.fillText('Aucune donnée', w / 2, h / 2);
+      return;
+    }
+
+    const cx = w * 0.33;
+    const cy = h / 2;
+    const radius = Math.min(cx - 10, cy - 10, 55);
+    const innerRadius = radius * 0.55;
+
+    let startAngle = -Math.PI / 2;
+    counts.forEach((count, i) => {
+      if (count === 0) return;
+      const sliceAngle = (count / total) * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(cx + innerRadius * Math.cos(startAngle), cy + innerRadius * Math.sin(startAngle));
+      c.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
+      c.arc(cx, cy, innerRadius, startAngle + sliceAngle, startAngle, true);
+      c.closePath();
+      c.fillStyle = colors[i];
+      c.fill();
+      startAngle += sliceAngle;
+    });
+
+    // Center text
+    c.fillStyle = textColor;
+    c.font = 'bold 18px Inter, sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(total, cx, cy - 4);
+    c.font = '8px Inter, sans-serif';
+    c.fillText('Total', cx, cy + 12);
+
+    // Legend
+    const legendX = w * 0.55;
+    let legendY = 30;
+    labels.forEach((label, i) => {
+      if (counts[i] === 0) return;
+      c.fillStyle = colors[i];
+      c.beginPath();
+      c.arc(legendX, legendY, 5, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = textColor;
+      c.font = '11px Inter, sans-serif';
+      c.textAlign = 'left';
+      c.textBaseline = 'middle';
+      c.fillText(`${label} (${counts[i]})`, legendX + 12, legendY);
+      legendY += 22;
+    });
+  }
+}
 
 async function loadStats() {
   showSkeletonStats();
@@ -303,6 +487,75 @@ async function loadContacts() {
 
 window._pg_contact = (p) => { contactPage = p; renderContacts(); };
 
+// ─── BULK CONTACT ACTIONS ───
+function toggleContactSelect(id, checked) {
+  if (checked) selectedContactIds.add(id);
+  else selectedContactIds.delete(id);
+  updateContactBulkBar();
+}
+function toggleAllContacts(checked) {
+  const search = document.getElementById('contactSearch').value.toLowerCase();
+  let filtered = contacts.filter(c =>
+    c.name.toLowerCase().includes(search) ||
+    c.email.toLowerCase().includes(search) ||
+    c.phone.toLowerCase().includes(search)
+  );
+  if (contactFilter !== 'all') {
+    if (contactFilter === 'new') filtered = filtered.filter(c => !c.read);
+    else if (contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
+    else if (contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
+  }
+  if (checked) {
+    filtered.forEach(c => selectedContactIds.add(c.id));
+  } else {
+    selectedContactIds.clear();
+  }
+  renderContacts();
+}
+function clearContactSelection() {
+  selectedContactIds.clear();
+  document.getElementById('contactSelectAll').checked = false;
+  renderContacts();
+}
+function updateContactBulkBar() {
+  const bar = document.getElementById('contactBulkBar');
+  const count = document.getElementById('contactBulkCount');
+  const total = selectedContactIds.size;
+  if (total === 0) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  count.textContent = `${total} sélectionné(s)`;
+}
+async function bulkMarkRead() {
+  const ids = [...selectedContactIds];
+  if (ids.length === 0) return;
+  try {
+    await Promise.all(ids.map(id =>
+      fetch(`${API_BASE}/contacts/${id}`, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ read: true }) })
+    ));
+    ids.forEach(id => { const c = contacts.find(x => x.id === id); if (c) c.read = true; });
+    selectedContactIds.clear();
+    document.getElementById('contactSelectAll').checked = false;
+    renderContacts(); loadStats();
+    showToast(`${ids.length} message(s) marqué(s) comme lu`, 'success');
+  } catch (err) { showToast('Erreur', 'error'); }
+}
+async function bulkDeleteContacts() {
+  const ids = [...selectedContactIds];
+  if (ids.length === 0) return;
+  showConfirm('Supprimer plusieurs messages', `Supprimer ${ids.length} message(s) ? Cette action est irréversible.`, async () => {
+    try {
+      await Promise.all(ids.map(id =>
+        fetch(`${API_BASE}/contacts/${id}`, { method: 'DELETE', headers: getHeaders() })
+      ));
+      contacts = contacts.filter(c => !selectedContactIds.has(c.id));
+      selectedContactIds.clear();
+      document.getElementById('contactSelectAll').checked = false;
+      renderContacts(); loadStats();
+      showToast(`${ids.length} message(s) supprimé(s)`, 'success');
+    } catch (err) { showToast('Erreur', 'error'); }
+  });
+}
+
 function renderContacts() {
   const search = document.getElementById('contactSearch').value.toLowerCase();
   const tbody = document.getElementById('contactsBody');
@@ -316,7 +569,6 @@ function renderContacts() {
     else if (contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
     else if (contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
   }
-  // Update filter counts
   const totalNew = contacts.filter(c => !c.read).length;
   document.getElementById('filterContactNew').textContent = totalNew;
   if (contactPage > Math.ceil(filtered.length / PER_PAGE)) contactPage = 1;
@@ -330,6 +582,9 @@ function renderContacts() {
   const page = filtered.slice(start, start + PER_PAGE);
   tbody.innerHTML = page.map(c => `
     <tr class="${!c.read ? 'unread' : ''}" style="cursor:pointer" onclick="openContactDetail('${c.id}')">
+      <td onclick="event.stopPropagation()" style="width:36px">
+        <input type="checkbox" class="contact-check" value="${c.id}" ${selectedContactIds.has(c.id) ? 'checked' : ''} onchange="toggleContactSelect('${c.id}', this.checked)">
+      </td>
       <td data-label="Date">${formatDate(c.date)}</td>
       <td data-label="Nom"><strong>${escapeHtml(c.name)}</strong></td>
       <td data-label="Email"><a href="mailto:${escapeHtml(c.email)}" onclick="event.stopPropagation()">${escapeHtml(c.email)}</a></td>
@@ -346,6 +601,7 @@ function renderContacts() {
     </tr>
   `).join('');
   renderPagination('contactsPagination', contactPage, total, PER_PAGE, 'contact');
+  updateContactBulkBar();
 }
 
 async function markRead(id) {
@@ -407,7 +663,6 @@ function renderQuotes() {
   if (quoteFilter !== 'all') {
     filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
   }
-  // Update filter counts
   const totalPending = quotes.filter(q => (q.status || 'pending') === 'pending').length;
   document.getElementById('filterQuotePending').textContent = totalPending;
   if (quotePage > Math.ceil(filtered.length / PER_PAGE)) quotePage = 1;
@@ -421,6 +676,9 @@ function renderQuotes() {
   const page = filtered.slice(start, start + PER_PAGE);
   tbody.innerHTML = page.map(q => `
     <tr>
+      <td onclick="event.stopPropagation()" style="width:36px">
+        <input type="checkbox" class="quote-check" value="${q.id}" ${selectedQuoteIds.has(q.id) ? 'checked' : ''} onchange="toggleQuoteSelect('${q.id}', this.checked)">
+      </td>
       <td data-label="Date">${formatDate(q.date)}</td>
       <td data-label="N° Devis"><code>${escapeHtml(q.quoteNumber)}</code></td>
       <td data-label="Nom"><strong>${escapeHtml(q.name)}</strong></td>
@@ -441,6 +699,7 @@ function renderQuotes() {
     </tr>
   `).join('');
   renderPagination('quotesPagination', quotePage, total, PER_PAGE, 'quote');
+  updateQuoteBulkBar();
 }
 
 async function updateQuoteStatus(id, status) {
@@ -461,6 +720,56 @@ function confirmDeleteQuote(id) {
       renderQuotes(); loadStats();
       showToast('Devis supprimé', 'success');
     } catch (err) { console.error(err); }
+  });
+}
+
+// ─── BULK QUOTE ACTIONS ───
+function toggleQuoteSelect(id, checked) {
+  if (checked) selectedQuoteIds.add(id);
+  else selectedQuoteIds.delete(id);
+  updateQuoteBulkBar();
+}
+function toggleAllQuotes(checked) {
+  const search = document.getElementById('quoteSearch').value.toLowerCase();
+  let filtered = quotes.filter(q =>
+    q.name.toLowerCase().includes(search) ||
+    q.email.toLowerCase().includes(search) ||
+    q.quoteNumber.toLowerCase().includes(search)
+  );
+  if (quoteFilter !== 'all') {
+    filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
+  }
+  if (checked) { filtered.forEach(q => selectedQuoteIds.add(q.id)); }
+  else { selectedQuoteIds.clear(); }
+  renderQuotes();
+}
+function clearQuoteSelection() {
+  selectedQuoteIds.clear();
+  document.getElementById('quoteSelectAll').checked = false;
+  renderQuotes();
+}
+function updateQuoteBulkBar() {
+  const bar = document.getElementById('quoteBulkBar');
+  const count = document.getElementById('quoteBulkCount');
+  const total = selectedQuoteIds.size;
+  if (total === 0) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  count.textContent = `${total} sélectionné(s)`;
+}
+async function bulkDeleteQuotes() {
+  const ids = [...selectedQuoteIds];
+  if (ids.length === 0) return;
+  showConfirm('Supprimer plusieurs devis', `Supprimer ${ids.length} devis(s) ? Cette action est irréversible.`, async () => {
+    try {
+      await Promise.all(ids.map(id =>
+        fetch(`${API_BASE}/quotes/${id}`, { method: 'DELETE', headers: getHeaders() })
+      ));
+      quotes = quotes.filter(q => !selectedQuoteIds.has(q.id));
+      selectedQuoteIds.clear();
+      document.getElementById('quoteSelectAll').checked = false;
+      renderQuotes(); loadStats();
+      showToast(`${ids.length} devis(s) supprimé(s)`, 'success');
+    } catch (err) { showToast('Erreur', 'error'); }
   });
 }
 
@@ -1535,10 +1844,28 @@ async function saveSettings() {
 }
 
 // ══════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════
+
+document.addEventListener('keydown', (e) => {
+  // Skip if typing in an input
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog', 'pricing'];
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9 && tabs[num - 1]) { switchTab(tabs[num - 1]); return; }
+  if (num === 0) { switchTab('pricing'); return; }
+  if (e.key === '?') {
+    document.getElementById('shortcutsModal').classList.toggle('open');
+  }
+});
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 
 if (checkAuth()) {
+  initDarkMode();
   loadStats();
   loadContacts();
   loadQuotes();
@@ -1552,5 +1879,12 @@ if (checkAuth()) {
   loadPricing();
   loadSettings();
   setInterval(loadStats, 30000);
-  // Dashboard is the default tab — renders when data loads
+  // Debounced chart rendering after data loads
+  let chartTimer;
+  const originalRenderDashboard = renderDashboard;
+  renderDashboard = function() {
+    originalRenderDashboard();
+    clearTimeout(chartTimer);
+    chartTimer = setTimeout(renderCharts, 300);
+  };
 }

@@ -32,6 +32,12 @@
     </div>
   </div>
   <script>
+    // Dark mode for login page
+    const savedDark = localStorage.getItem('adminDarkMode');
+    if (savedDark === 'true' || (savedDark === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.body.classList.add('dark');
+    }
+
     const API_BASE = '/api/admin';
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
