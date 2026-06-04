@@ -3,182 +3,296 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Nord Invest Madagascar</title>
+  <title>Dashboard — Nord Invest Madagascar</title>
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body class="dashboard-page">
-  <header class="admin-header">
-    <div class="header-left">
-      <img src="/images/logo.jpeg" alt="NIM" class="header-logo">
-      <h1>Nord Invest Madagascar</h1>
-    </div>
-    <div class="header-right">
-      <span id="adminUser" class="admin-user"></span>
-      <button id="logoutBtn" class="btn-outline">Déconnexion</button>
-    </div>
-  </header>
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <div class="stats-bar" id="statsBar">
-    <div class="stat-card" data-stat="contacts">
-      <span class="stat-value" id="statContacts">0</span>
-      <span class="stat-label">Contacts</span>
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="/images/logo.jpeg" alt="NIM">
+      <div class="brand-text">
+        <h2>Nord Invest</h2>
+        <span>Administration</span>
+      </div>
     </div>
-    <div class="stat-card" data-stat="unread">
-      <span class="stat-value" id="statUnread">0</span>
-      <span class="stat-label">Non lus</span>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Gestion</div>
+        <button class="nav-btn active" data-tab="contacts">
+          <span class="nav-icon">✉</span>
+          Messages
+          <span class="nav-badge" id="navBadgeUnread" style="display:none">0</span>
+        </button>
+        <button class="nav-btn" data-tab="quotes">
+          <span class="nav-icon">📋</span>
+          Devis
+        </button>
+        <button class="nav-btn" data-tab="subscribers">
+          <span class="nav-icon">📧</span>
+          Newsletter
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Contenu</div>
+        <button class="nav-btn" data-tab="images">
+          <span class="nav-icon">🖼</span>
+          Galerie
+        </button>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="adminUser">Administrateur</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+      </div>
+      <button class="sidebar-logout" id="logoutBtn">← Se déconnecter</button>
     </div>
-    <div class="stat-card" data-stat="quotes">
-      <span class="stat-value" id="statQuotes">0</span>
-      <span class="stat-label">Devis</span>
-    </div>
-    <div class="stat-card" data-stat="pending">
-      <span class="stat-value" id="statPending">0</span>
-      <span class="stat-label">En attente</span>
-    </div>
-    <div class="stat-card" data-stat="subscribers">
-      <span class="stat-value" id="statSubscribers">0</span>
-      <span class="stat-label">Newsletter</span>
-    </div>
-  </div>
+  </aside>
 
-  <nav class="admin-tabs">
-    <button class="tab-btn active" data-tab="contacts">Messages</button>
-    <button class="tab-btn" data-tab="quotes">Devis</button>
-    <button class="tab-btn" data-tab="subscribers">Newsletter</button>
-    <button class="tab-btn" data-tab="images">Galerie</button>
-  </nav>
+  <!-- ═══ MAIN ═══ -->
+  <div class="main-content">
+    <header class="top-header">
+      <h1 id="pageTitle">Tableau de bord <small>Vue d'ensemble</small></h1>
+      <div class="top-header-right">
+        <span style="font-size:0.75rem;color:var(--gray-400)" id="lastUpdate"></span>
+      </div>
+    </header>
 
-  <main class="admin-content">
-    <!-- Contacts Tab -->
-    <section id="tab-contacts" class="tab-content active">
-      <div class="tab-toolbar">
-        <input type="text" id="contactSearch" class="search-input" placeholder="Rechercher par nom, email...">
-        <button id="exportContactsBtn" class="btn-outline" title="Exporter en CSV">Export CSV</button>
+    <div class="page-content">
+      <!-- ─── STATS ─── -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+          <div class="stat-icon contacts">✉</div>
+          <div class="stat-body">
+            <span class="stat-value" id="statContacts">0</span>
+            <span class="stat-label">Messages</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon unread">!</div>
+          <div class="stat-body">
+            <span class="stat-value" id="statUnread">0</span>
+            <span class="stat-label">Non lus</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon quotes">📋</div>
+          <div class="stat-body">
+            <span class="stat-value" id="statQuotes">0</span>
+            <span class="stat-label">Devis</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending">⏳</div>
+          <div class="stat-body">
+            <span class="stat-value" id="statPending">0</span>
+            <span class="stat-label">En attente</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon subscribers">📧</div>
+          <div class="stat-body">
+            <span class="stat-value" id="statSubscribers">0</span>
+            <span class="stat-label">Newsletter</span>
+          </div>
+        </div>
       </div>
-      <div class="table-wrapper">
-        <table id="contactsTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Téléphone</th>
-              <th>Projet</th>
-              <th>Message</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="contactsBody"></tbody>
-        </table>
-      </div>
-    </section>
 
-    <!-- Quotes Tab -->
-    <section id="tab-quotes" class="tab-content">
-      <div class="tab-toolbar">
-        <input type="text" id="quoteSearch" class="search-input" placeholder="Rechercher par nom, email...">
-        <button id="exportQuotesBtn" class="btn-outline" title="Exporter en CSV">Export CSV</button>
-      </div>
-      <div class="table-wrapper">
-        <table id="quotesTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>N° Devis</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Service</th>
-              <th>Localisation</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="quotesBody"></tbody>
-        </table>
-      </div>
-    </section>
+      <!-- ─── CONTACTS TAB ─── -->
+      <section id="tab-contacts" class="tab-content active">
+        <div class="tab-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="contactSearch" class="search-input" placeholder="Rechercher par nom, email...">
+          </div>
+          <button class="btn-secondary" id="exportContactsBtn">📥 Export CSV</button>
+        </div>
+        <div class="table-wrapper responsive-table">
+          <div class="table-scroll">
+            <table id="contactsTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Projet</th>
+                  <th>Message</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="contactsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-    <!-- Subscribers Tab -->
-    <section id="tab-subscribers" class="tab-content">
-      <div class="tab-toolbar">
-        <input type="text" id="subSearch" class="search-input" placeholder="Rechercher par email...">
-        <button id="exportSubsBtn" class="btn-outline" title="Exporter en CSV">Export CSV</button>
-      </div>
-      <div class="table-wrapper">
-        <table id="subscribersTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Email</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="subscribersBody"></tbody>
-        </table>
-      </div>
-    </section>
+      <!-- ─── QUOTES TAB ─── -->
+      <section id="tab-quotes" class="tab-content">
+        <div class="tab-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="quoteSearch" class="search-input" placeholder="Rechercher par nom, email...">
+          </div>
+          <button class="btn-secondary" id="exportQuotesBtn">📥 Export CSV</button>
+        </div>
+        <div class="table-wrapper responsive-table">
+          <div class="table-scroll">
+            <table id="quotesTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>N° Devis</th>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Service</th>
+                  <th>Localisation</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="quotesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-    <!-- Images Tab -->
-    <section id="tab-images" class="tab-content">
-      <div class="upload-area">
-        <form id="imageUploadForm" class="upload-form">
-          <h3>Ajouter une image</h3>
-          <div class="upload-row">
-            <div class="form-group">
-              <label for="uploadSection">Section</label>
-              <select id="uploadSection" required>
-                <option value="hero">Hero</option>
-                <option value="about">About</option>
+      <!-- ─── SUBSCRIBERS TAB ─── -->
+      <section id="tab-subscribers" class="tab-content">
+        <div class="tab-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="subSearch" class="search-input" placeholder="Rechercher par email...">
+          </div>
+          <button class="btn-secondary" id="exportSubsBtn">📥 Export CSV</button>
+        </div>
+        <div class="table-wrapper responsive-table">
+          <div class="table-scroll">
+            <table id="subscribersTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Email</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="subscribersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── IMAGES TAB ─── -->
+      <section id="tab-images" class="tab-content">
+        <div class="upload-area">
+          <form id="imageUploadForm" class="upload-form">
+            <h3>Ajouter une image <small>JPG, PNG, WebP — max 10MB</small></h3>
+            <div class="upload-row">
+              <div class="form-group">
+                <label for="uploadSection">Section</label>
+                <select id="uploadSection" required>
+                  <option value="hero">Hero</option>
+                  <option value="about">About</option>
+                  <option value="team">Team</option>
+                  <option value="projects">Projets</option>
+                  <option value="blog">Blog</option>
+                  <option value="gallery">Galerie</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="uploadSlot">Assigner à (optionnel)</label>
+                <select id="uploadSlot">
+                  <option value="">— Aucun —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="newSlotLabel">Ou créer un nouveau slot (optionnel)</label>
+                <input type="text" id="newSlotLabel" placeholder="Ex: Team - Nouvel Architecte, Projet - École Primaire...">
+              </div>
+            </div>
+            <div class="drop-zone" id="dropZone">
+              <span class="drop-icon">📁</span>
+              <span class="drop-text">Cliquez ou glissez-déposez une image ici</span>
+            </div>
+            <input type="file" id="uploadFile" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" required>
+            <div id="uploadPreview" class="upload-preview hidden"></div>
+            <div id="uploadError" class="error-msg hidden"></div>
+            <button type="submit" class="btn-primary upload-btn" id="uploadBtn">
+              <span class="btn-text">Uploader</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+          </form>
+        </div>
+        <div class="gallery-manager">
+          <div class="gallery-toolbar">
+            <h3>Images uploadées</h3>
+            <div class="gallery-actions">
+              <button class="btn-secondary" id="newSlotBtn" style="font-size:0.75rem;padding:0.4rem 0.75rem">+ Nouveau slot</button>
+              <div class="gallery-filter">
+                <label for="filterSection">Filtrer :</label>
+                <select id="filterSection">
+                  <option value="all">Toutes</option>
+                  <option value="hero">Hero</option>
+                  <option value="about">About</option>
+                  <option value="team">Team</option>
+                  <option value="projects">Projets</option>
+                  <option value="blog">Blog</option>
+                  <option value="gallery">Galerie</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="new-slot-form hidden" id="newSlotForm">
+            <div class="new-slot-row">
+              <select id="newSlotSection">
                 <option value="team">Team</option>
                 <option value="projects">Projets</option>
                 <option value="blog">Blog</option>
+                <option value="hero">Hero</option>
+                <option value="about">About</option>
                 <option value="gallery">Galerie</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label for="uploadSlot">Assigner à (optionnel)</label>
-              <select id="uploadSlot">
-                <option value="">— Aucun —</option>
-              </select>
+              <input type="text" id="newSlotLabelInput" placeholder="Libellé du slot, ex: Nouvel Architecte">
+              <button class="btn-primary" id="newSlotSubmit" style="width:auto;padding:0.4rem 1rem;font-size:0.75rem">Créer</button>
+              <button class="btn-ghost" id="newSlotCancel" style="font-size:0.75rem">Annuler</button>
             </div>
           </div>
-          <div class="upload-row">
-            <div class="form-group file-group">
-              <label for="uploadFile">Fichier image</label>
-              <input type="file" id="uploadFile" accept="image/jpeg,image/png,image/webp,image/gif" required>
-              <div id="uploadPreview" class="upload-preview hidden"></div>
-            </div>
-          </div>
-          <div id="uploadError" class="error-msg hidden"></div>
-          <button type="submit" class="btn-primary upload-btn" id="uploadBtn">
-            <span class="btn-text">Uploader</span>
-            <span class="btn-loader hidden"></span>
-          </button>
-        </form>
-      </div>
-      <div class="gallery-manager">
-        <div class="gallery-toolbar">
-          <h3>Images uploadées</h3>
-          <div class="gallery-filter">
-            <label for="filterSection">Filtrer par section:</label>
-            <select id="filterSection">
-              <option value="all">Toutes</option>
-              <option value="hero">Hero</option>
-              <option value="about">About</option>
-              <option value="team">Team</option>
-              <option value="projects">Projets</option>
-              <option value="blog">Blog</option>
-              <option value="gallery">Galerie</option>
-            </select>
+          <div id="imageGrid" class="image-grid">
+            <p class="empty-row">Chargement...</p>
           </div>
         </div>
-        <div id="imageGrid" class="image-grid">
-          <p class="empty-row">Chargement...</p>
-        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ─── LIGHTBOX ─── -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <img id="lightboxImg" src="" alt="Preview">
+  </div>
+
+  <!-- ─── TOAST CONTAINER ─── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ─── CONFIRM MODAL ─── -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <div class="modal-icon danger">⚠</div>
+      <h3 id="confirmTitle">Confirmer</h3>
+      <p id="confirmMsg">Voulez-vous vraiment effectuer cette action ?</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="confirmCancel">Annuler</button>
+        <button class="btn-primary" id="confirmOk" style="width:auto;padding:0.6rem 1.5rem;background:var(--danger)">Confirmer</button>
       </div>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <script src="js/admin.js"></script>
 </body>

@@ -1,0 +1,11 @@
+SLOTS RAW: {
+  "slots": [
+    {
+      "id": "hero",
+      "section": "hero",
+      "originalFile": "architecture.svg",
+      "label": "Hero - Architecture",
+      "uploadedFile": null,
+      "updatedAt": null
+  
+readSlots error: Expected ',' or '}' after property value in JSON at position 3246 (line 130 column 3)

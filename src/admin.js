@@ -181,4 +181,4 @@ router.get('/stats', requireAuth, (req, res) => {
   });
 });
 
-export { router as adminRouter, escapeHtml };
+export { router as adminRouter, escapeHtml, requireAuth, sessions };

@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { requireAuth } from './admin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -75,7 +76,7 @@ function getImageMetadata(filePath, relativePath) {
 }
 
 // ─── UPLOAD IMAGE ───
-router.post('/upload', (req, res) => {
+router.post('/upload', requireAuth, (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
@@ -93,9 +94,28 @@ router.post('/upload', (req, res) => {
     const url = `/${relativePath}`;
     const metadata = getImageMetadata(req.file.path, relativePath);
 
-    // If a slot ID was provided, auto-assign
-    if (slotId) {
-      const data = readSlots();
+    const data = readSlots();
+
+    // If a new slot label was provided, create a new slot and assign
+    const newSlotLabel = req.body.newSlotLabel;
+    if (newSlotLabel) {
+      const slug = newSlotLabel
+        .toLowerCase()
+        .replace(/[^a-z0-9-\s]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      const id = `${section}-${slug}-${Date.now()}`;
+      data.slots.push({
+        id,
+        section,
+        originalFile: req.file.filename,
+        label: newSlotLabel,
+        uploadedFile: req.file.filename,
+        updatedAt: new Date().toISOString()
+      });
+      writeSlots(data);
+    } else if (slotId) {
       const slot = data.slots.find(s => s.id === slotId);
       if (slot) {
         slot.uploadedFile = req.file.filename;
@@ -113,7 +133,7 @@ router.post('/upload', (req, res) => {
 });
 
 // ─── LIST IMAGES WITH METADATA ───
-router.get('/images', (req, res) => {
+router.get('/images', requireAuth, (req, res) => {
   try {
     const result = {};
     const dirs = fs.readdirSync(imagesDir);
@@ -140,7 +160,7 @@ router.get('/images', (req, res) => {
 });
 
 // ─── DELETE IMAGE ───
-router.delete('/images/:section/:filename', (req, res) => {
+router.delete('/images/:section/:filename', requireAuth, (req, res) => {
   try {
     const { section, filename } = req.params;
     // Prevent path traversal
@@ -178,8 +198,8 @@ router.get('/images/slots', (req, res) => {
     // Build response with full URLs
     const result = data.slots.map(s => ({
       ...s,
-      currentFile: s.uploadedFile || s.originalFile,
-      currentUrl: `/images/${s.section}/${s.uploadedFile || s.originalFile}`
+      currentFile: s.uploadedFile || s.originalFile || 'placeholder.svg',
+      currentUrl: `/images/${s.section}/${s.uploadedFile || s.originalFile || 'placeholder.svg'}`
     }));
     res.json(result);
   } catch (error) {
@@ -189,7 +209,7 @@ router.get('/images/slots', (req, res) => {
 });
 
 // ─── ASSIGN IMAGE TO SLOT ───
-router.put('/images/slots/:slotId', (req, res) => {
+router.put('/images/slots/:slotId', requireAuth, (req, res) => {
   try {
     const { slotId } = req.params;
     const { filename } = req.body;
@@ -213,13 +233,53 @@ router.put('/images/slots/:slotId', (req, res) => {
       success: true,
       slot: {
         ...slot,
-        currentFile: slot.uploadedFile || slot.originalFile,
-        currentUrl: `/images/${slot.section}/${slot.uploadedFile || slot.originalFile}`
+        currentFile: slot.uploadedFile || slot.originalFile || 'placeholder.svg',
+        currentUrl: `/images/${slot.section}/${slot.uploadedFile || slot.originalFile || 'placeholder.svg'}`
       }
     });
   } catch (error) {
     console.error('Slot assign error:', error);
     res.status(500).json({ error: 'Failed to assign slot' });
+  }
+});
+
+// ─── CREATE NEW SLOT ───
+router.post('/images/slots', requireAuth, (req, res) => {
+  try {
+    const { section, label } = req.body;
+    if (!section || !label) return res.status(400).json({ error: 'Section et label requis' });
+
+    const slug = label
+      .toLowerCase()
+      .replace(/[^a-z0-9-\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    const id = `${section}-${slug}-${Date.now()}`;
+
+    const data = readSlots();
+    const slot = {
+      id,
+      section,
+      originalFile: null,
+      label,
+      uploadedFile: null,
+      updatedAt: null
+    };
+    data.slots.push(slot);
+    writeSlots(data);
+
+    res.status(201).json({
+      success: true,
+      slot: {
+        ...slot,
+        currentFile: slot.originalFile || 'placeholder.svg',
+        currentUrl: `/images/${section}/placeholder.svg`
+      }
+    });
+  } catch (error) {
+    console.error('Create slot error:', error);
+    res.status(500).json({ error: 'Failed to create slot' });
   }
 });
 

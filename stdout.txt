@@ -1,0 +1,4 @@
+✓ Nord Invest Madagascar server running on http://localhost:3000
+✓ Environment: development
+✓ Static files served from: ./public
+✓ API endpoints available at: /api/*

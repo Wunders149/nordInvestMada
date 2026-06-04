@@ -260,7 +260,7 @@ function handleSubmit(e) {
     message: document.getElementById('message').value
   };
 
-  const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+  const API_BASE = window.location.origin;
 
   fetch(`${API_BASE}/api/contact`, {
     method: 'POST',
@@ -305,7 +305,7 @@ function handleSubmit(e) {
 // ═══════════════════════════════════════════════════════
 
 async function calculatePricing(serviceType, squareMeters, finishingLevel, location) {
-  const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+  const API_BASE = window.location.origin;
   try {
     const response = await fetch(`${API_BASE}/api/calculate-pricing`, {
       method: 'POST',
@@ -430,14 +430,19 @@ function transferToForm(service, tier, surface, location, total) {
 // GALLERY / LIGHTBOX
 // ═══════════════════════════════════════════════════════
 
-const galleryImages = Array.from(document.querySelectorAll('.project-card img')).map(img => ({
-  src: img.src,
-  alt: img.alt
-}));
+let galleryImages = [];
+
+function rebuildGallery() {
+  galleryImages = Array.from(document.querySelectorAll('.project-card img')).map(img => ({
+    src: img.src,
+    alt: img.alt
+  }));
+}
 
 let galleryIndex = 0;
 
 function openGallery(index) {
+  rebuildGallery();
   galleryIndex = index;
   const modal = document.getElementById('galleryModal');
   const img = document.getElementById('galleryImg');
@@ -556,7 +561,7 @@ async function handleNewsletter(e) {
   if (!email) return;
   msg.textContent = '...';
   msg.className = 'newsletter-msg';
-  const API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+  const API_BASE = window.location.origin;
   try {
     const res = await fetch(`${API_BASE}/api/newsletter`, {
       method: 'POST',
@@ -609,6 +614,7 @@ async function loadImageSlots() {
         img.dataset.originalSrc = `/images/${slot.section}/${slot.originalFile}`;
       }
     });
+    rebuildGallery();
   } catch (err) {
     // Silent fail — SVGs remain as fallbacks
   }

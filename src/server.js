@@ -77,8 +77,12 @@ app.post('/api/calculate-pricing', (req, res) => {
   try {
     const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
 
+    const sqMeters = parseFloat(squareMeters);
     if (!serviceType || !squareMeters || !finishingLevel) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+    if (isNaN(sqMeters) || sqMeters <= 0) {
+      return res.status(400).json({ error: 'Invalid square meters value' });
     }
 
     const pricingRates = config.pricing || {};
@@ -104,7 +108,7 @@ app.post('/api/calculate-pricing', (req, res) => {
     if (unit === 'mission' || unit === 'intervention') {
       totalPrice = basePrice * multiplier;
     } else {
-      totalPrice = basePrice * squareMeters * multiplier;
+      totalPrice = basePrice * sqMeters * multiplier;
     }
 
     const contingency = totalPrice * (config.contingency_rate || 0.1);
@@ -114,7 +118,7 @@ app.post('/api/calculate-pricing', (req, res) => {
 
     res.json({
       serviceType,
-      squareMeters: serviceType !== 'forage' ? squareMeters : 1,
+      squareMeters: serviceType !== 'forage' ? sqMeters : 1,
       finishingLevel,
       location,
       basePrice: Math.round(basePrice),
