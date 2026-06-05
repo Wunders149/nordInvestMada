@@ -109,6 +109,22 @@ window._pg_contact = (p) => { contactPage = p; renderContacts(); };
 window._pg_quote = (p) => { quotePage = p; renderQuotes(); };
 window._pg_content = (entity, p) => { contentPage[entity] = p; renderEntity(entity); };
 
+// ─── Sidebar toggle (mobile) ───
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+if (sidebarToggle && sidebar && overlay) {
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+}
+
 // ─── Init ───
 if (checkAuth()) {
   initDarkMode();
