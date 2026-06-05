@@ -19,6 +19,7 @@ const uploadsDir = process.env.UPLOADS_DIR || path.join(projectRoot, 'uploads');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
