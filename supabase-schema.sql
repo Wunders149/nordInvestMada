@@ -115,6 +115,7 @@ CREATE TABLE activity_logs (
 CREATE INDEX idx_activity_timestamp ON activity_logs(timestamp DESC);
 
 -- 10. IMAGE SLOTS
+-- Cloudinary mapping stored in `settings` table under key 'cloudinary_mapping'
 CREATE TABLE image_slots (
   id TEXT PRIMARY KEY,
   section TEXT NOT NULL,

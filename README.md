@@ -13,7 +13,7 @@ Professional real estate and construction website built with Node.js/Express bac
 - **Image Listing API** — Scans and serves available project/team/hero images with metadata
 - **Config Endpoint** — Merges static config.json with dynamic Supabase site_config
 - **Admin Dashboard API** — Secure token-based auth persisted in Supabase, CRUD for contacts/quotes/subscribers/team/services/projects/blog, stats, CSV export
-- **Image Upload & Management API** — Multer-based upload, slot system, rename, replace, delete
+- **Image Upload & Management API** — Cloudinary-based upload, slot system, rename, replace, delete
 - **Rate Limiting** — 5 req/15min on contact/quote, 3 req/15min on newsletter, 30 req/15min on pricing
 - **Input Validation** — Zod schemas for all public and admin endpoints
 - **Session Persistence** — Admin sessions stored in Supabase with in-memory cache (survives restarts)
@@ -140,12 +140,12 @@ npm start     # production
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/images` | Bearer | List all images grouped by section |
-| POST | `/api/upload` | Bearer | Upload image (multipart) |
-| DELETE | `/api/images/:section/:filename` | Bearer | Delete image |
-| PUT | `/api/images/:section/:filename/rename` | Bearer | Rename image |
-| POST | `/api/images/:section/:filename/replace` | Bearer | Replace image file |
-| GET | `/api/images/slots` | — | List all slots |
+| GET | `/api/images` | Bearer | List all images grouped by section (from Supabase + Cloudinary) |
+| POST | `/api/upload` | Bearer | Upload image — saved to Cloudinary, metadata in Supabase |
+| DELETE | `/api/images/:section/:filename` | Bearer | Delete image from Cloudinary + local disk |
+| PUT | `/api/images/:section/:filename/rename` | Bearer | Rename image (updates slot label, Cloudinary public_id stays stable) |
+| POST | `/api/images/:section/:filename/replace` | Bearer | Replace image file — uploads new to Cloudinary, removes old |
+| GET | `/api/images/slots` | — | List all image slots with Cloudinary URLs |
 | PUT | `/api/images/slots/:id` | Bearer | Assign image to slot |
 | POST | `/api/images/slots` | Bearer | Create new slot |
 
@@ -162,6 +162,9 @@ npm start     # production
 | `ADMIN_EMAIL` | No | Where to receive contact alerts |
 | `GOOGLE_ANALYTICS_ID` | No | GA4 measurement ID |
 | `SITE_URL` | No | Canonical site URL |
+| `CLOUDINARY_CLOUD_NAME` | Yes | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret |
 | `ADMIN_USER` | No | Admin username (fallback) |
 | `ADMIN_PASS` | No | Admin password (fallback) |
 
@@ -173,10 +176,12 @@ orinvestmada/
 │   ├── server.js           # Express entry point (routes, rate limiters, email)
 │   ├── admin.js            # Admin API router (CRUD, pricing, settings, activity)
 │   ├── auth.js             # Auth middleware, session management (Supabase-backed)
-│   ├── images.js           # Image upload/management API (Multer, slots)
+│   ├── images.js           # Image upload/management API (Cloudinary + slots)
+│   ├── cloudinary.js       # Cloudinary config + upload/delete/list helpers
 │   ├── supabase.js         # Supabase client + generic CRUD helpers
 │   ├── validation.js       # Zod schemas + validate() middleware
-│   └── migrate.js          # One-time JSON → Supabase migration script
+│   ├── migrate.js          # One-time JSON → Supabase migration script
+│   └── migrate-cloudinary.js  # One-time local → Cloudinary migration script
 ├── public/
 │   ├── index.html          # Main website (SPA)
 │   ├── admin/
@@ -234,6 +239,60 @@ orinvestmada/
 | `site_config` | Singleton — pricing grid, contact info, rates |
 
 ## Deployment
+
+## Cloudinary Migration
+
+Images are stored on **Cloudinary CDN** for optimized delivery, automatic format conversion (`f_auto`), quality optimization (`q_auto`), and CDN edge caching.
+
+### Migration Status
+
+The codebase is fully Cloudinary-ready. All uploads go directly to Cloudinary via server-side upload (Multer memory → Cloudinary API). Two data sources coexist:
+
+- **Cloudinary** — primary storage for uploaded images
+- **Local `public/images/`** — fallback SVGs served via `express.static`
+
+The `image_slots` table has been extended with `cloudinary_public_id` and `cloudinary_url` columns in Supabase.
+
+### Running the Migration
+
+To migrate existing local images to Cloudinary:
+
+```bash
+# 1. Ensure Cloudinary env vars are set in .env
+# 2. Run the migration script
+node src/migrate-cloudinary.js
+```
+
+The script will:
+1. Upload all files from `public/images/*/` to Cloudinary under `nord-invest/{section}/`
+2. Upload logo and standards SVGs to Cloudinary
+3. Create or update `image_slots` entries with Cloudinary public IDs and URLs
+4. Print a summary and next steps (update OG meta tags, JSON-LD)
+
+### Cloudinary Folder Structure
+
+```
+nord-invest/
+├── hero/        # Hero section images
+├── about/       # About section images
+├── team/        # Team member photos
+├── projects/    # Project portfolio images
+├── blog/        # Blog post images
+├── gallery/     # Gallery images
+├── services/    # Service section images
+├── standards/   # Standards/security icons
+├── logos/       # Company logo
+└── gallery/     # Additional gallery images
+```
+
+### Image Slot URL Resolution
+
+The `GET /api/images/slots` endpoint returns each slot with a `currentUrl` field. The resolution order is:
+
+1. `cloudinary_url` — Cloudinary CDN URL (if migrated)
+2. `uploaded_file` — Local path to user-uploaded image
+3. `original_file` — Local path to fallback SVG
+4. `placeholder.svg` — Generic placeholder image
 
 ### Render
 1. Push to GitHub

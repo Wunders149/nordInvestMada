@@ -630,11 +630,12 @@ async function loadImageSlots() {
     if (!res.ok) return;
     const slots = await res.json();
     slots.forEach(slot => {
-      if (!slot.uploadedFile) return;
+      if (!slot.uploadedFile && !slot.cloudinaryUrl) return;
+      if (!slot.currentUrl || slot.currentUrl.endsWith('placeholder.svg')) return;
       const img = document.querySelector(`[data-image-slot="${slot.id}"]`);
       if (img) {
         img.src = slot.currentUrl;
-        img.dataset.originalSrc = `/images/${slot.section}/${slot.originalFile}`;
+        img.dataset.originalSrc = slot.originalFile ? `/images/${slot.section}/${slot.originalFile}` : '';
       }
     });
     rebuildGallery();

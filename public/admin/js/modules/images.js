@@ -52,13 +52,15 @@ export function renderImages() {
     return;
   }
   grid.innerHTML = allFiles.map(f => {
-    const slotInfo = slots.find(s => s.section === f.section && s.uploadedFile === f.name);
+    const imgSrc = f.cloudinaryUrl || `/${f.path}`;
+    const lightboxUrl = f.cloudinaryUrl || `/${f.path}`;
+    const slotInfo = slots.find(s => s.id === f.slotId);
     const sectionSlots = slots.filter(s => s.section === f.section);
     return `
       <div class="image-card">
         ${slotInfo ? `<span class="slot-badge">${escapeHtml(slotInfo.label)}</span>` : ''}
-        <div class="img-wrap" onclick="openLightbox('/${f.path}')">
-          <img src="/${f.path}" alt="${escapeHtml(f.name)}" loading="lazy">
+        <div class="img-wrap" onclick="openLightbox('${escapeHtml(lightboxUrl)}')">
+          <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(f.name)}" loading="lazy">
         </div>
         <div class="img-info">
           <span class="img-name">${escapeHtml(f.name)}</span>
@@ -67,7 +69,7 @@ export function renderImages() {
         <div class="img-actions">
           <select class="slot-select" onchange="assignSlot('${escapeHtml(f.section)}', '${escapeHtml(f.name)}', this.value)">
             <option value="">Assigner...</option>
-            ${sectionSlots.map(s => `<option value="${s.id}" ${s.uploadedFile === f.name ? 'selected' : ''}>${escapeHtml(s.label)}${s.uploadedFile === f.name ? ' ✓' : ''}</option>`).join('')}
+            ${sectionSlots.map(s => `<option value="${s.id}" ${s.id === f.slotId ? 'selected' : ''}>${escapeHtml(s.label)}${s.id === f.slotId ? ' ✓' : ''}</option>`).join('')}
           </select>
           <button class="btn-icon info" onclick="openImageEditor('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Modifier">✏</button>
           <button class="btn-icon danger" onclick="confirmDeleteImage('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Supprimer">✕</button>
@@ -112,8 +114,11 @@ export function openImageEditor(section, filename) {
   imageEditState.filename = filename;
   const nameWithoutExt = getBase(filename);
 
+  const currentSlot = slots.find(s => s.section === section && s.id === (images[section]?.find(f => f.name === filename)?.slotId || ''));
+  const imgSrc = currentSlot?.cloudinaryUrl || `/images/${section}/${filename}`;
+
   document.getElementById('imageEditTitle').textContent = `Modifier : ${filename}`;
-  document.getElementById('imageEditPreview').src = `/images/${section}/${filename}`;
+  document.getElementById('imageEditPreview').src = imgSrc;
   document.getElementById('imageEditName').value = nameWithoutExt;
   document.getElementById('imageEditExt').textContent = getExt(filename);
   document.getElementById('imageEditSection').value = section;
@@ -124,11 +129,10 @@ export function openImageEditor(section, filename) {
   const slotSelect = document.getElementById('imageEditSlot');
   slotSelect.innerHTML = '<option value="">— Aucun —</option>';
   const sectionSlots = slots.filter(s => s.section === section);
-  const currentSlot = slots.find(s => s.section === section && s.uploadedFile === filename);
   sectionSlots.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.id;
-    opt.textContent = s.label + (s.uploadedFile === filename ? ' (actuel)' : s.uploadedFile ? ' ✓' : '');
+    opt.textContent = s.label + (s.id === currentSlot?.id ? ' (actuel)' : s.uploadedFile ? ' ✓' : '');
     if (currentSlot && currentSlot.id === s.id) opt.selected = true;
     slotSelect.appendChild(opt);
   });
