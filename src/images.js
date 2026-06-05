@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { requireAuth } from './admin.js';
+import { requireAuth, logActivity, writeJSON, readJSON } from './auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -13,9 +13,8 @@ const slotsPath = path.join(dataDir, 'image-slots.json');
 
 const router = Router();
 
-// ─── Multer setup ───
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 10 * 1024 * 1024;
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -48,18 +47,11 @@ const upload = multer({
   }
 });
 
-// ─── Helpers ───
 function readSlots() {
   try {
     if (!fs.existsSync(slotsPath)) return { slots: [] };
     return JSON.parse(fs.readFileSync(slotsPath, 'utf8'));
   } catch { return { slots: [] }; }
-}
-
-function writeSlots(data) {
-  const dir = path.dirname(slotsPath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
 }
 
 function getImageMetadata(filePath, relativePath) {
@@ -77,7 +69,7 @@ function getImageMetadata(filePath, relativePath) {
 
 // ─── UPLOAD IMAGE ───
 router.post('/upload', requireAuth, (req, res) => {
-  upload.single('image')(req, res, (err) => {
+  upload.single('image')(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'Fichier trop volumineux (max 10MB)' });
@@ -95,9 +87,8 @@ router.post('/upload', requireAuth, (req, res) => {
     const metadata = getImageMetadata(req.file.path, relativePath);
 
     const data = readSlots();
-
-    // If a new slot label was provided, create a new slot and assign
     const newSlotLabel = req.body.newSlotLabel;
+
     if (newSlotLabel) {
       const slug = newSlotLabel
         .toLowerCase()
@@ -114,15 +105,19 @@ router.post('/upload', requireAuth, (req, res) => {
         uploadedFile: req.file.filename,
         updatedAt: new Date().toISOString()
       });
-      writeSlots(data);
     } else if (slotId) {
       const slot = data.slots.find(s => s.id === slotId);
       if (slot) {
         slot.uploadedFile = req.file.filename;
         slot.updatedAt = new Date().toISOString();
-        writeSlots(data);
       }
     }
+
+    const slotsDir = path.dirname(slotsPath);
+    if (!fs.existsSync(slotsDir)) fs.mkdirSync(slotsDir, { recursive: true });
+    fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
+
+    logActivity('image_upload', `Image uploadée: ${req.file.filename} (${section})`, req.admin?.username || 'admin');
 
     res.json({
       success: true,
@@ -132,7 +127,7 @@ router.post('/upload', requireAuth, (req, res) => {
   });
 });
 
-// ─── LIST IMAGES WITH METADATA ───
+// ─── LIST IMAGES ───
 router.get('/images', requireAuth, (req, res) => {
   try {
     const result = {};
@@ -163,7 +158,6 @@ router.get('/images', requireAuth, (req, res) => {
 router.delete('/images/:section/:filename', requireAuth, (req, res) => {
   try {
     const { section, filename } = req.params;
-    // Prevent path traversal
     if (section.includes('..') || filename.includes('..') || section.includes('/') || filename.includes('/')) {
       return res.status(400).json({ error: 'Invalid path' });
     }
@@ -172,7 +166,6 @@ router.delete('/images/:section/:filename', requireAuth, (req, res) => {
 
     fs.unlinkSync(filePath);
 
-    // Unassign from any slot using this file
     const data = readSlots();
     let changed = false;
     data.slots.forEach(s => {
@@ -182,7 +175,9 @@ router.delete('/images/:section/:filename', requireAuth, (req, res) => {
         changed = true;
       }
     });
-    if (changed) writeSlots(data);
+    if (changed) fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
+
+    logActivity('image_delete', `Image supprimée: ${filename} (${section})`, req.admin?.username || 'admin');
 
     res.json({ success: true });
   } catch (error) {
@@ -191,12 +186,118 @@ router.delete('/images/:section/:filename', requireAuth, (req, res) => {
   }
 });
 
+// ─── RENAME IMAGE ───
+router.put('/images/:section/:filename/rename', requireAuth, (req, res) => {
+  try {
+    const { section, filename } = req.params;
+    const { newName } = req.body;
+    if (!newName || !newName.trim()) return res.status(400).json({ error: 'Nouveau nom requis' });
+    if (section.includes('..') || filename.includes('..') || filename.includes('/')) {
+      return res.status(400).json({ error: 'Invalid path' });
+    }
+
+    const ext = path.extname(filename);
+    const baseNew = path.basename(newName.trim(), ext)
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    if (!baseNew) return res.status(400).json({ error: 'Nom invalide après nettoyage' });
+    const newFilename = `${baseNew}${ext}`;
+
+    const oldPath = path.join(imagesDir, section, filename);
+    const newPath = path.join(imagesDir, section, newFilename);
+    if (!fs.existsSync(oldPath)) return res.status(404).json({ error: 'Fichier non trouvé' });
+    if (fs.existsSync(newPath)) return res.status(409).json({ error: 'Un fichier avec ce nom existe déjà' });
+
+    fs.renameSync(oldPath, newPath);
+
+    const data = readSlots();
+    let changed = false;
+    data.slots.forEach(s => {
+      if (s.section === section && s.uploadedFile === filename) {
+        s.uploadedFile = newFilename;
+        s.updatedAt = new Date().toISOString();
+        changed = true;
+      }
+      if (s.section === section && s.originalFile === filename) {
+        s.originalFile = newFilename;
+        changed = true;
+      }
+    });
+    if (changed) fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
+
+    const relativePath = path.join('images', section, newFilename).replace(/\\/g, '/');
+    logActivity('image_rename', `Image renommée: ${filename} → ${newFilename} (${section})`, req.admin?.username || 'admin');
+
+    res.json({
+      success: true,
+      file: {
+        name: newFilename,
+        path: relativePath,
+        url: `/${relativePath}`
+      }
+    });
+  } catch (error) {
+    console.error('Image rename error:', error);
+    res.status(500).json({ error: 'Failed to rename image' });
+  }
+});
+
+// ─── REPLACE IMAGE ───
+router.post('/images/:section/:filename/replace', requireAuth, (req, res) => {
+  upload.single('image')(req, res, async (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'Fichier trop volumineux (max 10MB)' });
+        return res.status(400).json({ error: err.message });
+      }
+      return res.status(400).json({ error: err.message });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
+
+    const { section, filename } = req.params;
+    if (section.includes('..') || filename.includes('..') || filename.includes('/')) {
+      return res.status(400).json({ error: 'Invalid path' });
+    }
+
+    const oldPath = path.join(imagesDir, section, filename);
+    if (fs.existsSync(oldPath)) {
+      fs.unlinkSync(oldPath);
+    }
+
+    const relativePath = path.join('images', section, req.file.filename).replace(/\\/g, '/');
+
+    const data = readSlots();
+    let changed = false;
+    data.slots.forEach(s => {
+      if (s.section === section && s.uploadedFile === filename) {
+        s.uploadedFile = req.file.filename;
+        s.updatedAt = new Date().toISOString();
+        changed = true;
+      }
+    });
+    if (changed) fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
+
+    logActivity('image_replace', `Image remplacée: ${filename} → ${req.file.filename} (${section})`, req.admin?.username || 'admin');
+
+    res.json({
+      success: true,
+      url: `/${relativePath}`,
+      file: {
+        name: req.file.filename,
+        path: relativePath,
+        size: req.file.size
+      }
+    });
+  });
+});
+
 // ─── GET SLOT ASSIGNMENTS ───
 router.get('/images/slots', (req, res) => {
   try {
     const data = readSlots();
-    // Build response with full URLs
-    const result = data.slots.map(s => ({
+    const result = (data.slots || []).map(s => ({
       ...s,
       currentFile: s.uploadedFile || s.originalFile || 'placeholder.svg',
       currentUrl: `/images/${s.section}/${s.uploadedFile || s.originalFile || 'placeholder.svg'}`
@@ -219,7 +320,6 @@ router.put('/images/slots/:slotId', requireAuth, (req, res) => {
     if (!slot) return res.status(404).json({ error: 'Slot non trouvé' });
 
     if (filename) {
-      // Verify the file exists
       const filePath = path.join(imagesDir, slot.section, filename);
       if (!fs.existsSync(filePath)) return res.status(400).json({ error: 'Fichier introuvable dans cette section' });
       slot.uploadedFile = filename;
@@ -227,7 +327,9 @@ router.put('/images/slots/:slotId', requireAuth, (req, res) => {
       slot.uploadedFile = null;
     }
     slot.updatedAt = new Date().toISOString();
-    writeSlots(data);
+    fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
+
+    logActivity('slot_assign', `Slot ${slotId} assigné à ${filename || 'aucun'}`, req.admin?.username || 'admin');
 
     res.json({
       success: true,
@@ -258,22 +360,24 @@ router.post('/images/slots', requireAuth, (req, res) => {
     const id = `${section}-${slug}-${Date.now()}`;
 
     const data = readSlots();
-    const slot = {
+    data.slots.push({
       id,
       section,
       originalFile: null,
       label,
       uploadedFile: null,
       updatedAt: null
-    };
-    data.slots.push(slot);
-    writeSlots(data);
+    });
+    fs.writeFileSync(slotsPath, JSON.stringify(data, null, 2));
+
+    logActivity('slot_create', `Slot créé: ${label} (${section})`, req.admin?.username || 'admin');
 
     res.status(201).json({
       success: true,
       slot: {
-        ...slot,
-        currentFile: slot.originalFile || 'placeholder.svg',
+        id, section, label,
+        originalFile: null, uploadedFile: null, updatedAt: null,
+        currentFile: 'placeholder.svg',
         currentUrl: `/images/${section}/placeholder.svg`
       }
     });

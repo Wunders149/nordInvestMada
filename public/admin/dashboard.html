@@ -76,6 +76,10 @@
           <span class="nav-icon">⚙️</span>
           Paramètres
         </button>
+        <button class="nav-btn" data-tab="activity">
+          <span class="nav-icon">📋</span>
+          Journal
+        </button>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -97,6 +101,7 @@
       <h1 id="pageTitle">Tableau de bord <small>Vue d'ensemble</small></h1>
       <div class="top-header-actions" id="topHeaderActions"></div>
       <div class="top-header-right">
+        <a href="/" target="_blank" class="btn-ghost" style="font-size:0.75rem;padding:0.35rem 0.75rem;text-decoration:none" title="Voir le site public">🌐 Site public</a>
         <span style="font-size:0.75rem;color:var(--gray-400)" id="lastUpdate"></span>
         <button class="btn-ghost" onclick="document.getElementById('shortcutsModal').classList.add('open')" title="Raccourcis clavier (?)" style="font-size:0.9rem;padding:0.25rem 0.5rem">⌨</button>
       </div>
@@ -385,8 +390,14 @@
       <!-- ─── TEAM TAB ─── -->
       <section id="tab-team" class="tab-content">
         <div class="tab-toolbar">
-          <h3 class="tab-title">Gérer les membres de l'équipe</h3>
-          <button class="btn-secondary" onclick="openTeamForm()">+ Ajouter</button>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="teamSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('team')">
+          </div>
+          <div class="tab-toolbar-actions">
+            <button class="btn-secondary" id="teamExport" onclick="exportEntity('team')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" onclick="openTeamForm()">+ Ajouter</button>
+          </div>
         </div>
         <div id="teamList" class="admin-card-grid"></div>
       </section>
@@ -394,8 +405,14 @@
       <!-- ─── SERVICES TAB ─── -->
       <section id="tab-services" class="tab-content">
         <div class="tab-toolbar">
-          <h3 class="tab-title">Gérer les services</h3>
-          <button class="btn-secondary" onclick="openServiceForm()">+ Ajouter</button>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="servicesSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('services')">
+          </div>
+          <div class="tab-toolbar-actions">
+            <button class="btn-secondary" id="servicesExport" onclick="exportEntity('services')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" onclick="openServiceForm()">+ Ajouter</button>
+          </div>
         </div>
         <div id="servicesList" class="admin-card-grid"></div>
       </section>
@@ -403,8 +420,14 @@
       <!-- ─── PROJECTS TAB ─── -->
       <section id="tab-projects" class="tab-content">
         <div class="tab-toolbar">
-          <h3 class="tab-title">Gérer les réalisations</h3>
-          <button class="btn-secondary" onclick="openProjectForm()">+ Ajouter</button>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="projectsSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('projects')">
+          </div>
+          <div class="tab-toolbar-actions">
+            <button class="btn-secondary" id="projectsExport" onclick="exportEntity('projects')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" onclick="openProjectForm()">+ Ajouter</button>
+          </div>
         </div>
         <div id="projectsList" class="admin-card-grid"></div>
       </section>
@@ -412,8 +435,14 @@
       <!-- ─── BLOG TAB ─── -->
       <section id="tab-blog" class="tab-content">
         <div class="tab-toolbar">
-          <h3 class="tab-title">Gérer les articles</h3>
-          <button class="btn-secondary" onclick="openBlogForm()">+ Ajouter</button>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="blogSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('blog')">
+          </div>
+          <div class="tab-toolbar-actions">
+            <button class="btn-secondary" id="blogExport" onclick="exportEntity('blog')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" onclick="openBlogForm()">+ Ajouter</button>
+          </div>
         </div>
         <div id="blogList" class="admin-card-grid"></div>
       </section>
@@ -434,6 +463,29 @@
           <button class="btn-secondary" onclick="saveSettings()" id="saveSettingsBtn">💾 Enregistrer</button>
         </div>
         <div id="settingsEditor"></div>
+      </section>
+
+      <!-- ─── ACTIVITY LOG TAB ─── -->
+      <section id="tab-activity" class="tab-content">
+        <div class="tab-toolbar">
+          <h3 class="tab-title">Journal d'activité</h3>
+          <button class="btn-secondary" onclick="loadActivityLog()">🔄 Actualiser</button>
+        </div>
+        <div class="table-wrapper responsive-table">
+          <div class="table-scroll">
+            <table id="activityTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Action</th>
+                  <th>Détails</th>
+                  <th>Utilisateur</th>
+                </tr>
+              </thead>
+              <tbody id="activityBody"></tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -557,6 +609,48 @@
       <div class="modal-actions crud-modal-actions">
         <button class="btn-secondary" onclick="closeCrudForm()">Annuler</button>
         <button class="btn-primary" id="crudSaveBtn" onclick="saveCrudItem()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── IMAGE EDIT MODAL ─── -->
+  <div class="modal-overlay detail-modal" id="imageEditModal">
+    <div class="modal-box detail-box" style="max-width:560px">
+      <div class="detail-header">
+        <h3 id="imageEditTitle">Modifier l'image</h3>
+        <button class="modal-close" id="imageEditClose">✕</button>
+      </div>
+      <div class="detail-body">
+        <div class="image-edit-preview" style="text-align:center;margin-bottom:1rem">
+          <img id="imageEditPreview" src="" alt="Preview" style="max-width:100%;max-height:220px;border-radius:0.5rem;object-fit:contain;background:var(--bg-card)">
+        </div>
+        <div class="form-group">
+          <label for="imageEditName">Nom du fichier</label>
+          <div style="display:flex;gap:0.5rem">
+            <input type="text" id="imageEditName" class="search-input" style="flex:1" placeholder="nouveau-nom">
+            <span id="imageEditExt" style="display:flex;align-items:center;font-size:0.8125rem;color:var(--gray-500)"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="imageEditSection">Section</label>
+          <input type="text" id="imageEditSection" class="search-input" readonly style="background:var(--bg-card);color:var(--text-muted)">
+        </div>
+        <div class="form-group">
+          <label for="imageEditSlot">Assignation au slot</label>
+          <select id="imageEditSlot" class="status-select" style="width:100%">
+            <option value="">— Aucun —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Remplacer l'image</label>
+          <input type="file" id="imageEditFile" accept="image/jpeg,image/png,image/webp,image/gif" style="font-size:0.8125rem">
+          <div id="imageEditReplaceStatus" style="font-size:0.75rem;color:var(--gray-500);margin-top:0.25rem"></div>
+        </div>
+        <div id="imageEditError" class="error-msg hidden"></div>
+      </div>
+      <div class="detail-footer">
+        <button class="btn-primary" id="imageEditSave">💾 Enregistrer</button>
+        <button class="btn-secondary" id="imageEditCloseBtn">Annuler</button>
       </div>
     </div>
   </div>

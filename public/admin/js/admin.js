@@ -1,3 +1,7 @@
+// ══════════════════════════════════════════════
+// NORD INVEST MADAGASCAR — Admin Dashboard
+// ══════════════════════════════════════════════
+
 const API_BASE = '/api/admin';
 let token = '';
 let contacts = [];
@@ -5,18 +9,22 @@ let quotes = [];
 let subscribers = [];
 let slots = [];
 let images = {};
+let activityLogs = [];
 let selectedContactIds = new Set();
 let selectedQuoteIds = new Set();
 
-// Pagination state
 const PER_PAGE = 10;
 let contactPage = 1;
 let quotePage = 1;
+let contentPage = {};
 let contactDetailId = null;
 
-// Filter state
 let contactFilter = 'all';
 let quoteFilter = 'all';
+
+// Lazy load trackers
+const loadedTabs = new Set();
+let isDirty = false;
 
 // ══════════════════════════════════════════════
 // HELPERS
@@ -50,10 +58,32 @@ function formatDateShort(iso) {
 }
 
 function humanSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
+  if (!bytes || bytes < 1024) return (bytes || 0) + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
 }
+
+// ══════════════════════════════════════════════
+// UNSAVED CHANGES WARNING
+// ══════════════════════════════════════════════
+
+function markDirty() { isDirty = true; }
+function markClean() { isDirty = false; }
+
+function confirmNavigation(callback) {
+  if (!isDirty) { callback(); return; }
+  showConfirm('Modifications non enregistrées', 'Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter ?', () => {
+    markClean();
+    callback();
+  });
+}
+
+window.addEventListener('beforeunload', (e) => {
+  if (isDirty) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 
 // ══════════════════════════════════════════════
 // SKELETON LOADING
@@ -61,6 +91,7 @@ function humanSize(bytes) {
 
 function showSkeletonTable(id, cols, rows = 5) {
   const tbody = document.getElementById(id);
+  if (!tbody) return;
   tbody.innerHTML = Array(rows).fill(0).map(() =>
     `<tr class="skeleton-row">${Array(cols).fill(0).map(() => '<td><div class="skeleton skeleton-cell"></div></td>').join('')}</tr>`
   ).join('');
@@ -75,6 +106,7 @@ function showSkeletonStats() {
 
 function showSkeletonGrid(id, count = 6) {
   const grid = document.getElementById(id);
+  if (!grid) return;
   grid.innerHTML = Array(count).fill(0).map(() =>
     `<div class="skeleton skeleton-card"></div>`
   ).join('');
@@ -86,6 +118,7 @@ function showSkeletonGrid(id, count = 6) {
 
 function renderPagination(id, page, total, perPage, onPage) {
   const el = document.getElementById(id);
+  if (!el) return;
   const totalPages = Math.ceil(total / perPage);
   if (totalPages <= 1) { el.innerHTML = ''; return; }
   let html = '';
@@ -101,6 +134,10 @@ function renderPagination(id, page, total, perPage, onPage) {
   el.innerHTML = html;
 }
 
+window._pg_contact = (p) => { contactPage = p; renderContacts(); };
+window._pg_quote = (p) => { quotePage = p; renderQuotes(); };
+window._pg_content = (entity, p) => { contentPage[entity] = p; renderEntity(entity); };
+
 // ══════════════════════════════════════════════
 // EMPTY STATE
 // ══════════════════════════════════════════════
@@ -115,6 +152,14 @@ function emptyState(icon, title, desc) {
       </div>
     </td></tr>
   `;
+}
+
+function emptyStateGrid(icon, title, desc) {
+  return `<div class="empty-state" style="grid-column:1/-1">
+    <div class="empty-icon">${icon}</div>
+    <div class="empty-title">${title}</div>
+    <div class="empty-desc">${desc}</div>
+  </div>`;
 }
 
 // ══════════════════════════════════════════════
@@ -151,13 +196,15 @@ function showConfirm(title, msg, cb) {
   confirmCallback = cb;
 }
 
-document.getElementById('confirmCancel').addEventListener('click', () => {
-  document.getElementById('confirmModal').classList.remove('open');
-  confirmCallback = null;
-});
-document.getElementById('confirmOk').addEventListener('click', () => {
-  document.getElementById('confirmModal').classList.remove('open');
-  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('confirmCancel').addEventListener('click', () => {
+    document.getElementById('confirmModal').classList.remove('open');
+    confirmCallback = null;
+  });
+  document.getElementById('confirmOk').addEventListener('click', () => {
+    document.getElementById('confirmModal').classList.remove('open');
+    if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+  });
 });
 
 // ══════════════════════════════════════════════
@@ -170,18 +217,23 @@ function checkAuth() {
   return true;
 }
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  showConfirm('Déconnexion', 'Voulez-vous vraiment vous déconnecter ?', () => {
-    fetch(`${API_BASE}/logout`, { method: 'POST', headers: getHeaders() })
-      .catch(() => {})
-      .finally(() => {
-        localStorage.removeItem('adminToken');
-        window.location.href = '/admin/login.html';
-      });
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    showConfirm('Déconnexion', 'Voulez-vous vraiment vous déconnecter ?', () => {
+      fetch(`${API_BASE}/logout`, { method: 'POST', headers: getHeaders() })
+        .catch(() => {})
+        .finally(() => {
+          localStorage.removeItem('adminToken');
+          window.location.href = '/admin/login.html';
+        });
+    });
   });
 });
 
-// ─── DARK MODE ───
+// ══════════════════════════════════════════════
+// DARK MODE
+// ══════════════════════════════════════════════
+
 function initDarkMode() {
   const saved = localStorage.getItem('adminDarkMode');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -198,80 +250,128 @@ function updateDarkBtn() {
   btn.innerHTML = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
 }
 
-document.getElementById('darkModeBtn').addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  const isDark = document.body.classList.contains('dark');
-  localStorage.setItem('adminDarkMode', isDark);
-  updateDarkBtn();
-  // Re-render charts with new theme
-  renderCharts();
+document.addEventListener('DOMContentLoaded', () => {
+  const darkBtn = document.getElementById('darkModeBtn');
+  if (darkBtn) {
+    darkBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      localStorage.setItem('adminDarkMode', isDark);
+      updateDarkBtn();
+      renderCharts();
+    });
+  }
 });
 
 // ══════════════════════════════════════════════
-// SIDEBAR NAVIGATION
+// SIDEBAR NAVIGATION + LAZY LOADING
 // ══════════════════════════════════════════════
 
-document.getElementById('sidebarToggle').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('open');
-});
-document.getElementById('sidebarOverlay').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('open');
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+  }
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+    });
+  });
 });
 
 function switchTab(tabId) {
+  confirmNavigation(() => {
+    _switchTab(tabId);
+  });
+}
+
+function _switchTab(tabId) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.nav-btn[data-tab="${tabId}"]`).classList.add('active');
-  document.getElementById(`tab-${tabId}`).classList.add('active');
+  const navBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+  if (navBtn) navBtn.classList.add('active');
+  const tab = document.getElementById(`tab-${tabId}`);
+  if (tab) tab.classList.add('active');
+
   const titles = {
     dashboard: 'Tableau de bord', contacts: 'Messages', quotes: 'Devis',
     subscribers: 'Newsletter', images: 'Galerie',
     team: 'Équipe', services: 'Services', projects: 'Projets',
-    blog: 'Blog', pricing: 'Tarifs', settings: 'Paramètres'
+    blog: 'Blog', pricing: 'Tarifs', settings: 'Paramètres',
+    activity: 'Journal d\'activité'
   };
-  document.getElementById('pageTitle').innerHTML = `${titles[tabId] || tabId} <small>Gestion</small>`;
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('open');
-  if (tabId === 'dashboard') renderDashboard();
-  else if (tabId === 'contacts') loadContacts();
-  else if (tabId === 'quotes') loadQuotes();
-  else if (tabId === 'subscribers') loadSubscribers();
-  else if (tabId === 'images') { loadSlots(); loadImages(); }
-  else if (tabId === 'team') loadEntity('team');
-  else if (tabId === 'services') loadEntity('services');
-  else if (tabId === 'projects') loadEntity('projects');
-  else if (tabId === 'blog') loadEntity('blog');
-  else if (tabId === 'pricing') loadPricing();
-  else if (tabId === 'settings') loadSettings();
+  const pageTitle = document.getElementById('pageTitle');
+  if (pageTitle) pageTitle.innerHTML = `${titles[tabId] || tabId} <small>Gestion</small>`;
+
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+
+  // Lazy load per tab — only fetch data on first visit
+  if (!loadedTabs.has(tabId)) {
+    loadedTabs.add(tabId);
+    switch (tabId) {
+      case 'dashboard': renderDashboard(); break;
+      case 'contacts': loadContacts(); break;
+      case 'quotes': loadQuotes(); break;
+      case 'subscribers': loadSubscribers(); break;
+      case 'images': loadSlots(); loadImages(); break;
+      case 'team': loadEntity('team'); break;
+      case 'services': loadEntity('services'); break;
+      case 'projects': loadEntity('projects'); break;
+      case 'blog': loadEntity('blog'); break;
+      case 'pricing': loadPricingEditor(); break;
+      case 'settings': loadSettings(); break;
+      case 'activity': loadActivityLog(); break;
+    }
+  } else {
+    // Refresh data if re-visiting
+    switch (tabId) {
+      case 'dashboard': renderDashboard(); loadStats(); break;
+      case 'contacts': renderContacts(); break;
+      case 'quotes': renderQuotes(); break;
+      case 'subscribers': renderSubscribers(); break;
+      case 'images': renderImages(); break;
+    }
+  }
 }
 
-document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    switchTab(btn.dataset.tab);
-  });
+// ══════════════════════════════════════════════
+// SEARCH (declarative event binding)
+// ══════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cs = document.getElementById('contactSearch');
+  if (cs) cs.addEventListener('input', () => { contactPage = 1; renderContacts(); });
+  const qs = document.getElementById('quoteSearch');
+  if (qs) qs.addEventListener('input', () => { quotePage = 1; renderQuotes(); });
+  const ss = document.getElementById('subSearch');
+  if (ss) ss.addEventListener('input', renderSubscribers);
 });
 
 // ══════════════════════════════════════════════
-// SEARCH
+// STATS + CHARTS
 // ══════════════════════════════════════════════
 
-document.getElementById('contactSearch').addEventListener('input', () => { contactPage = 1; renderContacts(); });
-document.getElementById('quoteSearch').addEventListener('input', () => { quotePage = 1; renderQuotes(); });
-document.getElementById('subSearch').addEventListener('input', renderSubscribers);
-
-// ══════════════════════════════════════════════
-// STATS
-// ══════════════════════════════════════════════
-
-// ─── CHARTS ───
 function renderCharts() {
   const isDark = document.body.classList.contains('dark');
   const textColor = isDark ? '#94a3b8' : '#64748b';
   const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-  // Contacts bar chart
   const ctx1 = document.getElementById('contactsChart');
   if (ctx1) {
     const canvas = ctx1;
@@ -284,7 +384,6 @@ function renderCharts() {
 
     c.clearRect(0, 0, w, h);
 
-    // Aggregate contacts by month
     const monthly = {};
     contacts.forEach(ct => {
       const d = new Date(ct.date);
@@ -309,7 +408,6 @@ function renderCharts() {
     const barW = Math.min(40, chartW / months.length * 0.6);
     const gap = chartW / months.length;
 
-    // Grid lines
     for (let i = 0; i <= 3; i++) {
       const y = pad.top + (chartH / 3) * i;
       c.strokeStyle = gridColor;
@@ -320,7 +418,6 @@ function renderCharts() {
       c.stroke();
     }
 
-    // Bars
     months.forEach((m, i) => {
       const x = pad.left + gap * i + (gap - barW) / 2;
       const barH = (values[i] / maxVal) * chartH;
@@ -338,7 +435,6 @@ function renderCharts() {
         c.fillRect(x, y, barW, barH);
       }
 
-      // Label
       c.fillStyle = textColor;
       c.font = '8px Inter, sans-serif';
       c.textAlign = 'center';
@@ -347,7 +443,6 @@ function renderCharts() {
     });
   }
 
-  // Quotes donut chart
   const ctx2 = document.getElementById('quotesChart');
   if (ctx2) {
     const canvas = ctx2;
@@ -393,7 +488,6 @@ function renderCharts() {
       startAngle += sliceAngle;
     });
 
-    // Center text
     c.fillStyle = textColor;
     c.font = 'bold 18px Inter, sans-serif';
     c.textAlign = 'center';
@@ -402,7 +496,6 @@ function renderCharts() {
     c.font = '8px Inter, sans-serif';
     c.fillText('Total', cx, cy + 12);
 
-    // Legend
     const legendX = w * 0.55;
     let legendY = 30;
     labels.forEach((label, i) => {
@@ -447,7 +540,8 @@ async function loadStats() {
 function setContactFilter(filter) {
   contactFilter = filter;
   document.querySelectorAll('#contactFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`#contactFilterBar .filter-btn[data-filter="${filter}"]`).classList.add('active');
+  const btn = document.querySelector(`#contactFilterBar .filter-btn[data-filter="${filter}"]`);
+  if (btn) btn.classList.add('active');
   contactPage = 1;
   renderContacts();
 }
@@ -455,7 +549,8 @@ function setContactFilter(filter) {
 function setQuoteFilter(filter) {
   quoteFilter = filter;
   document.querySelectorAll('#quoteFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`#quoteFilterBar .filter-btn[data-filter="${filter}"]`).classList.add('active');
+  const btn = document.querySelector(`#quoteFilterBar .filter-btn[data-filter="${filter}"]`);
+  if (btn) btn.classList.add('active');
   quotePage = 1;
   renderQuotes();
 }
@@ -481,18 +576,16 @@ async function loadContacts() {
     contacts = await res.json();
     contactPage = 1;
     renderContacts();
-    renderDashboard();
+    loadStats();
   } catch (err) { console.error('Contacts error:', err); }
 }
 
-window._pg_contact = (p) => { contactPage = p; renderContacts(); };
-
-// ─── BULK CONTACT ACTIONS ───
 function toggleContactSelect(id, checked) {
   if (checked) selectedContactIds.add(id);
   else selectedContactIds.delete(id);
   updateContactBulkBar();
 }
+
 function toggleAllContacts(checked) {
   const search = document.getElementById('contactSearch').value.toLowerCase();
   let filtered = contacts.filter(c =>
@@ -512,19 +605,22 @@ function toggleAllContacts(checked) {
   }
   renderContacts();
 }
+
 function clearContactSelection() {
   selectedContactIds.clear();
   document.getElementById('contactSelectAll').checked = false;
   renderContacts();
 }
+
 function updateContactBulkBar() {
   const bar = document.getElementById('contactBulkBar');
   const count = document.getElementById('contactBulkCount');
   const total = selectedContactIds.size;
-  if (total === 0) { bar.classList.add('hidden'); return; }
-  bar.classList.remove('hidden');
-  count.textContent = `${total} sélectionné(s)`;
+  if (total === 0) { if (bar) bar.classList.add('hidden'); return; }
+  if (bar) bar.classList.remove('hidden');
+  if (count) count.textContent = `${total} sélectionné(s)`;
 }
+
 async function bulkMarkRead() {
   const ids = [...selectedContactIds];
   if (ids.length === 0) return;
@@ -539,6 +635,7 @@ async function bulkMarkRead() {
     showToast(`${ids.length} message(s) marqué(s) comme lu`, 'success');
   } catch (err) { showToast('Erreur', 'error'); }
 }
+
 async function bulkDeleteContacts() {
   const ids = [...selectedContactIds];
   if (ids.length === 0) return;
@@ -559,6 +656,7 @@ async function bulkDeleteContacts() {
 function renderContacts() {
   const search = document.getElementById('contactSearch').value.toLowerCase();
   const tbody = document.getElementById('contactsBody');
+  if (!tbody) return;
   let filtered = contacts.filter(c =>
     c.name.toLowerCase().includes(search) ||
     c.email.toLowerCase().includes(search) ||
@@ -570,7 +668,8 @@ function renderContacts() {
     else if (contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
   }
   const totalNew = contacts.filter(c => !c.read).length;
-  document.getElementById('filterContactNew').textContent = totalNew;
+  const newEl = document.getElementById('filterContactNew');
+  if (newEl) newEl.textContent = totalNew;
   if (contactPage > Math.ceil(filtered.length / PER_PAGE)) contactPage = 1;
   if (filtered.length === 0) {
     tbody.innerHTML = emptyState('✉', 'Aucun message', contactFilter === 'new' ? 'Aucun nouveau message.' : contactFilter === 'resolved' ? 'Aucun message résolu.' : 'Les messages de contact apparaîtront ici.');
@@ -646,15 +745,67 @@ async function loadQuotes() {
     quotes = await res.json();
     quotePage = 1;
     renderQuotes();
-    renderDashboard();
+    loadStats();
   } catch (err) { console.error('Quotes error:', err); }
 }
 
-window._pg_quote = (p) => { quotePage = p; renderQuotes(); };
+function toggleQuoteSelect(id, checked) {
+  if (checked) selectedQuoteIds.add(id);
+  else selectedQuoteIds.delete(id);
+  updateQuoteBulkBar();
+}
+
+function toggleAllQuotes(checked) {
+  const search = document.getElementById('quoteSearch').value.toLowerCase();
+  let filtered = quotes.filter(q =>
+    q.name.toLowerCase().includes(search) ||
+    q.email.toLowerCase().includes(search) ||
+    q.quoteNumber.toLowerCase().includes(search)
+  );
+  if (quoteFilter !== 'all') {
+    filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
+  }
+  if (checked) { filtered.forEach(q => selectedQuoteIds.add(q.id)); }
+  else { selectedQuoteIds.clear(); }
+  renderQuotes();
+}
+
+function clearQuoteSelection() {
+  selectedQuoteIds.clear();
+  document.getElementById('quoteSelectAll').checked = false;
+  renderQuotes();
+}
+
+function updateQuoteBulkBar() {
+  const bar = document.getElementById('quoteBulkBar');
+  const count = document.getElementById('quoteBulkCount');
+  const total = selectedQuoteIds.size;
+  if (total === 0) { if (bar) bar.classList.add('hidden'); return; }
+  if (bar) bar.classList.remove('hidden');
+  if (count) count.textContent = `${total} sélectionné(s)`;
+}
+
+async function bulkDeleteQuotes() {
+  const ids = [...selectedQuoteIds];
+  if (ids.length === 0) return;
+  showConfirm('Supprimer plusieurs devis', `Supprimer ${ids.length} devis(s) ? Cette action est irréversible.`, async () => {
+    try {
+      await Promise.all(ids.map(id =>
+        fetch(`${API_BASE}/quotes/${id}`, { method: 'DELETE', headers: getHeaders() })
+      ));
+      quotes = quotes.filter(q => !selectedQuoteIds.has(q.id));
+      selectedQuoteIds.clear();
+      document.getElementById('quoteSelectAll').checked = false;
+      renderQuotes(); loadStats();
+      showToast(`${ids.length} devis(s) supprimé(s)`, 'success');
+    } catch (err) { showToast('Erreur', 'error'); }
+  });
+}
 
 function renderQuotes() {
   const search = document.getElementById('quoteSearch').value.toLowerCase();
   const tbody = document.getElementById('quotesBody');
+  if (!tbody) return;
   let filtered = quotes.filter(q =>
     q.name.toLowerCase().includes(search) ||
     q.email.toLowerCase().includes(search) ||
@@ -664,7 +815,8 @@ function renderQuotes() {
     filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
   }
   const totalPending = quotes.filter(q => (q.status || 'pending') === 'pending').length;
-  document.getElementById('filterQuotePending').textContent = totalPending;
+  const pendEl = document.getElementById('filterQuotePending');
+  if (pendEl) pendEl.textContent = totalPending;
   if (quotePage > Math.ceil(filtered.length / PER_PAGE)) quotePage = 1;
   if (filtered.length === 0) {
     tbody.innerHTML = emptyState('📋', 'Aucun devis', quoteFilter === 'pending' ? 'Aucun devis en attente.' : 'Les demandes de devis apparaîtront ici.');
@@ -723,56 +875,6 @@ function confirmDeleteQuote(id) {
   });
 }
 
-// ─── BULK QUOTE ACTIONS ───
-function toggleQuoteSelect(id, checked) {
-  if (checked) selectedQuoteIds.add(id);
-  else selectedQuoteIds.delete(id);
-  updateQuoteBulkBar();
-}
-function toggleAllQuotes(checked) {
-  const search = document.getElementById('quoteSearch').value.toLowerCase();
-  let filtered = quotes.filter(q =>
-    q.name.toLowerCase().includes(search) ||
-    q.email.toLowerCase().includes(search) ||
-    q.quoteNumber.toLowerCase().includes(search)
-  );
-  if (quoteFilter !== 'all') {
-    filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
-  }
-  if (checked) { filtered.forEach(q => selectedQuoteIds.add(q.id)); }
-  else { selectedQuoteIds.clear(); }
-  renderQuotes();
-}
-function clearQuoteSelection() {
-  selectedQuoteIds.clear();
-  document.getElementById('quoteSelectAll').checked = false;
-  renderQuotes();
-}
-function updateQuoteBulkBar() {
-  const bar = document.getElementById('quoteBulkBar');
-  const count = document.getElementById('quoteBulkCount');
-  const total = selectedQuoteIds.size;
-  if (total === 0) { bar.classList.add('hidden'); return; }
-  bar.classList.remove('hidden');
-  count.textContent = `${total} sélectionné(s)`;
-}
-async function bulkDeleteQuotes() {
-  const ids = [...selectedQuoteIds];
-  if (ids.length === 0) return;
-  showConfirm('Supprimer plusieurs devis', `Supprimer ${ids.length} devis(s) ? Cette action est irréversible.`, async () => {
-    try {
-      await Promise.all(ids.map(id =>
-        fetch(`${API_BASE}/quotes/${id}`, { method: 'DELETE', headers: getHeaders() })
-      ));
-      quotes = quotes.filter(q => !selectedQuoteIds.has(q.id));
-      selectedQuoteIds.clear();
-      document.getElementById('quoteSelectAll').checked = false;
-      renderQuotes(); loadStats();
-      showToast(`${ids.length} devis(s) supprimé(s)`, 'success');
-    } catch (err) { showToast('Erreur', 'error'); }
-  });
-}
-
 // ══════════════════════════════════════════════
 // SUBSCRIBERS CRUD
 // ══════════════════════════════════════════════
@@ -790,6 +892,7 @@ async function loadSubscribers() {
 function renderSubscribers() {
   const search = document.getElementById('subSearch').value.toLowerCase();
   const tbody = document.getElementById('subscribersBody');
+  if (!tbody) return;
   const filtered = subscribers.filter(s => s.email.toLowerCase().includes(search));
   if (filtered.length === 0) {
     tbody.innerHTML = emptyState('📧', 'Aucun abonné', 'Les inscrits à la newsletter apparaîtront ici.');
@@ -834,26 +937,6 @@ function exportToCsv(filename, rows) {
   showToast('Fichier CSV téléchargé', 'success');
 }
 
-document.getElementById('markAllReadBtn').addEventListener('click', markAllRead);
-document.getElementById('exportContactsBtn').addEventListener('click', () => {
-  exportToCsv('contacts.csv', contacts.map(c => [
-    formatDate(c.date), c.name, c.email, c.phone,
-    c.projectType, c.serviceType, c.budget, c.message,
-    c.read ? 'Lu' : 'Non lu', c.resolved ? 'Résolu' : 'Non résolu'
-  ]));
-});
-document.getElementById('exportQuotesBtn').addEventListener('click', () => {
-  exportToCsv('devis.csv', quotes.map(q => [
-    formatDate(q.date), q.quoteNumber, q.name, q.email,
-    q.serviceType, q.location, q.status, q.details
-  ]));
-});
-document.getElementById('exportSubsBtn').addEventListener('click', () => {
-  exportToCsv('newsletter.csv', subscribers.map(s => [
-    formatDate(s.date), s.email
-  ]));
-});
-
 // ══════════════════════════════════════════════
 // IMAGE GALLERY
 // ══════════════════════════════════════════════
@@ -869,6 +952,7 @@ async function loadSlots() {
 
 function populateSlotSelect() {
   const sel = document.getElementById('uploadSlot');
+  if (!sel) return;
   sel.innerHTML = '<option value="">— Aucun —</option>';
   const section = document.getElementById('uploadSection').value;
   slots.filter(s => s.section === section).forEach(s => {
@@ -879,91 +963,108 @@ function populateSlotSelect() {
   });
 }
 
-document.getElementById('uploadSection').addEventListener('change', populateSlotSelect);
+document.addEventListener('DOMContentLoaded', () => {
+  const us = document.getElementById('uploadSection');
+  if (us) us.addEventListener('change', populateSlotSelect);
+});
 
-// ─── Drag & Drop ───
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('uploadFile');
 
-dropZone.addEventListener('click', () => fileInput.click());
+document.addEventListener('DOMContentLoaded', () => {
+  if (dropZone) {
+    dropZone.addEventListener('click', () => fileInput.click());
 
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.classList.add('drag-over');
-});
-dropZone.addEventListener('dragleave', () => {
-  dropZone.classList.remove('drag-over');
-});
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  if (e.dataTransfer.files.length) {
-    fileInput.files = e.dataTransfer.files;
-    updatePreview();
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        updatePreview();
+      }
+    });
   }
+  if (fileInput) fileInput.addEventListener('change', updatePreview);
 });
-fileInput.addEventListener('change', updatePreview);
 
 function updatePreview() {
   const file = fileInput.files[0];
   const preview = document.getElementById('uploadPreview');
-  if (!file) { preview.classList.add('hidden'); return; }
-  // Update drop zone text
-  dropZone.querySelector('.drop-text').textContent = file.name;
-  dropZone.querySelector('.drop-icon').textContent = '🖼';
-  // Preview
+  if (!file) { if (preview) preview.classList.add('hidden'); return; }
+  if (dropZone) {
+    dropZone.querySelector('.drop-text').textContent = file.name;
+    dropZone.querySelector('.drop-icon').textContent = '🖼';
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
-    preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu">`;
-    preview.classList.remove('hidden');
+    if (preview) {
+      preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu">`;
+      preview.classList.remove('hidden');
+    }
   };
   reader.readAsDataURL(file);
 }
 
-// ─── Upload ───
-document.getElementById('imageUploadForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('uploadBtn');
-  const errorEl = document.getElementById('uploadError');
-  const file = fileInput.files[0];
-  if (!file) { showToast('Sélectionnez un fichier', 'error'); return; }
-  if (file.size > 10 * 1024 * 1024) { showToast('Fichier trop volumineux (max 10MB)', 'error'); return; }
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('imageUploadForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('uploadBtn');
+      const errorEl = document.getElementById('uploadError');
+      const file = fileInput.files[0];
+      if (!file) { showToast('Sélectionnez un fichier', 'error'); return; }
+      if (file.size > 10 * 1024 * 1024) { showToast('Fichier trop volumineux (max 10MB)', 'error'); return; }
 
-  btn.querySelector('.btn-text').textContent = 'Upload en cours...';
-  btn.querySelector('.btn-loader').classList.remove('hidden');
-  btn.disabled = true;
-  errorEl.classList.add('hidden');
+      if (btn) {
+        btn.querySelector('.btn-text').textContent = 'Upload en cours...';
+        btn.querySelector('.btn-loader').classList.remove('hidden');
+        btn.disabled = true;
+      }
+      if (errorEl) errorEl.classList.add('hidden');
 
-  try {
-    const fd = new FormData();
-    fd.append('section', document.getElementById('uploadSection').value);
-    fd.append('slotId', document.getElementById('uploadSlot').value);
-    fd.append('newSlotLabel', document.getElementById('newSlotLabel').value.trim());
-    fd.append('image', file);
+      try {
+        const fd = new FormData();
+        fd.append('section', document.getElementById('uploadSection').value);
+        fd.append('slotId', document.getElementById('uploadSlot').value);
+        fd.append('newSlotLabel', document.getElementById('newSlotLabel').value.trim());
+        fd.append('image', file);
 
-    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
-    if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
+        if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload échoué');
 
-    document.getElementById('imageUploadForm').reset();
-    document.getElementById('newSlotLabel').value = '';
-    document.getElementById('uploadPreview').innerHTML = '';
-    document.getElementById('uploadPreview').classList.add('hidden');
-    dropZone.querySelector('.drop-text').textContent = 'Cliquez ou glissez-déposez une image ici';
-    dropZone.querySelector('.drop-icon').textContent = '📁';
-    btn.querySelector('.btn-text').textContent = 'Uploader';
-    showToast('Image uploadée avec succès', 'success');
-    loadImages();
-    loadSlots();
-  } catch (err) {
-    errorEl.textContent = err.message;
-    errorEl.classList.remove('hidden');
-    btn.querySelector('.btn-text').textContent = 'Uploader';
-    showToast(err.message, 'error');
-  } finally {
-    btn.querySelector('.btn-loader').classList.add('hidden');
-    btn.disabled = false;
+        document.getElementById('imageUploadForm').reset();
+        document.getElementById('newSlotLabel').value = '';
+        const preview = document.getElementById('uploadPreview');
+        if (preview) { preview.innerHTML = ''; preview.classList.add('hidden'); }
+        if (dropZone) {
+          dropZone.querySelector('.drop-text').textContent = 'Cliquez ou glissez-déposez une image ici';
+          dropZone.querySelector('.drop-icon').textContent = '📁';
+        }
+        if (btn) btn.querySelector('.btn-text').textContent = 'Uploader';
+        showToast('Image uploadée avec succès', 'success');
+        loadImages();
+        loadSlots();
+      } catch (err) {
+        if (errorEl) { errorEl.textContent = err.message; errorEl.classList.remove('hidden'); }
+        if (btn) btn.querySelector('.btn-text').textContent = 'Uploader';
+        showToast(err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.querySelector('.btn-loader').classList.add('hidden');
+          btn.disabled = false;
+        }
+      }
+    });
   }
 });
 
@@ -979,6 +1080,7 @@ async function loadImages() {
 
 function renderImages() {
   const grid = document.getElementById('imageGrid');
+  if (!grid) return;
   const filter = document.getElementById('filterSection').value;
   const allFiles = [];
   Object.keys(images).forEach(section => {
@@ -986,11 +1088,7 @@ function renderImages() {
     (images[section] || []).forEach(f => allFiles.push({ ...f, section }));
   });
   if (allFiles.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-      <div class="empty-icon">🖼</div>
-      <div class="empty-title">Aucune image</div>
-      <div class="empty-desc">Uploader des images via le formulaire ci-dessus.</div>
-    </div>`;
+    grid.innerHTML = emptyStateGrid('🖼', 'Aucune image', 'Uploader des images via le formulaire ci-dessus.');
     return;
   }
   grid.innerHTML = allFiles.map(f => {
@@ -1011,6 +1109,7 @@ function renderImages() {
             <option value="">Assigner...</option>
             ${sectionSlots.map(s => `<option value="${s.id}" ${s.uploadedFile === f.name ? 'selected' : ''}>${escapeHtml(s.label)}${s.uploadedFile === f.name ? ' ✓' : ''}</option>`).join('')}
           </select>
+          <button class="btn-icon info" onclick="openImageEditor('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Modifier">✏</button>
           <button class="btn-icon danger" onclick="confirmDeleteImage('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Supprimer">✕</button>
         </div>
       </div>
@@ -1043,7 +1142,127 @@ function confirmDeleteImage(section, filename) {
   });
 }
 
-document.getElementById('filterSection').addEventListener('change', renderImages);
+document.addEventListener('DOMContentLoaded', () => {
+  const fs = document.getElementById('filterSection');
+  if (fs) fs.addEventListener('change', renderImages);
+});
+
+// ══════════════════════════════════════════════
+// IMAGE EDITOR
+// ══════════════════════════════════════════════
+
+function getExt(p) { const i = p.lastIndexOf('.'); return i >= 0 ? p.slice(i) : ''; }
+function getBase(p) { const i = p.lastIndexOf('.'); return i >= 0 ? p.slice(0, i) : p; }
+
+let imageEditState = { section: '', filename: '' };
+
+function openImageEditor(section, filename) {
+  imageEditState = { section, filename };
+  const nameWithoutExt = getBase(filename);
+
+  document.getElementById('imageEditTitle').textContent = `Modifier : ${filename}`;
+  document.getElementById('imageEditPreview').src = `/images/${section}/${filename}`;
+  document.getElementById('imageEditName').value = nameWithoutExt;
+  document.getElementById('imageEditExt').textContent = getExt(filename);
+  document.getElementById('imageEditSection').value = section;
+  document.getElementById('imageEditError').classList.add('hidden');
+  document.getElementById('imageEditReplaceStatus').textContent = '';
+  document.getElementById('imageEditFile').value = '';
+
+  const slotSelect = document.getElementById('imageEditSlot');
+  slotSelect.innerHTML = '<option value="">— Aucun —</option>';
+  const sectionSlots = slots.filter(s => s.section === section);
+  const currentSlot = slots.find(s => s.section === section && s.uploadedFile === filename);
+  sectionSlots.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.label + (s.uploadedFile === filename ? ' (actuel)' : s.uploadedFile ? ' ✓' : '');
+    if (currentSlot && currentSlot.id === s.id) opt.selected = true;
+    slotSelect.appendChild(opt);
+  });
+
+  document.getElementById('imageEditModal').classList.add('open');
+}
+
+function closeImageEditor() {
+  document.getElementById('imageEditModal').classList.remove('open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('imageEditClose').addEventListener('click', closeImageEditor);
+  document.getElementById('imageEditCloseBtn').addEventListener('click', closeImageEditor);
+  document.getElementById('imageEditModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeImageEditor();
+  });
+
+  document.getElementById('imageEditSave').addEventListener('click', async () => {
+    const btn = document.getElementById('imageEditSave');
+    const errorEl = document.getElementById('imageEditError');
+    btn.disabled = true;
+    btn.textContent = '⏳ Enregistrement...';
+    errorEl.classList.add('hidden');
+
+    try {
+      const { section, filename } = imageEditState;
+      const newName = document.getElementById('imageEditName').value.trim();
+      const newSlotId = document.getElementById('imageEditSlot').value;
+      const replaceFile = document.getElementById('imageEditFile').files[0];
+
+      // 1. Rename if changed
+      if (newName && newName !== getBase(filename)) {
+        const renameRes = await fetch(`/api/images/${encodeURIComponent(section)}/${encodeURIComponent(filename)}/rename`, {
+          method: 'PUT',
+          headers: getHeaders(),
+          body: JSON.stringify({ newName: newName + getExt(filename) })
+        });
+        const renameData = await renameRes.json();
+        if (!renameRes.ok) throw new Error(renameData.error || 'Échec du renommage');
+        imageEditState.filename = renameData.file.name;
+      }
+
+      // 2. Replace if file provided
+      if (replaceFile) {
+        const currentName = imageEditState.filename;
+        const fd = new FormData();
+        fd.append('image', replaceFile);
+        const replaceRes = await fetch(`/api/images/${encodeURIComponent(section)}/${encodeURIComponent(currentName)}/replace`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+        const replaceData = await replaceRes.json();
+        if (!replaceRes.ok) throw new Error(replaceData.error || 'Échec du remplacement');
+        imageEditState.filename = replaceData.file.name;
+      }
+
+      // 3. Reassign slot if changed
+      if (newSlotId) {
+        const currentSlot = slots.find(s => s.id === newSlotId);
+        if (currentSlot && currentSlot.uploadedFile !== imageEditState.filename) {
+          await assignSlot(section, imageEditState.filename, newSlotId);
+        }
+      } else {
+        const currentAssigned = slots.find(s => s.section === section && s.uploadedFile === imageEditState.filename);
+        if (currentAssigned) {
+          await fetch(`/api/images/slots/${currentAssigned.id}`, {
+            method: 'PUT', headers: getHeaders(), body: JSON.stringify({ filename: null })
+          });
+        }
+      }
+
+      showToast('Image modifiée avec succès', 'success');
+      closeImageEditor();
+      loadSlots();
+      loadImages();
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Enregistrer';
+    }
+  });
+});
 
 // ══════════════════════════════════════════════
 // CONTACT DETAIL MODAL
@@ -1054,9 +1273,10 @@ function openContactDetail(id) {
   if (!c) return;
   contactDetailId = id;
   document.getElementById('detailName').textContent = c.name;
-  document.getElementById('detailDate').textContent = formatDate(c.date);
-  document.getElementById('detailEmail').textContent = c.email;
-  document.getElementById('detailEmail').href = `mailto:${c.email}`;
+  const detailDate = document.getElementById('detailDate');
+  if (detailDate) detailDate.textContent = formatDate(c.date);
+  const detailEmail = document.getElementById('detailEmail');
+  if (detailEmail) { detailEmail.textContent = c.email; detailEmail.href = `mailto:${c.email}`; }
   document.getElementById('detailPhone').textContent = c.phone || 'Non fourni';
   document.getElementById('detailProject').textContent = c.projectType;
   document.getElementById('detailBudget').textContent = c.budget || 'Non spécifié';
@@ -1075,14 +1295,14 @@ function openContactDetail(id) {
     notesEl.textContent = 'Aucune note';
     notesEl.style.display = '';
   }
-  editor.classList.add('hidden');
-  document.getElementById('detailNotesTextarea').value = c.notes || '';
+  if (editor) editor.classList.add('hidden');
+  const notesTextarea = document.getElementById('detailNotesTextarea');
+  if (notesTextarea) notesTextarea.value = c.notes || '';
 
-  // Sync action buttons
   const readBtn = document.getElementById('detailMarkRead');
   const resolveBtn = document.getElementById('detailMarkResolved');
-  readBtn.style.display = c.read ? 'none' : '';
-  resolveBtn.style.display = c.resolved ? 'none' : '';
+  if (readBtn) readBtn.style.display = c.read ? 'none' : '';
+  if (resolveBtn) resolveBtn.style.display = c.resolved ? 'none' : '';
 
   document.getElementById('contactDetailModal').classList.add('open');
 }
@@ -1092,66 +1312,66 @@ function closeContactDetail() {
   contactDetailId = null;
 }
 
-document.getElementById('detailClose').addEventListener('click', closeContactDetail);
-document.getElementById('contactDetailModal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeContactDetail();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && document.getElementById('contactDetailModal').classList.contains('open')) closeContactDetail();
-});
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('detailClose').addEventListener('click', closeContactDetail);
+  document.getElementById('contactDetailModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeContactDetail();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('contactDetailModal').classList.contains('open')) closeContactDetail();
+  });
 
-// Detail modal actions
-document.getElementById('detailMarkRead').addEventListener('click', async () => {
-  if (!contactDetailId) return;
-  await markRead(contactDetailId);
-  const c = contacts.find(x => x.id === contactDetailId);
-  if (c) c.read = true;
-  openContactDetail(contactDetailId);
-  renderContacts();
-});
-
-document.getElementById('detailMarkResolved').addEventListener('click', async () => {
-  if (!contactDetailId) return;
-  await markResolved(contactDetailId);
-  const c = contacts.find(x => x.id === contactDetailId);
-  if (c) { c.read = true; c.resolved = true; }
-  openContactDetail(contactDetailId);
-  renderContacts();
-  loadStats();
-});
-
-document.getElementById('detailDelete').addEventListener('click', () => {
-  if (!contactDetailId) return;
-  const id = contactDetailId;
-  closeContactDetail();
-  confirmDeleteContact(id);
-});
-
-// Notes editing
-document.getElementById('detailNotesEdit').addEventListener('click', () => {
-  document.getElementById('detailNotes').style.display = 'none';
-  document.getElementById('detailNotesEditor').classList.remove('hidden');
-  document.getElementById('detailNotesTextarea').focus();
-});
-
-document.getElementById('detailNotesCancel').addEventListener('click', () => {
-  document.getElementById('detailNotesEditor').classList.add('hidden');
-  document.getElementById('detailNotes').style.display = '';
-});
-
-document.getElementById('detailNotesSave').addEventListener('click', async () => {
-  const notes = document.getElementById('detailNotesTextarea').value.trim();
-  if (!contactDetailId) return;
-  try {
-    const res = await fetch(`${API_BASE}/contacts/${contactDetailId}`, {
-      method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ notes })
-    });
-    if (!res.ok) throw new Error('Failed');
+  document.getElementById('detailMarkRead').addEventListener('click', async () => {
+    if (!contactDetailId) return;
+    await markRead(contactDetailId);
     const c = contacts.find(x => x.id === contactDetailId);
-    if (c) c.notes = notes;
-    showToast('Notes enregistrées', 'success');
+    if (c) c.read = true;
     openContactDetail(contactDetailId);
-  } catch (err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
+    renderContacts();
+  });
+
+  document.getElementById('detailMarkResolved').addEventListener('click', async () => {
+    if (!contactDetailId) return;
+    await markResolved(contactDetailId);
+    const c = contacts.find(x => x.id === contactDetailId);
+    if (c) { c.read = true; c.resolved = true; }
+    openContactDetail(contactDetailId);
+    renderContacts();
+    loadStats();
+  });
+
+  document.getElementById('detailDelete').addEventListener('click', () => {
+    if (!contactDetailId) return;
+    const id = contactDetailId;
+    closeContactDetail();
+    confirmDeleteContact(id);
+  });
+
+  document.getElementById('detailNotesEdit').addEventListener('click', () => {
+    document.getElementById('detailNotes').style.display = 'none';
+    document.getElementById('detailNotesEditor').classList.remove('hidden');
+    document.getElementById('detailNotesTextarea').focus();
+  });
+
+  document.getElementById('detailNotesCancel').addEventListener('click', () => {
+    document.getElementById('detailNotesEditor').classList.add('hidden');
+    document.getElementById('detailNotes').style.display = '';
+  });
+
+  document.getElementById('detailNotesSave').addEventListener('click', async () => {
+    const notes = document.getElementById('detailNotesTextarea').value.trim();
+    if (!contactDetailId) return;
+    try {
+      const res = await fetch(`${API_BASE}/contacts/${contactDetailId}`, {
+        method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ notes })
+      });
+      if (!res.ok) throw new Error('Failed');
+      const c = contacts.find(x => x.id === contactDetailId);
+      if (c) c.notes = notes;
+      showToast('Notes enregistrées', 'success');
+      openContactDetail(contactDetailId);
+    } catch (err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
+  });
 });
 
 // ══════════════════════════════════════════════
@@ -1163,45 +1383,50 @@ function openLightbox(src) {
   document.getElementById('lightboxImg').src = src;
   lb.classList.add('open');
 }
-document.getElementById('lightboxClose').addEventListener('click', () => {
-  document.getElementById('lightbox').classList.remove('open');
-});
-document.getElementById('lightbox').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) document.getElementById('lightbox').classList.remove('open');
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('open');
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('lightboxClose').addEventListener('click', () => {
+    document.getElementById('lightbox').classList.remove('open');
+  });
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) document.getElementById('lightbox').classList.remove('open');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('open');
+  });
 });
 
 // ══════════════════════════════════════════════
 // NEW SLOT FROM GALLERY
 // ══════════════════════════════════════════════
 
-document.getElementById('newSlotBtn').addEventListener('click', () => {
-  document.getElementById('newSlotForm').classList.toggle('hidden');
-});
-document.getElementById('newSlotCancel').addEventListener('click', () => {
-  document.getElementById('newSlotForm').classList.add('hidden');
-});
-document.getElementById('newSlotSubmit').addEventListener('click', async () => {
-  const section = document.getElementById('newSlotSection').value;
-  const label = document.getElementById('newSlotLabelInput').value.trim();
-  if (!label) { showToast('Veuillez entrer un libellé', 'error'); return; }
-  try {
-    const res = await fetch('/api/images/slots', {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ section, label })
-    });
-    if (!res.ok) throw new Error('Échec création');
-    document.getElementById('newSlotLabelInput').value = '';
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('newSlotBtn').addEventListener('click', () => {
+    document.getElementById('newSlotForm').classList.toggle('hidden');
+  });
+  document.getElementById('newSlotCancel').addEventListener('click', () => {
     document.getElementById('newSlotForm').classList.add('hidden');
-    showToast('Slot créé', 'success');
-    loadSlots();
-    loadImages();
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
+  });
+  document.getElementById('newSlotSubmit').addEventListener('click', async () => {
+    const section = document.getElementById('newSlotSection').value;
+    const label = document.getElementById('newSlotLabelInput').value.trim();
+    if (!label) { showToast('Veuillez entrer un libellé', 'error'); return; }
+    try {
+      const res = await fetch('/api/images/slots', {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ section, label })
+      });
+      if (!res.ok) throw new Error('Échec création');
+      document.getElementById('newSlotLabelInput').value = '';
+      document.getElementById('newSlotForm').classList.add('hidden');
+      showToast('Slot créé', 'success');
+      loadSlots();
+      loadImages();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
 });
 
 // ══════════════════════════════════════════════
@@ -1215,6 +1440,7 @@ function renderDashboard() {
 
 function renderDashContacts() {
   const body = document.getElementById('dashContactsBody');
+  if (!body) return;
   const recent = contacts.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
   if (recent.length === 0) {
     body.innerHTML = '<div class="widget-empty">Aucun message pour le moment.</div>';
@@ -1236,6 +1462,7 @@ function renderDashContacts() {
 
 function renderDashQuotes() {
   const body = document.getElementById('dashQuotesBody');
+  if (!body) return;
   const recent = quotes.filter(q => (q.status || 'pending') === 'pending').slice(0, 5);
   if (recent.length === 0) {
     body.innerHTML = '<div class="widget-empty">Aucun devis en attente.</div>';
@@ -1265,6 +1492,7 @@ let blogData = [];
 const ENTITY_CONFIG = {
   team: {
     label: 'Membre', labelPlural: 'Membres', api: 'team',
+    searchFields: ['name', 'role'],
     fields: [
       { key: 'name', label: 'Nom', type: 'text', required: true },
       { key: 'role', label: 'Rôle', type: 'text', required: true },
@@ -1276,6 +1504,7 @@ const ENTITY_CONFIG = {
   },
   services: {
     label: 'Service', labelPlural: 'Services', api: 'services',
+    searchFields: ['title', 'description'],
     fields: [
       { key: 'title', label: 'Titre', type: 'text', required: true },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
@@ -1286,6 +1515,7 @@ const ENTITY_CONFIG = {
   },
   projects: {
     label: 'Projet', labelPlural: 'Projets', api: 'projects',
+    searchFields: ['title', 'location', 'description'],
     fields: [
       { key: 'title', label: 'Titre', type: 'text', required: true },
       { key: 'location', label: 'Localisation', type: 'text' },
@@ -1301,6 +1531,7 @@ const ENTITY_CONFIG = {
   },
   blog: {
     label: 'Article', labelPlural: 'Articles', api: 'blog',
+    searchFields: ['title', 'excerpt'],
     fields: [
       { key: 'title', label: 'Titre', type: 'text', required: true },
       { key: 'slug', label: 'Slug (URL)', type: 'text' },
@@ -1323,6 +1554,8 @@ function entityLabel(entity) {
 async function loadEntity(entity) {
   const cfg = ENTITY_CONFIG[entity];
   if (!cfg) return;
+  const listEl = document.getElementById(`${entity}List`);
+  if (listEl && !contentPage[entity]) contentPage[entity] = 1;
   showSkeletonGrid(`${entity}List`, 4);
   try {
     const res = await fetch(`${API_BASE}/${cfg.api}`, { headers: getHeaders() });
@@ -1347,13 +1580,30 @@ function renderEntity(entity) {
   const container = document.getElementById(`${entity}List`);
   if (!container) return;
 
+  // Search filter
+  const searchInput = document.getElementById(`${entity}Search`);
+  const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+  if (searchTerm) {
+    items = (items || []).filter(item =>
+      cfg.searchFields.some(f => String(item[f] || '').toLowerCase().includes(searchTerm))
+    );
+  }
+
   if (!items || items.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">Aucun ${cfg.label.toLowerCase()}</div><div class="empty-desc">Cliquez sur "Ajouter" pour créer le premier ${cfg.label.toLowerCase()}.</div></div>`;
+    container.innerHTML = emptyStateGrid('📂', searchTerm ? 'Aucun résultat' : `Aucun ${cfg.label.toLowerCase()}`, searchTerm ? 'Essayez d\'autres termes de recherche.' : `Cliquez sur "Ajouter" pour créer le premier ${cfg.label.toLowerCase()}.`);
     return;
   }
 
-  container.innerHTML = items.map(item => {
-    const deleteFn = `confirmDeleteItem('${entity}', '${item.id}')`;
+  // Pagination
+  const perPage = 8;
+  if (!contentPage[entity] || contentPage[entity] < 1) contentPage[entity] = 1;
+  const total = items.length;
+  const maxPage = Math.ceil(total / perPage);
+  if (contentPage[entity] > maxPage) contentPage[entity] = maxPage;
+  const start = (contentPage[entity] - 1) * perPage;
+  const page = items.slice(start, start + perPage);
+
+  container.innerHTML = page.map(item => {
     const title = item.name || item.title || item.label || 'Sans titre';
     const subtitle = item.role || item.location || '';
     const preview = item.description || item.excerpt || item.bio || '';
@@ -1365,11 +1615,26 @@ function renderEntity(entity) {
       </div>
       <div class="admin-card-actions">
         <span class="badge ${item.visible !== false ? 'badge-success' : 'badge-warning'}">${item.visible !== false ? 'Visible' : 'Masqué'}</span>
-        <button class="btn-icon info" onclick="open${entityLabel(entity)}Form('${item.id}')" title="Modifier">✏</button>
-        <button class="btn-icon danger" onclick="${deleteFn}" title="Supprimer">✕</button>
+        <button class="btn-icon info" onclick="openCrudForm('${entity}', '${item.id}')" title="Modifier">✏</button>
+        <button class="btn-icon danger" onclick="confirmDeleteItem('${entity}', '${item.id}')" title="Supprimer">✕</button>
       </div>
     </div>`;
   }).join('');
+
+  // Append pagination
+  const paginationId = `${entity}Pagination`;
+  let pagEl = document.getElementById(paginationId);
+  if (!pagEl) {
+    pagEl = document.createElement('div');
+    pagEl.id = paginationId;
+    pagEl.className = 'pagination';
+    container.parentElement.appendChild(pagEl);
+  }
+  renderPagination(paginationId, contentPage[entity], total, perPage, `content,'${entity}'`);
+
+  // Show export button
+  const exportBtn = document.getElementById(`${entity}Export`);
+  if (exportBtn) exportBtn.style.display = 'inline-flex';
 }
 
 // ─── CRUD Form ───
@@ -1443,12 +1708,10 @@ function openCrudForm(entity, editId) {
     } else {
       html += `<input type="${field.type}" id="crud_${field.key}" class="search-input" value="${escapeHtml(String(val))}">`;
     }
-
     html += `</div>`;
   }
 
   document.getElementById('crudFormBody').innerHTML = html;
-  // Preview initial selected slot
   const sel = document.querySelector(`#crudFormBody select[onchange="previewSlotImage(this)"]`);
   if (sel) previewSlotImage(sel);
   document.getElementById('crudModal').classList.add('open');
@@ -1493,7 +1756,6 @@ async function uploadSlotImage(fieldKey, section) {
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
     status.textContent = '✓ Uploadé';
     status.style.color = 'var(--success)';
-    // Refresh slots and update preview
     const sr = await fetch('/api/images/slots');
     slots = await sr.json();
     const updatedSlot = slots.find(s => s.id === slotId);
@@ -1574,11 +1836,32 @@ function openServiceForm(id) { openCrudForm('services', id); }
 function openProjectForm(id) { openCrudForm('projects', id); }
 function openBlogForm(id) { openCrudForm('blog', id); }
 
-// ─── PRICING EDITOR ───
+// Export helpers for content
+function exportEntity(entity) {
+  const cfg = ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  let items;
+  if (entity === 'team') items = teamData;
+  else if (entity === 'services') items = servicesData;
+  else if (entity === 'projects') items = projectsData;
+  else if (entity === 'blog') items = blogData;
+  if (!items || items.length === 0) { showToast('Aucune donnée à exporter', 'info'); return; }
+  const headers = cfg.fields.map(f => f.label);
+  const rows = items.map(item => cfg.fields.map(f => {
+    const val = item[f.key];
+    if (f.type === 'checkbox') return val ? 'Oui' : 'Non';
+    return val !== undefined ? String(val) : '';
+  }));
+  exportToCsv(`${entity}.csv`, [headers, ...rows]);
+}
+
+// ══════════════════════════════════════════════
+// PRICING EDITOR
+// ══════════════════════════════════════════════
 
 let pricingData = null;
 
-async function loadPricing() {
+async function loadPricingEditor() {
   try {
     const res = await fetch(`${API_BASE}/pricing`, { headers: getHeaders() });
     if (res.status === 401) return;
@@ -1601,12 +1884,12 @@ function renderPricingEditor() {
       const t = tiers[tier];
       html += `<div class="pricing-tier" data-cat="${cat}" data-tier="${tier}">
         <div class="pricing-tier-header">
-          <input class="search-input pricing-name" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom">
-          <input class="search-input pricing-price" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix">
-          <input class="search-input pricing-unit" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité">
+          <input class="search-input pricing-name" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom" oninput="markDirty()">
+          <input class="search-input pricing-price" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix" oninput="markDirty()">
+          <input class="search-input pricing-unit" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité" oninput="markDirty()">
         </div>
         <div class="pricing-tier-features">
-          ${(t.features || []).map((f, fi) => `<input class="search-input pricing-feature" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}">`).join('')}
+          ${(t.features || []).map((f, fi) => `<input class="search-input pricing-feature" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}" oninput="markDirty()">`).join('')}
           <button class="btn-ghost" style="font-size:0.7rem;padding:0.25rem" onclick="addPricingFeature('${cat}','${tier}')">+ Ajouter option</button>
         </div>
       </div>`;
@@ -1614,11 +1897,10 @@ function renderPricingEditor() {
     html += `</div>`;
   });
 
-  // Rates
   html += `<div class="pricing-cat"><h4>Taux</h4>
     <div class="pricing-tier" style="display:flex;gap:1rem;flex-wrap:wrap">
-      <label style="font-size:0.8125rem">Marge sécurité (%): <input class="search-input pricing-rate" type="number" id="pricingContingency" value="${(pricingData.contingency_rate || 0.1) * 100}"></label>
-      <label style="font-size:0.8125rem">TVA (%): <input class="search-input pricing-rate" type="number" id="pricingTax" value="${(pricingData.tax_rate || 0.2) * 100}"></label>
+      <label style="font-size:0.8125rem">Marge sécurité (%): <input class="search-input pricing-rate" type="number" id="pricingContingency" value="${(pricingData.contingency_rate || 0.1) * 100}" oninput="markDirty()"></label>
+      <label style="font-size:0.8125rem">TVA (%): <input class="search-input pricing-rate" type="number" id="pricingTax" value="${(pricingData.tax_rate || 0.2) * 100}" oninput="markDirty()"></label>
     </div>
   </div>`;
 
@@ -1637,13 +1919,14 @@ function addPricingFeature(cat, tier) {
   input.dataset.cat = cat;
   input.dataset.tier = tier;
   input.dataset.field = `feature_${idx}`;
+  input.oninput = markDirty;
   parent.insertBefore(input, parent.lastElementChild);
+  markDirty();
 }
 
 async function savePricing() {
   const btn = document.getElementById('savePricingBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Enregistrement...';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enregistrement...'; }
   try {
     const pricing = {};
     ['construction', 'rehabilitation', 'forage'].forEach(cat => {
@@ -1669,7 +1952,6 @@ async function savePricing() {
           pricing[cat][tier].features[idx] = el.value;
         }
       });
-      // Clean up empty features
       Object.keys(pricing[cat]).forEach(tier => {
         pricing[cat][tier].features = pricing[cat][tier].features.filter(f => f && f.trim());
       });
@@ -1688,16 +1970,18 @@ async function savePricing() {
       method: 'PUT', headers: getHeaders(), body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('Erreur');
+    markClean();
     showToast('Tarifs enregistrés', 'success');
   } catch (err) {
-    showToast('Erreur lors de l\'enregistrement', 'error');
+    showToast('Erreur lors de l\'enregistrement: ' + err.message, 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '💾 Enregistrer';
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; }
   }
 }
 
-// ─── SETTINGS EDITOR ───
+// ══════════════════════════════════════════════
+// SETTINGS EDITOR
+// ══════════════════════════════════════════════
 
 let settingsData = null;
 let contactInfoData = null;
@@ -1725,52 +2009,52 @@ function renderSettingsEditor() {
         <h4>Coordonnées</h4>
         <div class="form-group">
           <label>Téléphone</label>
-          <input class="search-input" id="setPhone" value="${escapeHtml(contactInfoData.contact?.phone || '')}">
+          <input class="search-input" id="setPhone" value="${escapeHtml(contactInfoData.contact?.phone || '')}" oninput="markDirty()">
         </div>
         <div class="form-group">
           <label>Email</label>
-          <input class="search-input" id="setEmail" value="${escapeHtml(contactInfoData.contact?.email || '')}">
+          <input class="search-input" id="setEmail" value="${escapeHtml(contactInfoData.contact?.email || '')}" oninput="markDirty()">
         </div>
         <div class="form-group">
           <label>Adresse</label>
-          <input class="search-input" id="setAddress" value="${escapeHtml(contactInfoData.contact?.address || '')}">
+          <input class="search-input" id="setAddress" value="${escapeHtml(contactInfoData.contact?.address || '')}" oninput="markDirty()">
         </div>
       </div>
       <div class="settings-section">
         <h4>Réseaux sociaux</h4>
         <div class="form-group">
           <label>Facebook</label>
-          <input class="search-input" id="setFacebook" value="${escapeHtml(contactInfoData.social?.facebook || '')}">
+          <input class="search-input" id="setFacebook" value="${escapeHtml(contactInfoData.social?.facebook || '')}" oninput="markDirty()">
         </div>
         <div class="form-group">
           <label>Instagram</label>
-          <input class="search-input" id="setInstagram" value="${escapeHtml(contactInfoData.social?.instagram || '')}">
+          <input class="search-input" id="setInstagram" value="${escapeHtml(contactInfoData.social?.instagram || '')}" oninput="markDirty()">
         </div>
       </div>
       <div class="settings-section">
         <h4>Site</h4>
         <div class="form-group">
           <label>Google Analytics ID</label>
-          <input class="search-input" id="setGA" value="${escapeHtml(settingsData.googleAnalyticsId || '')}">
+          <input class="search-input" id="setGA" value="${escapeHtml(settingsData.googleAnalyticsId || '')}" oninput="markDirty()">
         </div>
         <div class="form-group">
           <label>WhatsApp (numéro)</label>
-          <input class="search-input" id="setWhatsApp" value="${escapeHtml(settingsData.whatsappNumber || '')}">
+          <input class="search-input" id="setWhatsApp" value="${escapeHtml(settingsData.whatsappNumber || '')}" oninput="markDirty()">
         </div>
         <div class="form-group">
           <label>URL du site</label>
-          <input class="search-input" id="setSiteUrl" value="${escapeHtml(settingsData.siteUrl || '')}">
+          <input class="search-input" id="setSiteUrl" value="${escapeHtml(settingsData.siteUrl || '')}" oninput="markDirty()">
         </div>
       </div>
       <div class="settings-section" style="grid-column:1/-1">
         <h4>Vision & Mission</h4>
         <div class="form-group">
           <label>Mission</label>
-          <textarea class="detail-textarea" id="setMission" rows="3">${escapeHtml(contactInfoData.mission || '')}</textarea>
+          <textarea class="detail-textarea" id="setMission" rows="3" oninput="markDirty()">${escapeHtml(contactInfoData.mission || '')}</textarea>
         </div>
         <div class="form-group">
           <label>Vision</label>
-          <textarea class="detail-textarea" id="setVision" rows="3">${escapeHtml(contactInfoData.vision || '')}</textarea>
+          <textarea class="detail-textarea" id="setVision" rows="3" oninput="markDirty()">${escapeHtml(contactInfoData.vision || '')}</textarea>
         </div>
       </div>
       <div class="settings-section" style="grid-column:1/-1">
@@ -1778,30 +2062,58 @@ function renderSettingsEditor() {
         <div class="settings-inline">
           <div class="form-group">
             <label>Années d'expérience</label>
-            <input class="search-input" type="number" id="setExpYears" value="${contactInfoData.experience_years || 10}">
+            <input class="search-input" type="number" id="setExpYears" value="${contactInfoData.experience_years || 10}" oninput="markDirty()">
           </div>
           <div class="form-group">
             <label>Année de fondation</label>
-            <input class="search-input" type="number" id="setFounded" value="${contactInfoData.founded || 2015}">
+            <input class="search-input" type="number" id="setFounded" value="${contactInfoData.founded || 2015}" oninput="markDirty()">
           </div>
           <div class="form-group">
             <label>Nombre de techniciens</label>
-            <input class="search-input" type="number" id="setStaff" value="${contactInfoData.team?.total_staff || 34}">
+            <input class="search-input" type="number" id="setStaff" value="${contactInfoData.team?.total_staff || 34}" oninput="markDirty()">
           </div>
           <div class="form-group">
             <label>Ingénieurs civils</label>
-            <input class="search-input" type="number" id="setEngineers" value="${contactInfoData.team?.civil_engineers || 4}">
+            <input class="search-input" type="number" id="setEngineers" value="${contactInfoData.team?.civil_engineers || 4}" oninput="markDirty()">
           </div>
+        </div>
+      </div>
+      <div class="settings-section" style="grid-column:1/-1">
+        <h4>Test d'envoi d'email</h4>
+        <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+          <input class="search-input" id="testEmailTo" placeholder="Email destinataire" style="flex:1;min-width:200px" value="">
+          <button class="btn-secondary" onclick="testEmail()" style="padding:0.5rem 1rem">📧 Tester</button>
+          <span id="testEmailStatus" style="font-size:0.8125rem;color:var(--gray-500)"></span>
         </div>
       </div>
     </div>
   `;
 }
 
+async function testEmail() {
+  const to = document.getElementById('testEmailTo').value.trim();
+  if (!to) { showToast('Entrez un email destinataire', 'error'); return; }
+  const status = document.getElementById('testEmailStatus');
+  status.textContent = '⏳ Envoi...';
+  try {
+    const res = await fetch(`${API_BASE}/test-email`, {
+      method: 'POST', headers: getHeaders(), body: JSON.stringify({ to })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    status.textContent = '✓ Email envoyé avec succès';
+    status.style.color = 'var(--success)';
+    showToast('Email test envoyé', 'success');
+  } catch (err) {
+    status.textContent = '✗ ' + err.message;
+    status.style.color = 'var(--danger)';
+    showToast('Échec: ' + err.message, 'error');
+  }
+}
+
 async function saveSettings() {
   const btn = document.getElementById('saveSettingsBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Enregistrement...';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enregistrement...'; }
   try {
     const contactPayload = {
       contact: {
@@ -1834,13 +2146,45 @@ async function saveSettings() {
       fetch(`${API_BASE}/settings`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(settingsPayload) })
     ]);
 
+    markClean();
     showToast('Paramètres enregistrés', 'success');
   } catch (err) {
     showToast('Erreur lors de l\'enregistrement', 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '💾 Enregistrer';
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; }
   }
+}
+
+// ══════════════════════════════════════════════
+// ACTIVITY LOG
+// ══════════════════════════════════════════════
+
+async function loadActivityLog() {
+  const tbody = document.getElementById('activityBody');
+  if (!tbody) { showToast('Onglet journal non disponible', 'error'); return; }
+  tbody.innerHTML = '<tr><td colspan="4"><div class="skeleton skeleton-cell" style="height:40px"></div></td></tr>';
+  try {
+    const res = await fetch(`${API_BASE}/activity`, { headers: getHeaders() });
+    activityLogs = await res.json();
+    renderActivityLog();
+  } catch (err) { console.error('Activity log error:', err); }
+}
+
+function renderActivityLog() {
+  const tbody = document.getElementById('activityBody');
+  if (!tbody) return;
+  if (!activityLogs || activityLogs.length === 0) {
+    tbody.innerHTML = emptyState('📋', 'Aucune activité', 'Le journal d\'activité apparaîtra ici.');
+    return;
+  }
+  tbody.innerHTML = activityLogs.map(log => `
+    <tr>
+      <td data-label="Date">${formatDate(log.timestamp)}</td>
+      <td data-label="Action"><span class="badge badge-info">${escapeHtml(log.action)}</span></td>
+      <td data-label="Détails">${escapeHtml(log.details || '').substring(0, 120)}</td>
+      <td data-label="Utilisateur">${escapeHtml(log.username || 'admin')}</td>
+    </tr>
+  `).join('');
 }
 
 // ══════════════════════════════════════════════
@@ -1848,15 +2192,15 @@ async function saveSettings() {
 // ══════════════════════════════════════════════
 
 document.addEventListener('keydown', (e) => {
-  // Skip if typing in an input
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
 
-  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog', 'pricing'];
+  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog'];
   const num = parseInt(e.key);
   if (num >= 1 && num <= 9 && tabs[num - 1]) { switchTab(tabs[num - 1]); return; }
   if (num === 0) { switchTab('pricing'); return; }
   if (e.key === '?') {
-    document.getElementById('shortcutsModal').classList.toggle('open');
+    const modal = document.getElementById('shortcutsModal');
+    if (modal) modal.classList.toggle('open');
   }
 });
 
@@ -1867,24 +2211,7 @@ document.addEventListener('keydown', (e) => {
 if (checkAuth()) {
   initDarkMode();
   loadStats();
-  loadContacts();
-  loadQuotes();
-  loadSubscribers();
-  loadSlots();
-  loadImages();
-  loadEntity('team');
-  loadEntity('services');
-  loadEntity('projects');
-  loadEntity('blog');
-  loadPricing();
-  loadSettings();
-  setInterval(loadStats, 30000);
-  // Debounced chart rendering after data loads
-  let chartTimer;
-  const originalRenderDashboard = renderDashboard;
-  renderDashboard = function() {
-    originalRenderDashboard();
-    clearTimeout(chartTimer);
-    chartTimer = setTimeout(renderCharts, 300);
-  };
+  // Dashboard loads lazily — just mark it as loaded but don't fetch data yet
+  // Load initial data needed for dashboard
+  switchTab('dashboard');
 }

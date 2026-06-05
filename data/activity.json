@@ -1,0 +1,128 @@
+[
+  {
+    "id": "log_1780641827906_oeh3",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:43:47.906Z"
+  },
+  {
+    "id": "log_1780641767513_3o2f",
+    "action": "image_delete",
+    "details": "Image supprimée: replacement-1780641767492.jpg (gallery)",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:42:47.513Z"
+  },
+  {
+    "id": "log_1780641767502_esla",
+    "action": "image_replace",
+    "details": "Image remplacée: replace-test.jpg → replacement-1780641767492.jpg (gallery)",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:42:47.502Z"
+  },
+  {
+    "id": "log_1780641767451_wsnc",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:42:47.451Z"
+  },
+  {
+    "id": "log_1780641659496_ir4w",
+    "action": "image_rename",
+    "details": "Image renommée: test-existing.jpg → renamed-image.jpg (gallery)",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:40:59.496Z"
+  },
+  {
+    "id": "log_1780641659077_atak",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:40:59.077Z"
+  },
+  {
+    "id": "log_1780641609903_m30y",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:40:09.903Z"
+  },
+  {
+    "id": "log_1780641573019_ojgv",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:39:33.019Z"
+  },
+  {
+    "id": "log_1780641472291_9i67",
+    "action": "login_failed",
+    "details": "Tentative de connexion échouée pour: admin@test.com",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:37:52.291Z"
+  },
+  {
+    "id": "log_1780641471947_hy49",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:37:51.947Z"
+  },
+  {
+    "id": "log_1780641457230_7bic",
+    "action": "login_failed",
+    "details": "Tentative de connexion échouée pour: admin@test.com",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:37:37.230Z"
+  },
+  {
+    "id": "log_1780640964497_7q0j",
+    "action": "contact_update",
+    "details": "Contact contact_1780584200742 mis à jour",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:29:24.497Z"
+  },
+  {
+    "id": "log_1780640956647_qp5c",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:29:16.647Z"
+  },
+  {
+    "id": "log_1780640893075_m4sp",
+    "action": "logout",
+    "details": "Déconnexion",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:28:13.075Z"
+  },
+  {
+    "id": "log_1780640892766_g4l3",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:28:12.766Z"
+  },
+  {
+    "id": "log_1780640832457_vr59",
+    "action": "pricing_update",
+    "details": "Grille tarifaire mise à jour",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:27:12.457Z"
+  },
+  {
+    "id": "log_1780640832187_1can",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:27:12.187Z"
+  },
+  {
+    "id": "log_1780640818042_s9vr",
+    "action": "login",
+    "details": "Connexion réussie",
+    "username": "admin",
+    "timestamp": "2026-06-05T06:26:58.042Z"
+  }
+]

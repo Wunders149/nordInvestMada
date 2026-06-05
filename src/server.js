@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { adminRouter } from './admin.js';
 import { imageRouter } from './images.js';
+import { readJSON, checkDefaultCredentials } from './auth.js';
 
 dotenv.config();
 
@@ -17,30 +18,26 @@ const uploadsDir = process.env.UPLOADS_DIR || path.join(projectRoot, 'uploads');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+checkDefaultCredentials();
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// ─── STATIC FILE SERVING ─── 
-// Serve public folder (HTML, CSS, images, etc.)
 app.use(express.static(path.join(projectRoot, 'public')));
-
-// Serve uploads folder
 app.use('/uploads', express.static(uploadsDir));
 
-// Ensure persistent directories exist
 [dataDir, uploadsDir].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
-// Ensure image subdirectories exist on the volume mount
+
 const imagesSubdirs = ['hero', 'about', 'team', 'projects', 'blog', 'gallery', 'services', 'standards'];
 const imagesBase = path.join(projectRoot, 'public', 'images');
 imagesSubdirs.forEach(sub => {
   const d = path.join(imagesBase, sub);
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 });
-// Seed data files if volume is fresh
+
 const seedFiles = ['contacts.json', 'quotes.json', 'subscribers.json', 'image-slots.json'];
 seedFiles.forEach(f => {
   const target = path.join(dataDir, f);
@@ -51,10 +48,8 @@ seedFiles.forEach(f => {
   }
 });
 
-// Serve admin panel static files
 app.use('/admin', express.static(path.join(projectRoot, 'public', 'admin')));
 
-// Email configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -63,7 +58,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Load configuration
 const configPath = path.join(projectRoot, 'config.json');
 let config = {};
 try {
@@ -72,7 +66,6 @@ try {
   console.error('Failed to load config.json:', error);
 }
 
-// ─── PRICING CALCULATIONS ─── 
 app.post('/api/calculate-pricing', (req, res) => {
   try {
     const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
@@ -136,7 +129,6 @@ app.post('/api/calculate-pricing', (req, res) => {
   }
 });
 
-// ─── FORM SUBMISSION ─── 
 app.post('/api/contact', async (req, res) => {
   try {
     const { name, email, phone, projectType, budget, message, serviceType } = req.body;
@@ -150,14 +142,10 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Persist contact to JSON
     const contactsPath = path.join(dataDir, 'contacts.json');
-    let contacts = [];
-    try {
-      if (fs.existsSync(contactsPath)) {
-        contacts = JSON.parse(fs.readFileSync(contactsPath, 'utf8'));
-      }
-    } catch {}
+    let contacts = readJSON(contactsPath);
+    if (!Array.isArray(contacts)) contacts = [];
+
     const contactEntry = {
       id: `contact_${Date.now()}`,
       name, email, phone: phone || '',
@@ -232,7 +220,6 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// ─── NEWSLETTER SUBSCRIPTION ─── 
 app.post('/api/newsletter', async (req, res) => {
   try {
     const { email } = req.body;
@@ -243,22 +230,16 @@ app.post('/api/newsletter', async (req, res) => {
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: 'Email invalide' });
     }
-    // Store newsletter subscribers (append to a JSON file)
     const subscribersPath = path.join(dataDir, 'subscribers.json');
-    let subscribers = [];
-    try {
-      if (fs.existsSync(subscribersPath)) {
-        subscribers = JSON.parse(fs.readFileSync(subscribersPath, 'utf8'));
-      }
-    } catch {}
+    let subscribers = readJSON(subscribersPath);
+    if (!Array.isArray(subscribers)) subscribers = [];
     if (subscribers.find(s => s.email === email)) {
-      return res.json({ success: true, message: 'D\u00e9j\u00e0 inscrit' });
+      return res.json({ success: true, message: 'Déjà inscrit' });
     }
     subscribers.push({ email, date: new Date().toISOString() });
     const dir = path.dirname(subscribersPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(subscribersPath, JSON.stringify(subscribers, null, 2));
-    // Optional: send admin notification (best-effort)
     try {
       const adminMailOptions = {
         from: process.env.EMAIL_USER,
@@ -277,7 +258,6 @@ app.post('/api/newsletter', async (req, res) => {
   }
 });
 
-// ─── QUOTE REQUEST ─── 
 app.post('/api/request-quote', async (req, res) => {
   try {
     const { name, email, serviceType, details, location } = req.body;
@@ -289,14 +269,9 @@ app.post('/api/request-quote', async (req, res) => {
     const quoteNumber = `NIM-${Date.now()}`;
     const createdDate = new Date().toLocaleDateString('fr-FR');
 
-    // Persist quote to JSON
     const quotesPath = path.join(dataDir, 'quotes.json');
-    let quotes = [];
-    try {
-      if (fs.existsSync(quotesPath)) {
-        quotes = JSON.parse(fs.readFileSync(quotesPath, 'utf8'));
-      }
-    } catch {}
+    let quotes = readJSON(quotesPath);
+    if (!Array.isArray(quotes)) quotes = [];
     const quoteEntry = {
       id: `quote_${Date.now()}`,
       quoteNumber, name, email,
@@ -356,19 +331,9 @@ app.post('/api/request-quote', async (req, res) => {
   }
 });
 
-// ─── CONFIGURATION ENDPOINT ─── 
 app.get('/api/config', (req, res) => {
   res.json(config);
 });
-
-// ─── PUBLIC CONTENT API ───
-function readJSON(filePath) {
-  try {
-    if (!fs.existsSync(filePath)) return [];
-    const data = fs.readFileSync(filePath, 'utf8');
-    return data.trim() ? JSON.parse(data) : [];
-  } catch { return []; }
-}
 
 app.get('/api/team', (req, res) => {
   const items = readJSON(path.join(dataDir, 'team.json'));
@@ -402,13 +367,9 @@ app.get('/api/pricing', (req, res) => {
   } catch { res.status(500).json({ error: 'Failed to load pricing' }); }
 });
 
-// ─── ADMIN API ───
 app.use('/api/admin', adminRouter);
-
-// ─── IMAGE MANAGEMENT API ───
 app.use('/api', imageRouter);
 
-// ─── HEALTH CHECK ─── 
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'Server is running',
@@ -417,7 +378,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── CATCH-ALL FOR SPA (returns index.html for unknown non-admin routes) ───
 app.get('*', (req, res) => {
   if (req.path.startsWith('/admin')) {
     return res.status(404).json({ error: 'Not found' });
@@ -425,13 +385,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(projectRoot, 'public', 'index.html'));
 });
 
-// ─── ERROR HANDLING ─── 
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// ─── HELPER FUNCTION ─── 
 function escapeHtml(text) {
   if (!text) return '';
   const map = {
@@ -444,10 +402,9 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// Start server
 app.listen(PORT, () => {
   console.log(`✓ Nord Invest Madagascar server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✓ Static files served from: ./public`);
+  console.log(`✓ Data directory: ${dataDir}`);
   console.log(`✓ API endpoints available at: /api/*`);
 });

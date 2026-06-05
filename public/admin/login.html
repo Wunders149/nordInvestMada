@@ -29,13 +29,22 @@
           <span class="btn-loader hidden"></span>
         </button>
       </form>
+      <button class="dark-toggle" id="loginDarkToggle" onclick="toggleLoginDark()" style="margin-top:1rem;font-size:0.75rem;padding:0.35rem 0.75rem;background:none;border:1px solid var(--gray-300);border-radius:0.375rem;cursor:pointer;color:var(--text-primary);width:100%">🌙 Mode sombre</button>
     </div>
   </div>
   <script>
     // Dark mode for login page
     const savedDark = localStorage.getItem('adminDarkMode');
-    if (savedDark === 'true' || (savedDark === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedDark === 'true' || (savedDark === null && prefersDark)) {
       document.body.classList.add('dark');
+    }
+
+    function toggleLoginDark() {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      localStorage.setItem('adminDarkMode', isDark);
+      document.getElementById('loginDarkToggle').textContent = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
     }
 
     const API_BASE = '/api/admin';
