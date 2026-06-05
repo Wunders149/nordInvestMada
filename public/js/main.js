@@ -664,7 +664,7 @@ async function loadTeam() {
     if (!grid) return;
     grid.innerHTML = team.map(m => `
       <div class="team-card">
-        <img src="/images/team/${m.image_slot ? m.image_slot.replace('team-', '') : 'director'}.svg" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy" data-image-slot="${m.image_slot || ''}">
+        <img src="/images/placeholder.svg" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy" data-image-slot="${m.image_slot || ''}">
         <div class="team-name">${escapeHtml(m.name)}</div>
         <div class="team-role">${escapeHtml(m.role)}</div>
         <div class="team-desc">${escapeHtml(m.bio)}</div>
