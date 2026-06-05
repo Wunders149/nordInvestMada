@@ -290,6 +290,28 @@ document.addEventListener('DOMContentLoaded', () => {
       switchTab(btn.dataset.tab);
     });
   });
+
+  // ─── Chart resize handler ───
+  let chartResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(chartResizeTimer);
+    chartResizeTimer = setTimeout(renderCharts, 150);
+  });
+  window.addEventListener('orientationchange', () => {
+    setTimeout(renderCharts, 300);
+  });
+
+  // ─── Auto-close sidebar on desktop resize ───
+  let sidebarTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(sidebarTimer);
+    sidebarTimer = setTimeout(() => {
+      if (window.innerWidth > 900) {
+        sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
+      }
+    }, 200);
+  });
 });
 
 function switchTab(tabId) {

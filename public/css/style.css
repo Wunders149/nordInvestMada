@@ -1502,6 +1502,54 @@ h1 { animation-delay: 0.25s; }
   .pricing-grid { gap: 16px; }
   #contact { padding: 40px 12px; }
   .contact-form { padding: 20px 12px; }
+  .gallery-modal { padding: 10px; }
+  .gallery-content { max-width: 98vw; max-height: 70vh; }
+  .gallery-close { top: 10px; right: 12px; font-size: 2rem; }
+  .gallery-nav { padding: 8px 10px; font-size: 1rem; }
+  .gallery-prev { left: 4px; }
+  .gallery-next { right: 4px; }
+  .gallery-caption { font-size: 0.75rem; margin-top: 12px; }
+}
+
+/* ─── LANDSCAPE PHONE ─── */
+@media (max-height: 500px) and (orientation: landscape) {
+  nav { padding: 8px 16px; }
+  .nav-logo { font-size: 0.85rem; }
+  .nav-logo-img { width: 24px; height: 24px; }
+  .nav-links a { font-size: 0.75rem; padding: 6px; }
+  #hero { min-height: auto; }
+  .hero-left { padding: 60px 20px 20px; }
+  .hero-right { height: 200px; }
+  .hero-tag { font-size: 0.55rem; }
+  h1 { font-size: clamp(1.4rem, 3vw, 2.5rem); }
+  .hero-sub { font-size: 0.78rem; }
+  .hero-stats { flex-direction: row; gap: 12px; }
+  .stat-val { font-size: 1.4rem; }
+  .gallery-modal { padding: 10px; }
+  .gallery-content { max-height: 70vh; }
+  .gallery-nav { padding: 8px 10px; font-size: 1rem; }
+}
+
+/* ─── PRINT STYLES ─── */
+@media print {
+  nav, .hamburger, .whatsapp-float, .back-to-top, .gallery-modal,
+  #newsletter, footer, .hero-right, .hero-decor, .hero-badge,
+  .service-num, .price-features, .pricing-footer, .form-row { display: none !important; }
+  #hero { min-height: auto; background: none !important; }
+  .hero-left { padding: 20px; }
+  .hero-stats { border-top: 1px solid #ccc; }
+  body { color: #000; background: #fff; }
+  a { color: #000; text-decoration: underline; }
+  section { padding: 30px 20px; page-break-inside: avoid; }
+  .projects-grid, .team-grid, .blog-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ─── THEME SECTION OVERRIDES ─── */

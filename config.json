@@ -79,15 +79,131 @@
   "pricing": {
     "construction": {
       "economic": {
-        "name": "Test",
-        "pricePerM2": 500000,
+        "name": "Économique",
+        "pricePerM2": 400000,
+        "unit": "m²",
         "features": [
-          "test"
+          "Fondations et dallage",
+          "Murs porteurs en parpaing",
+          "Toiture en tôle bac acier",
+          "Enduit ciment extérieur",
+          "Menuiserie simple",
+          "Installation électrique de base"
+        ]
+      },
+      "standard": {
+        "name": "Standard",
+        "pricePerM2": 850000,
+        "unit": "m²",
+        "features": [
+          "Fondations renforcées",
+          "Murs porteurs + cloisons",
+          "Toiture charpente bois + tuiles",
+          "Carrelage au choix",
+          "Plomberie complète",
+          "Électricité encastrée",
+          "Menuiserie aluminium",
+          "Peinture intérieure complète"
+        ]
+      },
+      "premium": {
+        "name": "Premium",
+        "pricePerM2": 1600000,
+        "unit": "m²",
+        "features": [
+          "Architecture personnalisée",
+          "Matériaux nobles (pierre, bois précieux)",
+          "Doubles vitrages",
+          "Climatisation intégrée",
+          "Domotique et smart home",
+          "Piscine et aménagements extérieurs",
+          "Plafond tendu ou décoratif",
+          "Salle de bain haut de gamme"
         ]
       }
     },
-    "rehabilitation": {},
-    "forage": {}
+    "rehabilitation": {
+      "economic": {
+        "name": "Rafraîchissement",
+        "pricePerM2": 200000,
+        "unit": "m²",
+        "features": [
+          "Peinture intérieure complète",
+          "Réparation des fissures",
+          "Nettoyage en profondeur",
+          "Remplacement des prises et interrupteurs",
+          "Petites réparations plomberie"
+        ]
+      },
+      "standard": {
+        "name": "Rénovation Complète",
+        "pricePerM2": 550000,
+        "unit": "m²",
+        "features": [
+          "Reprise électricité complète",
+          "Plomberie intégrale",
+          "Carrelage et revêtements neufs",
+          "Menuiserie intérieure neuve",
+          "Toiture et étanchéité",
+          "Enduits et peinture"
+        ]
+      },
+      "premium": {
+        "name": "Confortement & Extension",
+        "pricePerM2": 1000000,
+        "unit": "m²",
+        "features": [
+          "Extension de surface habitable",
+          "Confortement structurel (poteaux, poutres)",
+          "Finition haut de gamme",
+          "Isolation thermique et acoustique",
+          "Véranda ou terrasse couverte",
+          "Permis de construire inclus"
+        ]
+      }
+    },
+    "forage": {
+      "economic": {
+        "name": "Géophysique Préalable",
+        "price": 3500000,
+        "unit": "mission",
+        "features": [
+          "Prospection électrique verticale",
+          "Carte piézométrique",
+          "Rapport de potentiel aquifère",
+          "Recommandations forage",
+          "Délai : 5 jours ouvrés"
+        ]
+      },
+      "standard": {
+        "name": "Forage + Équipement",
+        "pricePerML": 300000,
+        "unit": "ml",
+        "features": [
+          "Foration tubée complète",
+          "Tubage PVC ou acier",
+          "Développement et nettoyage",
+          "Pompe immergée + motopompe",
+          "Essai de débit 24h",
+          "Installation électrique de surface",
+          "Garantie 1 an"
+        ]
+      },
+      "premium": {
+        "name": "Entretien & Réhabilitation",
+        "price": 5500000,
+        "unit": "mission",
+        "features": [
+          "Diagnostic complet du forage",
+          "Réhabilitation des crépines",
+          "Remplacement pompe et câbles",
+          "Traitement chimique anti-bactérien",
+          "Nouvel essai de débit",
+          "Rapport technique détaillé",
+          "Garantie 6 mois"
+        ]
+      }
+    }
   },
   "contingency_rate": 0.1,
   "tax_rate": 0.2,
