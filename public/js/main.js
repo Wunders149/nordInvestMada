@@ -132,6 +132,12 @@ if (hamburger) {
     hamburger.classList.toggle('active');
     navLinks.classList.toggle('active');
   });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════════════
