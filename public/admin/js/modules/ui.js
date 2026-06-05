@@ -1,5 +1,5 @@
-import { escapeHtml, formatDate, formatDateShort } from './helpers.js';
-import { isDirty, markClean, API_BASE, getHeaders, clearToken, contacts, quotes, contentPage, loadedTabs, selectedContactIds, selectedQuoteIds, contactPage, quotePage } from './api.js';
+import { escapeHtml } from './helpers.js';
+import { isDirty, markClean, API_BASE, getHeaders, loadedTabs, contactPage, quotePage } from './api.js';
 
 export let confirmCallback = null;
 

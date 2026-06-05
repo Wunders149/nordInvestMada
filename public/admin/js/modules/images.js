@@ -1,7 +1,6 @@
-import { API_BASE, getHeaders, token, slots, images, clearToken } from './api.js';
-import { escapeHtml } from './helpers.js';
+import { getHeaders, token, slots, images, clearToken } from './api.js';
+import { escapeHtml, humanSize } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, openLightbox } from './ui.js';
-import { humanSize } from './helpers.js';
 
 export async function loadSlots() {
   try {

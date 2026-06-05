@@ -1,4 +1,4 @@
-import { API_BASE, getHeaders, contacts, setToken, selectedContactIds, contactPage, contactFilter, PER_PAGE, clearToken } from './api.js';
+import { API_BASE, getHeaders, contacts, selectedContactIds, contactPage, contactFilter, PER_PAGE, clearToken } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
 import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState, showSkeletonStats } from './ui.js';
 import { loadStats } from './dashboard.js';

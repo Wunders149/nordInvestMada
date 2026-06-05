@@ -1,6 +1,6 @@
-import { checkAuth, markDirty, markClean, contactPage, quotePage, contentPage, contacts } from './modules/api.js';
-import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, switchTab as uiSwitchTab, openLightbox } from './modules/ui.js';
-import { loadStats, renderCharts } from './modules/dashboard.js';
+import { checkAuth, markDirty, markClean, contactPage, quotePage, contentPage, loadedTabs } from './modules/api.js';
+import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox } from './modules/ui.js';
+import { loadStats, renderCharts, renderDashboard } from './modules/dashboard.js';
 import {
   loadContacts, renderContacts, setContactFilter, toggleContactSelect, toggleAllContacts,
   clearContactSelection, bulkMarkRead, bulkDeleteContacts, markAllRead, markRead, markResolved,
@@ -24,12 +24,69 @@ import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pri
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
 
+// ─── Tab switching ───
+function _switchTab(tabId) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+  if (navBtn) navBtn.classList.add('active');
+  const tab = document.getElementById(`tab-${tabId}`);
+  if (tab) tab.classList.add('active');
+
+  const titles = {
+    dashboard: 'Tableau de bord', contacts: 'Messages', quotes: 'Devis',
+    subscribers: 'Newsletter', images: 'Galerie',
+    team: 'Équipe', services: 'Services', projects: 'Projets',
+    blog: 'Blog', pricing: 'Tarifs', settings: 'Paramètres',
+    activity: "Journal d'activité"
+  };
+  const pageTitle = document.getElementById('pageTitle');
+  if (pageTitle) pageTitle.innerHTML = `${titles[tabId] || tabId} <small>Gestion</small>`;
+
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+
+  if (!loadedTabs.has(tabId)) {
+    loadedTabs.add(tabId);
+    switch (tabId) {
+      case 'dashboard': renderDashboard(); break;
+      case 'contacts': loadContacts(); break;
+      case 'quotes': loadQuotes(); break;
+      case 'subscribers': loadSubscribers(); break;
+      case 'images': loadSlots(); loadImages(); break;
+      case 'team': loadEntity('team'); break;
+      case 'services': loadEntity('services'); break;
+      case 'projects': loadEntity('projects'); break;
+      case 'blog': loadEntity('blog'); break;
+      case 'pricing': loadPricingEditor(); break;
+      case 'settings': loadSettings(); break;
+      case 'activity': loadActivityLog(); break;
+    }
+  } else {
+    switch (tabId) {
+      case 'dashboard': renderDashboard(); loadStats(); break;
+      case 'contacts': renderContacts(); break;
+      case 'quotes': renderQuotes(); break;
+      case 'subscribers': renderSubscribers(); break;
+      case 'images': renderImages(); break;
+    }
+  }
+}
+
+function switchTab(tabId) {
+  confirmNavigation(() => {
+    _switchTab(tabId);
+  });
+}
+
 // ─── Expose everything to window for inline HTML event handlers ───
 Object.assign(window, {
   markDirty, markClean,
   showConfirm, showToast, confirmNavigation, exportToCsv, openLightbox,
   renderPagination,
-  switchTab: uiSwitchTab,
+  switchTab,
   loadStats, renderCharts,
   loadContacts, renderContacts, setContactFilter, toggleContactSelect, toggleAllContacts,
   clearContactSelection, bulkMarkRead, bulkDeleteContacts, markAllRead, markRead, markResolved,
@@ -56,5 +113,5 @@ window._pg_content = (entity, p) => { contentPage[entity] = p; renderEntity(enti
 if (checkAuth()) {
   initDarkMode();
   loadStats();
-  uiSwitchTab('dashboard');
+  _switchTab('dashboard');
 }

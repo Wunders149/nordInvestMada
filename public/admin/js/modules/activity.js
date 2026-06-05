@@ -1,6 +1,6 @@
-import { API_BASE, getHeaders, activityLogs, clearToken } from './api.js';
+import { API_BASE, getHeaders, activityLogs } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
-import { emptyState } from './ui.js';
+import { emptyState, showToast } from './ui.js';
 
 export async function loadActivityLog() {
   const tbody = document.getElementById('activityBody');
