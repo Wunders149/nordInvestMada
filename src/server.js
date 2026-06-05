@@ -5,9 +5,11 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import rateLimit from 'express-rate-limit';
 import { adminRouter } from './admin.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig } from './supabase.js';
+import { validate, contactSchema, newsletterSchema, quoteSchema, pricingSchema } from './validation.js';
 
 dotenv.config();
 
@@ -35,6 +37,39 @@ imagesSubdirs.forEach(sub => {
 
 app.use('/admin', express.static(path.join(projectRoot, 'public', 'admin')));
 
+// ─── Rate Limiters ───
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Trop de demandes. Réessayez dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const newsletterLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const quoteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Trop de demandes. Réessayez dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const pricingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { error: 'Trop de requêtes. Réessayez dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -60,7 +95,7 @@ async function loadSiteConfig() {
   }
 }
 
-app.post('/api/calculate-pricing', async (req, res) => {
+app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), async (req, res) => {
   try {
     const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
 
@@ -125,24 +160,15 @@ app.post('/api/calculate-pricing', async (req, res) => {
   }
 });
 
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, res) => {
   try {
     const { name, email, phone, projectType, budget, message, serviceType } = req.body;
 
-    if (!name || !email || !projectType || !message) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
-
     const contactEntry = {
       id: `contact_${Date.now()}`,
-      name, email, phone: phone || '',
+      name, email, phone,
       project_type: projectType,
-      budget: budget || '', message,
+      budget, message,
       service_type: serviceType || projectType,
       date: new Date().toISOString(),
       read: false,
@@ -212,16 +238,9 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-app.post('/api/newsletter', async (req, res) => {
+app.post('/api/newsletter', newsletterLimiter, validate(newsletterSchema), async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Email requis' });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Email invalide' });
-    }
 
     const { data: existing } = await supabase.from('subscribers').select('email').eq('email', email).maybeSingle();
     if (existing) {
@@ -250,20 +269,16 @@ app.post('/api/newsletter', async (req, res) => {
   }
 });
 
-app.post('/api/request-quote', async (req, res) => {
+app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, res) => {
   try {
     const { name, email, serviceType, details, location } = req.body;
-
-    if (!name || !email || !serviceType || !details) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
 
     const quoteNumber = `NIM-${Date.now()}`;
     const quoteEntry = {
       id: `quote_${Date.now()}`,
       quote_number: quoteNumber, name, email,
-      service_type: serviceType || '',
-      details, location: location || '',
+      service_type: serviceType,
+      details, location,
       date: new Date().toISOString(),
       status: 'pending',
       notes: ''

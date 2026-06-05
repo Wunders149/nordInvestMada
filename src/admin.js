@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import crypto from 'crypto';
-import { requireAuth, loginLimiter, sessions, loginUser, hashPassword, logActivity } from './auth.js';
+import { requireAuth, loginLimiter, createSession, destroySession, loginUser, hashPassword, logActivity } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
+import { validate, loginSchema } from './validation.js';
+import crypto from 'crypto';
 
 const router = Router();
 
@@ -43,27 +44,22 @@ function escapeHtml(text) {
 }
 
 // ─── LOGIN ───
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
   const { username, password } = req.body;
   const user = await loginUser(username, password);
   if (!user) {
     logActivity('login_failed', `Tentative de connexion échouée pour: ${username}`);
     return res.status(401).json({ error: 'Identifiants invalides' });
   }
-  const token = crypto.randomBytes(32).toString('hex');
-  sessions.set(token, {
-    username: user.username,
-    userId: user.id,
-    expires: Date.now() + 24 * 60 * 60 * 1000
-  });
+  const token = await createSession(user);
   logActivity('login', `Connexion réussie`, user.username);
   res.json({ success: true, token });
 });
 
 // ─── LOGOUT ───
-router.post('/logout', requireAuth, (req, res) => {
+router.post('/logout', requireAuth, async (req, res) => {
   logActivity('logout', `Déconnexion`, req.admin.username);
-  sessions.delete(req.headers.authorization.slice(7));
+  await destroySession(req.headers.authorization.slice(7));
   res.json({ success: true });
 });
 

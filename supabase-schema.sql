@@ -133,7 +133,17 @@ CREATE TABLE settings (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 12. SITE CONFIG (replaces config.json mutable parts)
+-- 12. SESSIONS (persistent admin login sessions)
+CREATE TABLE sessions (
+  token TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES admin_users(id) ON DELETE CASCADE,
+  username TEXT NOT NULL,
+  expires TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX idx_sessions_expires ON sessions(expires);
+
+-- 13. SITE CONFIG (replaces config.json mutable parts)
 CREATE TABLE site_config (
   id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),  -- singleton row
   contact JSONB,
