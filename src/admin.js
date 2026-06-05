@@ -1,15 +1,40 @@
 import { Router } from 'express';
-import path from 'path';
-import fs from 'fs';
 import crypto from 'crypto';
-import { fileURLToPath } from 'url';
-import { requireAuth, loginLimiter, sessions, logActivity, writeJSON, readJSON } from './auth.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, '..');
-const dataDir = process.env.DATA_DIR || path.join(projectRoot, 'data');
+import { requireAuth, loginLimiter, sessions, loginUser, hashPassword, logActivity } from './auth.js';
+import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
 
 const router = Router();
+
+const FIELD_MAP = {
+  imageSlot: 'image_slot'
+};
+
+function mapFields(body, direction = 'toDb') {
+  if (direction === 'toDb') {
+    const result = {};
+    for (const [key, value] of Object.entries(body)) {
+      result[FIELD_MAP[key] || key] = value;
+    }
+    return result;
+  }
+  const rev = {};
+  for (const [k, v] of Object.entries(FIELD_MAP)) { rev[v] = k; }
+  const result = {};
+  for (const [key, value] of Object.entries(body)) {
+    result[rev[key] || key] = value;
+  }
+  return result;
+}
+
+function camelizeKeys(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    result[camelKey] = value;
+  }
+  return result;
+}
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -18,23 +43,20 @@ function escapeHtml(text) {
 }
 
 // ─── LOGIN ───
-router.post('/login', loginLimiter, (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
-  const adminUser = process.env.ADMIN_USER || 'admin';
-  const adminPass = process.env.ADMIN_PASS || 'nordinvest2026';
-
-  if (username !== adminUser || password !== adminPass) {
+  const user = await loginUser(username, password);
+  if (!user) {
     logActivity('login_failed', `Tentative de connexion échouée pour: ${username}`);
     return res.status(401).json({ error: 'Identifiants invalides' });
   }
-
   const token = crypto.randomBytes(32).toString('hex');
   sessions.set(token, {
-    username,
+    username: user.username,
+    userId: user.id,
     expires: Date.now() + 24 * 60 * 60 * 1000
   });
-
-  logActivity('login', `Connexion réussie`, username);
+  logActivity('login', `Connexion réussie`, user.username);
   res.json({ success: true, token });
 });
 
@@ -46,268 +68,327 @@ router.post('/logout', requireAuth, (req, res) => {
 });
 
 // ─── CONTACTS ───
-router.get('/contacts', requireAuth, (req, res) => {
-  const filePath = path.join(dataDir, 'contacts.json');
-  const contacts = readJSON(filePath);
-  contacts.sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(contacts);
+router.get('/contacts', requireAuth, async (req, res) => {
+  try {
+    const contacts = await list('contacts', { order: [['date', 'desc']] });
+    res.json(contacts.map(c => camelizeKeys(c)));
+  } catch (err) {
+    console.error('Contacts list error:', err);
+    res.status(500).json({ error: 'Failed to load contacts' });
+  }
 });
 
 router.patch('/contacts/:id', requireAuth, async (req, res) => {
-  const filePath = path.join(dataDir, 'contacts.json');
-  const contacts = readJSON(filePath);
-  const idx = contacts.findIndex(c => c.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Contact non trouvé' });
-
-  if (req.body.read !== undefined) contacts[idx].read = req.body.read;
-  if (req.body.resolved !== undefined) contacts[idx].resolved = req.body.resolved;
-  if (req.body.notes !== undefined) contacts[idx].notes = req.body.notes;
-
-  await writeJSON(filePath, contacts);
-  logActivity('contact_update', `Contact ${req.params.id} mis à jour`, req.admin.username);
-  res.json({ success: true, contact: contacts[idx] });
+  try {
+    const contact = await update('contacts', req.params.id, {
+      read: req.body.read !== undefined ? req.body.read : undefined,
+      resolved: req.body.resolved !== undefined ? req.body.resolved : undefined,
+      notes: req.body.notes !== undefined ? req.body.notes : undefined
+    });
+    logActivity('contact_update', `Contact ${req.params.id} mis à jour`, req.admin.username);
+    res.json({ success: true, contact });
+  } catch (err) {
+    console.error('Contact update error:', err);
+    res.status(500).json({ error: 'Failed to update contact' });
+  }
 });
 
 router.delete('/contacts/:id', requireAuth, async (req, res) => {
-  const filePath = path.join(dataDir, 'contacts.json');
-  let contacts = readJSON(filePath);
-  const idx = contacts.findIndex(c => c.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Contact non trouvé' });
-  const removed = contacts.splice(idx, 1);
-  await writeJSON(filePath, contacts);
-  logActivity('contact_delete', `Contact supprimé: ${removed[0]?.name || req.params.id}`, req.admin.username);
-  res.json({ success: true });
+  try {
+    const contact = await get('contacts', req.params.id);
+    await remove('contacts', req.params.id);
+    logActivity('contact_delete', `Contact supprimé: ${contact?.name || req.params.id}`, req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Contact delete error:', err);
+    res.status(500).json({ error: 'Failed to delete contact' });
+  }
 });
 
 // ─── QUOTES ───
-router.get('/quotes', requireAuth, (req, res) => {
-  const filePath = path.join(dataDir, 'quotes.json');
-  const quotes = readJSON(filePath);
-  quotes.sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(quotes);
+router.get('/quotes', requireAuth, async (req, res) => {
+  try {
+    const quotes = await list('quotes', { order: [['date', 'desc']] });
+    res.json(quotes.map(q => camelizeKeys(q)));
+  } catch (err) {
+    console.error('Quotes list error:', err);
+    res.status(500).json({ error: 'Failed to load quotes' });
+  }
 });
 
 router.patch('/quotes/:id', requireAuth, async (req, res) => {
-  const filePath = path.join(dataDir, 'quotes.json');
-  const quotes = readJSON(filePath);
-  const idx = quotes.findIndex(q => q.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Devis non trouvé' });
-
-  if (req.body.status !== undefined) quotes[idx].status = req.body.status;
-  if (req.body.notes !== undefined) quotes[idx].notes = req.body.notes;
-
-  await writeJSON(filePath, quotes);
-  logActivity('quote_update', `Devis ${req.params.id} mis à jour (statut: ${req.body.status})`, req.admin.username);
-  res.json({ success: true, quote: quotes[idx] });
+  try {
+    const quote = await update('quotes', req.params.id, {
+      status: req.body.status !== undefined ? req.body.status : undefined,
+      notes: req.body.notes !== undefined ? req.body.notes : undefined
+    });
+    logActivity('quote_update', `Devis ${req.params.id} mis à jour (statut: ${req.body.status})`, req.admin.username);
+    res.json({ success: true, quote });
+  } catch (err) {
+    console.error('Quote update error:', err);
+    res.status(500).json({ error: 'Failed to update quote' });
+  }
 });
 
 router.delete('/quotes/:id', requireAuth, async (req, res) => {
-  const filePath = path.join(dataDir, 'quotes.json');
-  let quotes = readJSON(filePath);
-  const idx = quotes.findIndex(q => q.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Devis non trouvé' });
-  const removed = quotes.splice(idx, 1);
-  await writeJSON(filePath, quotes);
-  logActivity('quote_delete', `Devis supprimé: ${removed[0]?.quoteNumber || req.params.id}`, req.admin.username);
-  res.json({ success: true });
+  try {
+    const quote = await get('quotes', req.params.id);
+    await remove('quotes', req.params.id);
+    logActivity('quote_delete', `Devis supprimé: ${quote?.quoteNumber || req.params.id}`, req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Quote delete error:', err);
+    res.status(500).json({ error: 'Failed to delete quote' });
+  }
 });
 
 // ─── SUBSCRIBERS ───
-router.get('/subscribers', requireAuth, (req, res) => {
-  const filePath = path.join(dataDir, 'subscribers.json');
-  const subscribers = readJSON(filePath);
-  subscribers.sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(subscribers);
+router.get('/subscribers', requireAuth, async (req, res) => {
+  try {
+    const subscribers = await list('subscribers', { order: [['date', 'desc']] });
+    res.json(subscribers);
+  } catch (err) {
+    console.error('Subscribers list error:', err);
+    res.status(500).json({ error: 'Failed to load subscribers' });
+  }
 });
 
 router.delete('/subscribers/:email', requireAuth, async (req, res) => {
-  const filePath = path.join(dataDir, 'subscribers.json');
-  let subscribers = readJSON(filePath);
-  const idx = subscribers.findIndex(s => s.email === req.params.email);
-  if (idx === -1) return res.status(404).json({ error: 'Abonné non trouvé' });
-  subscribers.splice(idx, 1);
-  await writeJSON(filePath, subscribers);
-  logActivity('subscriber_delete', `Abonné supprimé: ${req.params.email}`, req.admin.username);
-  res.json({ success: true });
+  try {
+    const sub = await get('subscribers', req.params.email, 'email');
+    if (!sub) return res.status(404).json({ error: 'Abonné non trouvé' });
+    await remove('subscribers', req.params.email, 'email');
+    logActivity('subscriber_delete', `Abonné supprimé: ${req.params.email}`, req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Subscriber delete error:', err);
+    res.status(500).json({ error: 'Failed to delete subscriber' });
+  }
 });
 
 // ─── STATS ───
-router.get('/stats', requireAuth, (req, res) => {
-  const contactsPath = path.join(dataDir, 'contacts.json');
-  const quotesPath = path.join(dataDir, 'quotes.json');
-  const subscribersPath = path.join(dataDir, 'subscribers.json');
+router.get('/stats', requireAuth, async (req, res) => {
+  try {
+    const { count: totalContacts } = await supabase.from('contacts').select('*', { count: 'exact', head: true });
+    const { count: unreadContacts } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('read', false);
+    const { count: totalQuotes } = await supabase.from('quotes').select('*', { count: 'exact', head: true });
+    const { count: pendingQuotes } = await supabase.from('quotes').select('*', { count: 'exact', head: true }).in('status', ['pending', null]);
+    const { count: totalSubscribers } = await supabase.from('subscribers').select('*', { count: 'exact', head: true });
 
-  const contacts = readJSON(contactsPath);
-  const quotes = readJSON(quotesPath);
-  const subscribers = readJSON(subscribersPath);
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const { count: contactsThisMonth } = await supabase.from('contacts')
+      .select('*', { count: 'exact', head: true })
+      .gte('date', firstOfMonth);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  res.json({
-    totalContacts: contacts.length,
-    unreadContacts: contacts.filter(c => !c.read).length,
-    totalQuotes: quotes.length,
-    pendingQuotes: quotes.filter(q => q.status === 'pending' || !q.status).length,
-    totalSubscribers: subscribers.length,
-    contactsThisMonth: contacts.filter(c => new Date(c.date) >= new Date(today.getFullYear(), today.getMonth(), 1)).length,
-    lastUpdate: new Date().toISOString()
-  });
+    res.json({
+      totalContacts: totalContacts || 0,
+      unreadContacts: unreadContacts || 0,
+      totalQuotes: totalQuotes || 0,
+      pendingQuotes: pendingQuotes || 0,
+      totalSubscribers: totalSubscribers || 0,
+      contactsThisMonth: contactsThisMonth || 0,
+      lastUpdate: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.status(500).json({ error: 'Failed to load stats' });
+  }
 });
 
 // ─── ACTIVITY LOG ───
-router.get('/activity', requireAuth, (req, res) => {
-  const logPath = path.join(dataDir, 'activity.json');
-  const logs = readJSON(logPath);
-  res.json(Array.isArray(logs) ? logs.slice(0, 100) : []);
+router.get('/activity', requireAuth, async (req, res) => {
+  try {
+    const logs = await list('activity_logs', { order: [['timestamp', 'desc']], limit: 100 });
+    res.json(logs);
+  } catch (err) {
+    console.error('Activity log error:', err);
+    res.status(500).json({ error: 'Failed to load activity' });
+  }
 });
 
 // ─── GENERIC CRUD HELPER ───
-function crudRoutes(entityName, fileName) {
-  const filePath = () => path.join(dataDir, fileName);
-
-  router.get(`/${entityName}`, requireAuth, (req, res) => {
-    const items = readJSON(filePath());
-    items.sort((a, b) => (a.order || 99) - (b.order || 99));
-    res.json(items);
+function crudRoutes(entityName, tableName) {
+  router.get(`/${entityName}`, requireAuth, async (req, res) => {
+    try {
+      const items = await list(tableName, { order: [['order', 'asc']] });
+      res.json(items.map(i => camelizeKeys(i)));
+    } catch (err) {
+      console.error(`${entityName} list error:`, err);
+      res.status(500).json({ error: `Failed to load ${entityName}` });
+    }
   });
 
   router.post(`/${entityName}`, requireAuth, async (req, res) => {
-    const items = readJSON(filePath());
-    const newItem = {
-      id: `${entityName.slice(0, -1)}_${Date.now()}`,
-      ...req.body,
-      createdAt: new Date().toISOString()
-    };
-    items.push(newItem);
-    await writeJSON(filePath(), items);
-    logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${newItem.name || newItem.title || newItem.id}`, req.admin.username);
-    res.json({ success: true, item: newItem });
+    try {
+      const newItem = {
+        id: `${entityName.slice(0, -1)}_${Date.now()}`,
+        ...mapFields(req.body),
+        created_at: new Date().toISOString()
+      };
+      const result = await create(tableName, newItem);
+      logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${result.name || result.title || result.id}`, req.admin.username);
+      res.json({ success: true, item: camelizeKeys(result) });
+    } catch (err) {
+      console.error(`${entityName} create error:`, err);
+      res.status(500).json({ error: `Failed to create ${entityName.slice(0, -1)}` });
+    }
   });
 
   router.patch(`/${entityName}/:id`, requireAuth, async (req, res) => {
-    const items = readJSON(filePath());
-    const idx = items.findIndex(i => i.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ error: 'Not found' });
-    Object.assign(items[idx], req.body);
-    items[idx].updatedAt = new Date().toISOString();
-    await writeJSON(filePath(), items);
-    logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${items[idx].name || items[idx].title || req.params.id}`, req.admin.username);
-    res.json({ success: true, item: items[idx] });
+    try {
+      const item = await update(tableName, req.params.id, {
+        ...mapFields(req.body),
+        updated_at: new Date().toISOString()
+      });
+      logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${item.name || item.title || req.params.id}`, req.admin.username);
+      res.json({ success: true, item: camelizeKeys(item) });
+    } catch (err) {
+      console.error(`${entityName} update error:`, err);
+      if (err.code === 'PGRST116') return res.status(404).json({ error: 'Not found' });
+      res.status(500).json({ error: `Failed to update ${entityName.slice(0, -1)}` });
+    }
   });
 
   router.delete(`/${entityName}/:id`, requireAuth, async (req, res) => {
-    let items = readJSON(filePath());
-    const idx = items.findIndex(i => i.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ error: 'Not found' });
-    const removed = items.splice(idx, 1);
-    await writeJSON(filePath(), items);
-    logActivity(`${entityName}_delete`, `${entityName.slice(0, -1)} supprimé: ${removed[0]?.name || removed[0]?.title || req.params.id}`, req.admin.username);
-    res.json({ success: true });
+    try {
+      const item = await get(tableName, req.params.id);
+      if (!item) return res.status(404).json({ error: 'Not found' });
+      await remove(tableName, req.params.id);
+      logActivity(`${entityName}_delete`, `${entityName.slice(0, -1)} supprimé: ${item.name || item.title || req.params.id}`, req.admin.username);
+      res.json({ success: true });
+    } catch (err) {
+      console.error(`${entityName} delete error:`, err);
+      res.status(500).json({ error: `Failed to delete ${entityName.slice(0, -1)}` });
+    }
   });
 }
 
-crudRoutes('team', 'team.json');
-crudRoutes('services', 'services.json');
-crudRoutes('projects', 'projects.json');
-crudRoutes('blog', 'blog.json');
+crudRoutes('team', 'team_members');
+crudRoutes('services', 'services');
+crudRoutes('projects', 'projects');
+crudRoutes('blog', 'blog_posts');
 
 // ─── PRICING MANAGEMENT ───
-router.get('/pricing', requireAuth, (req, res) => {
-  const configPath = path.join(projectRoot, 'config.json');
-  const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  res.json(cfg.pricing || {});
+router.get('/pricing', requireAuth, async (req, res) => {
+  try {
+    const cfg = await getSiteConfig();
+    res.json(cfg.pricing || {});
+  } catch (err) {
+    console.error('Pricing get error:', err);
+    res.status(500).json({ error: 'Failed to load pricing' });
+  }
 });
 
 router.put('/pricing', requireAuth, async (req, res) => {
-  const configPath = path.join(projectRoot, 'config.json');
-  let cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  try {
+    const validCategories = ['construction', 'rehabilitation', 'forage'];
+    const incoming = req.body;
 
-  const validCategories = ['construction', 'rehabilitation', 'forage'];
-  const incoming = req.body;
-
-  for (const cat of validCategories) {
-    if (incoming[cat]) {
-      for (const tier of Object.keys(incoming[cat])) {
-        const t = incoming[cat][tier];
-        if (typeof t.name !== 'string' || !t.name.trim()) {
-          return res.status(400).json({ error: `Le champ "name" est requis pour ${cat}/${tier}` });
-        }
-        if (cat === 'forage') {
-          if (tier === 'standard' && (typeof t.pricePerML !== 'number' || t.pricePerML <= 0)) {
-            return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
+    for (const cat of validCategories) {
+      if (incoming[cat]) {
+        for (const tier of Object.keys(incoming[cat])) {
+          const t = incoming[cat][tier];
+          if (typeof t.name !== 'string' || !t.name.trim()) {
+            return res.status(400).json({ error: `Le champ "name" est requis pour ${cat}/${tier}` });
           }
-          if (tier !== 'standard' && (typeof t.price !== 'number' || t.price <= 0)) {
-            return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
+          if (cat === 'forage') {
+            if (tier === 'standard' && (typeof t.pricePerML !== 'number' || t.pricePerML <= 0)) {
+              return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
+            }
+            if (tier !== 'standard' && (typeof t.price !== 'number' || t.price <= 0)) {
+              return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
+            }
+          } else {
+            if (typeof t.pricePerM2 !== 'number' || t.pricePerM2 <= 0) {
+              return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
+            }
           }
-        } else {
-          if (typeof t.pricePerM2 !== 'number' || t.pricePerM2 <= 0) {
-            return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
+          if (!Array.isArray(t.features)) {
+            return res.status(400).json({ error: `"features" doit être un tableau pour ${cat}/${tier}` });
           }
-        }
-        if (!Array.isArray(t.features)) {
-          return res.status(400).json({ error: `"features" doit être un tableau pour ${cat}/${tier}` });
         }
       }
     }
-  }
 
-  cfg.pricing = incoming;
-  fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2));
-  logActivity('pricing_update', 'Grille tarifaire mise à jour', req.admin.username);
-  res.json({ success: true });
+    const cfg = await getSiteConfig();
+    await upsertSiteConfig({ ...cfg, pricing: incoming });
+    logActivity('pricing_update', 'Grille tarifaire mise à jour', req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Pricing update error:', err);
+    res.status(500).json({ error: 'Failed to update pricing' });
+  }
 });
 
 // ─── CONTACT INFO ───
-router.get('/contact-info', requireAuth, (req, res) => {
-  const configPath = path.join(projectRoot, 'config.json');
-  const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  res.json({
-    contact: cfg.contact || {},
-    social: cfg.social || {},
-    mission: cfg.mission || '',
-    vision: cfg.vision || '',
-    team: cfg.team || {},
-    founded: cfg.founded || 2015,
-    experience_years: cfg.experience_years || 10
-  });
+router.get('/contact-info', requireAuth, async (req, res) => {
+  try {
+    const cfg = await getSiteConfig();
+    res.json({
+      contact: cfg.contact || {},
+      social: cfg.social || {},
+      mission: cfg.mission || '',
+      vision: cfg.vision || '',
+      team: cfg.team_stats || {},
+      founded: cfg.founded || 2015,
+      experience_years: cfg.experience_years || 10
+    });
+  } catch (err) {
+    console.error('Contact info get error:', err);
+    res.status(500).json({ error: 'Failed to load contact info' });
+  }
 });
 
 router.put('/contact-info', requireAuth, async (req, res) => {
-  const configPath = path.join(projectRoot, 'config.json');
-  let cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  if (req.body.contact) cfg.contact = req.body.contact;
-  if (req.body.social) cfg.social = req.body.social;
-  if (req.body.mission) cfg.mission = req.body.mission;
-  if (req.body.vision) cfg.vision = req.body.vision;
-  if (req.body.team) cfg.team = req.body.team;
-  if (req.body.experience_years) cfg.experience_years = req.body.experience_years;
-  if (req.body.founded) cfg.founded = req.body.founded;
-  fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2));
-  logActivity('contact_info_update', 'Informations de contact mises à jour', req.admin.username);
-  res.json({ success: true });
+  try {
+    const cfg = await getSiteConfig();
+    const updates = {};
+    if (req.body.contact) updates.contact = req.body.contact;
+    if (req.body.social) updates.social = req.body.social;
+    if (req.body.mission) updates.mission = req.body.mission;
+    if (req.body.vision) updates.vision = req.body.vision;
+    if (req.body.team_stats) updates.team_stats = req.body.team_stats;
+    if (req.body.experience_years) updates.experience_years = req.body.experience_years;
+    if (req.body.founded) updates.founded = req.body.founded;
+    if (req.body.team) updates.team_stats = req.body.team;
+    await upsertSiteConfig({ ...cfg, ...updates });
+    logActivity('contact_info_update', 'Informations de contact mises à jour', req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Contact info update error:', err);
+    res.status(500).json({ error: 'Failed to update contact info' });
+  }
 });
 
 // ─── SITE SETTINGS ───
-router.get('/settings', requireAuth, (req, res) => {
-  const settingsPath = path.join(projectRoot, 'data', 'settings.json');
-  if (!fs.existsSync(settingsPath)) {
-    return res.json({
-      googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXXXXX',
-      whatsappNumber: '261328231280',
-      siteUrl: process.env.SITE_URL || 'https://nordinvest.mg',
-      seoDescription: "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, réhabilitation et vente immobilière.",
-      seoKeywords: ["immobilier", "construction", "madagascar", "antsiranana", "diego-suarez", "forage", "réhabilitation"]
+router.get('/settings', requireAuth, async (req, res) => {
+  try {
+    const settings = await getAllSettings();
+    res.json({
+      googleAnalyticsId: settings.googleAnalyticsId || process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXXXXX',
+      whatsappNumber: settings.whatsappNumber || '261328231280',
+      siteUrl: settings.siteUrl || process.env.SITE_URL || 'https://nordinvest.mg',
+      seoDescription: settings.seoDescription || "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, réhabilitation et vente immobilière.",
+      seoKeywords: settings.seoKeywords || ["immobilier", "construction", "madagascar", "antsiranana", "diego-suarez", "forage", "réhabilitation"]
     });
+  } catch (err) {
+    console.error('Settings get error:', err);
+    res.status(500).json({ error: 'Failed to load settings' });
   }
-  res.json(readJSON(settingsPath));
 });
 
 router.put('/settings', requireAuth, async (req, res) => {
-  const settingsPath = path.join(projectRoot, 'data', 'settings.json');
-  await writeJSON(settingsPath, req.body);
-  logActivity('settings_update', 'Paramètres du site mis à jour', req.admin.username);
-  res.json({ success: true });
+  try {
+    for (const [key, value] of Object.entries(req.body)) {
+      await setSetting(key, value);
+    }
+    logActivity('settings_update', 'Paramètres du site mis à jour', req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Settings update error:', err);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
 });
 
 // ─── EMAIL TEST ───

@@ -7,18 +7,15 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { adminRouter } from './admin.js';
 import { imageRouter } from './images.js';
-import { readJSON, checkDefaultCredentials } from './auth.js';
+import { supabase, getSiteConfig } from './supabase.js';
 
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
-const dataDir = process.env.DATA_DIR || path.join(projectRoot, 'data');
 const uploadsDir = process.env.UPLOADS_DIR || path.join(projectRoot, 'uploads');
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-checkDefaultCredentials();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -27,25 +24,13 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static(path.join(projectRoot, 'public')));
 app.use('/uploads', express.static(uploadsDir));
 
-[dataDir, uploadsDir].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-});
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const imagesSubdirs = ['hero', 'about', 'team', 'projects', 'blog', 'gallery', 'services', 'standards'];
 const imagesBase = path.join(projectRoot, 'public', 'images');
 imagesSubdirs.forEach(sub => {
   const d = path.join(imagesBase, sub);
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
-});
-
-const seedFiles = ['contacts.json', 'quotes.json', 'subscribers.json', 'image-slots.json'];
-seedFiles.forEach(f => {
-  const target = path.join(dataDir, f);
-  const source = path.join(projectRoot, 'data', f);
-  if (!fs.existsSync(target) && fs.existsSync(source)) {
-    fs.copyFileSync(source, target);
-    console.log(`Seeded ${f} to ${dataDir}`);
-  }
 });
 
 app.use('/admin', express.static(path.join(projectRoot, 'public', 'admin')));
@@ -58,15 +43,24 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Load static config.json and dynamic site_config
 const configPath = path.join(projectRoot, 'config.json');
-let config = {};
+let staticConfig = {};
 try {
-  config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  staticConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 } catch (error) {
   console.error('Failed to load config.json:', error);
 }
 
-app.post('/api/calculate-pricing', (req, res) => {
+async function loadSiteConfig() {
+  try {
+    return await getSiteConfig();
+  } catch {
+    return {};
+  }
+}
+
+app.post('/api/calculate-pricing', async (req, res) => {
   try {
     const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
 
@@ -78,7 +72,8 @@ app.post('/api/calculate-pricing', (req, res) => {
       return res.status(400).json({ error: 'Invalid square meters value' });
     }
 
-    const pricingRates = config.pricing || {};
+    const siteCfg = await loadSiteConfig();
+    const pricingRates = siteCfg.pricing || staticConfig.pricing || {};
     const servicePricing = pricingRates[serviceType]?.[finishingLevel];
 
     if (!servicePricing) {
@@ -89,11 +84,10 @@ app.post('/api/calculate-pricing', (req, res) => {
     const unit = servicePricing.unit || (servicePricing.pricePerML ? 'ml' : 'm²');
 
     const locationMultiplier = {};
-    if (config.locations) {
-      config.locations.forEach(loc => {
-        locationMultiplier[loc.code] = loc.multiplier;
-      });
-    }
+    const locations = siteCfg.locations || staticConfig.locations || [];
+    locations.forEach(loc => {
+      locationMultiplier[loc.code] = loc.multiplier;
+    });
 
     const multiplier = locationMultiplier[location] || 1.0;
 
@@ -104,9 +98,11 @@ app.post('/api/calculate-pricing', (req, res) => {
       totalPrice = basePrice * sqMeters * multiplier;
     }
 
-    const contingency = totalPrice * (config.contingency_rate || 0.1);
+    const contingencyRate = siteCfg.contingency_rate ?? staticConfig.contingency_rate ?? 0.1;
+    const taxRate = siteCfg.tax_rate ?? staticConfig.tax_rate ?? 0.2;
+    const contingency = totalPrice * contingencyRate;
     const estimatedTotal = totalPrice + contingency;
-    const tax = estimatedTotal * (config.tax_rate || 0.2);
+    const tax = estimatedTotal * taxRate;
     const grandTotal = estimatedTotal + tax;
 
     res.json({
@@ -142,24 +138,20 @@ app.post('/api/contact', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    const contactsPath = path.join(dataDir, 'contacts.json');
-    let contacts = readJSON(contactsPath);
-    if (!Array.isArray(contacts)) contacts = [];
-
     const contactEntry = {
       id: `contact_${Date.now()}`,
       name, email, phone: phone || '',
-      projectType, budget: budget || '', message,
-      serviceType: serviceType || projectType,
+      project_type: projectType,
+      budget: budget || '', message,
+      service_type: serviceType || projectType,
       date: new Date().toISOString(),
       read: false,
       resolved: false,
       notes: ''
     };
-    contacts.unshift(contactEntry);
-    const dir = path.dirname(contactsPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(contactsPath, JSON.stringify(contacts, null, 2));
+
+    const { error: dbError } = await supabase.from('contacts').insert(contactEntry);
+    if (dbError) throw dbError;
 
     const adminMailOptions = {
       from: process.env.EMAIL_USER,
@@ -205,7 +197,7 @@ app.post('/api/contact', async (req, res) => {
       await transporter.sendMail(adminMailOptions);
       await transporter.sendMail(customerMailOptions);
     } catch (mailErr) {
-      console.warn('Email sending failed (contact saved locally):', mailErr.message);
+      console.warn('Email sending failed (contact saved to DB):', mailErr.message);
     }
 
     res.json({
@@ -230,16 +222,15 @@ app.post('/api/newsletter', async (req, res) => {
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: 'Email invalide' });
     }
-    const subscribersPath = path.join(dataDir, 'subscribers.json');
-    let subscribers = readJSON(subscribersPath);
-    if (!Array.isArray(subscribers)) subscribers = [];
-    if (subscribers.find(s => s.email === email)) {
+
+    const { data: existing } = await supabase.from('subscribers').select('email').eq('email', email).maybeSingle();
+    if (existing) {
       return res.json({ success: true, message: 'Déjà inscrit' });
     }
-    subscribers.push({ email, date: new Date().toISOString() });
-    const dir = path.dirname(subscribersPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers, null, 2));
+
+    const { error: dbError } = await supabase.from('subscribers').insert({ email, date: new Date().toISOString() });
+    if (dbError) throw dbError;
+
     try {
       const adminMailOptions = {
         from: process.env.EMAIL_USER,
@@ -251,6 +242,7 @@ app.post('/api/newsletter', async (req, res) => {
     } catch (mailErr) {
       console.warn('Newsletter email notification failed:', mailErr.message);
     }
+
     res.json({ success: true, message: 'Inscription réussie' });
   } catch (error) {
     console.error('Newsletter error:', error);
@@ -267,24 +259,18 @@ app.post('/api/request-quote', async (req, res) => {
     }
 
     const quoteNumber = `NIM-${Date.now()}`;
-    const createdDate = new Date().toLocaleDateString('fr-FR');
-
-    const quotesPath = path.join(dataDir, 'quotes.json');
-    let quotes = readJSON(quotesPath);
-    if (!Array.isArray(quotes)) quotes = [];
     const quoteEntry = {
       id: `quote_${Date.now()}`,
-      quoteNumber, name, email,
-      serviceType: serviceType || '',
+      quote_number: quoteNumber, name, email,
+      service_type: serviceType || '',
       details, location: location || '',
       date: new Date().toISOString(),
       status: 'pending',
       notes: ''
     };
-    quotes.unshift(quoteEntry);
-    const qDir = path.dirname(quotesPath);
-    if (!fs.existsSync(qDir)) fs.mkdirSync(qDir, { recursive: true });
-    fs.writeFileSync(quotesPath, JSON.stringify(quotes, null, 2));
+
+    const { error: dbError } = await supabase.from('quotes').insert(quoteEntry);
+    if (dbError) throw dbError;
 
     const quoteMailOptions = {
       from: process.env.EMAIL_USER,
@@ -294,7 +280,7 @@ app.post('/api/request-quote', async (req, res) => {
       html: `
         <h2>Demande de Devis - Nord Invest Madagascar</h2>
         <p><strong>Numéro de Devis:</strong> ${quoteNumber}</p>
-        <p><strong>Date:</strong> ${createdDate}</p>
+        <p><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
         <p><strong>Client:</strong> ${escapeHtml(name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Type de Service:</strong> ${escapeHtml(serviceType)}</p>
@@ -317,7 +303,7 @@ app.post('/api/request-quote', async (req, res) => {
     try {
       await transporter.sendMail(quoteMailOptions);
     } catch (mailErr) {
-      console.warn('Email sending failed (quote saved locally):', mailErr.message);
+      console.warn('Email sending failed (quote saved to DB):', mailErr.message);
     }
 
     res.json({
@@ -331,40 +317,80 @@ app.post('/api/request-quote', async (req, res) => {
   }
 });
 
-app.get('/api/config', (req, res) => {
-  res.json(config);
+app.get('/api/config', async (req, res) => {
+  try {
+    const siteCfg = await loadSiteConfig();
+    res.json({
+      ...staticConfig,
+      pricing: siteCfg.pricing || staticConfig.pricing || {},
+      locations: siteCfg.locations || staticConfig.locations || [],
+      contingency_rate: siteCfg.contingency_rate ?? staticConfig.contingency_rate ?? 0.1,
+      tax_rate: siteCfg.tax_rate ?? staticConfig.tax_rate ?? 0.2,
+      contact: siteCfg.contact || staticConfig.contact || {},
+      social: siteCfg.social || staticConfig.social || {},
+      mission: siteCfg.mission || staticConfig.mission || '',
+      vision: siteCfg.vision || staticConfig.vision || '',
+      team_stats: siteCfg.team_stats || staticConfig.team || {}
+    });
+  } catch {
+    res.json(staticConfig);
+  }
 });
 
+async function publicList(req, res, tableName, filterKey, orderBy) {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .eq(filterKey, true)
+      .order(orderBy || 'order', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error(`${tableName} public list error:`, err);
+    res.status(500).json({ error: `Failed to load ${tableName}` });
+  }
+}
+
 app.get('/api/team', (req, res) => {
-  const items = readJSON(path.join(dataDir, 'team.json'));
-  res.json(items.filter(i => i.visible !== false).sort((a, b) => (a.order || 99) - (b.order || 99)));
+  publicList(req, res, 'team_members', 'visible', 'order');
 });
 
 app.get('/api/services', (req, res) => {
-  const items = readJSON(path.join(dataDir, 'services.json'));
-  res.json(items.filter(i => i.visible !== false).sort((a, b) => (a.order || 99) - (b.order || 99)));
+  publicList(req, res, 'services', 'visible', 'order');
 });
 
 app.get('/api/projects', (req, res) => {
-  const items = readJSON(path.join(dataDir, 'projects.json'));
-  res.json(items.filter(i => i.visible !== false).sort((a, b) => (a.order || 99) - (b.order || 99)));
+  publicList(req, res, 'projects', 'visible', 'order');
 });
 
-app.get('/api/blog', (req, res) => {
-  const items = readJSON(path.join(dataDir, 'blog.json'));
-  res.json(items.filter(i => i.published !== false).sort((a, b) => new Date(b.date) - new Date(a.date)));
-});
-
-app.get('/api/pricing', (req, res) => {
+app.get('/api/blog', async (req, res) => {
   try {
-    const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('published', true)
+      .order('date', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Blog public list error:', err);
+    res.status(500).json({ error: 'Failed to load blog posts' });
+  }
+});
+
+app.get('/api/pricing', async (req, res) => {
+  try {
+    const siteCfg = await loadSiteConfig();
     res.json({
-      pricing: cfg.pricing || {},
-      contingency_rate: cfg.contingency_rate || 0.1,
-      tax_rate: cfg.tax_rate || 0.2,
-      locations: cfg.locations || []
+      pricing: siteCfg.pricing || staticConfig.pricing || {},
+      contingency_rate: siteCfg.contingency_rate ?? staticConfig.contingency_rate ?? 0.1,
+      tax_rate: siteCfg.tax_rate ?? staticConfig.tax_rate ?? 0.2,
+      locations: siteCfg.locations || staticConfig.locations || []
     });
-  } catch { res.status(500).json({ error: 'Failed to load pricing' }); }
+  } catch {
+    res.status(500).json({ error: 'Failed to load pricing' });
+  }
 });
 
 app.use('/api/admin', adminRouter);
@@ -405,6 +431,6 @@ function escapeHtml(text) {
 app.listen(PORT, () => {
   console.log(`✓ Nord Invest Madagascar server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✓ Data directory: ${dataDir}`);
+  console.log(`✓ Uploads directory: ${uploadsDir}`);
   console.log(`✓ API endpoints available at: /api/*`);
 });
