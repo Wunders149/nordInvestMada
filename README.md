@@ -2,54 +2,54 @@
 
 Professional real estate and construction website built with Node.js/Express backend, vanilla JavaScript frontend, trilingual (FR/EN/MG), with comprehensive SEO/Analytics integration.
 
-## 📋 Features
+## Features
 
 ### Backend (Node.js/Express)
-- ✅ **Contact Form Handling** — Validates, persists to JSON, and processes contact submissions
-- ✅ **Email Notifications** — Sends confirmation emails to customers and admin alerts (graceful degradation if unavailable)
-- ✅ **Pricing Calculator API** — Dynamic pricing calculations based on service type and specifications
-- ✅ **Quote Request System** — Dedicated endpoint with JSON persistence for detailed quote requests
-- ✅ **Newsletter Subscription** — Email signup with JSON file storage and admin notification
-- ✅ **Image Listing API** — Scans and serves available project/team/hero images
-- ✅ **Config Endpoint** — Exposes site configuration (services, pricing, locations)
-- ✅ **Admin Dashboard API** — Secure token-based auth, CRUD for contacts/quotes/subscribers, stats, CSV export
-- ✅ **Image Upload & Management API** — Multer-based upload, slot system, delete, metadata listing
-- ✅ **CORS Support** — Cross-origin requests enabled
-- ✅ **Error Handling** — Comprehensive error logging and user-friendly responses
+- **Contact Form Handling** — Validates (Zod), persists to Supabase, and processes contact submissions
+- **Email Notifications** — Sends confirmation emails to customers and admin alerts (graceful degradation)
+- **Pricing Calculator API** — Dynamic pricing calculations based on service type and specifications
+- **Quote Request System** — Dedicated endpoint with Supabase persistence for detailed quote requests
+- **Newsletter Subscription** — Email signup with Supabase storage and admin notification
+- **Image Listing API** — Scans and serves available project/team/hero images with metadata
+- **Config Endpoint** — Merges static config.json with dynamic Supabase site_config
+- **Admin Dashboard API** — Secure token-based auth persisted in Supabase, CRUD for contacts/quotes/subscribers/team/services/projects/blog, stats, CSV export
+- **Image Upload & Management API** — Multer-based upload, slot system, rename, replace, delete
+- **Rate Limiting** — 5 req/15min on contact/quote, 3 req/15min on newsletter, 30 req/15min on pricing
+- **Input Validation** — Zod schemas for all public and admin endpoints
+- **Session Persistence** — Admin sessions stored in Supabase with in-memory cache (survives restarts)
+- CORS, error handling, activity logging
 
 ### Frontend Features
-- ✅ **Responsive Design** — Mobile-first, works on all devices (480px to 1440px+)
-- ✅ **SEO Optimized** — Meta tags, structured data (JSON-LD), Open Graph, Twitter Cards
-- ✅ **Google Analytics** — Event tracking for user interactions (form, CTA, pricing tabs, theme toggle, language switch)
-- ✅ **Smooth Animations** — Scroll-reveal effects, animated counters, loader overlay
-- ✅ **Interactive Forms** — Client-side validation and backend integration with auto-fill from pricing cards
-- ✅ **Pricing Calculator** — Live budget estimator with 3 service tiers, location multiplier, tax/contingency breakdown
-- ✅ **Interactive Pricing Tabs** — Construction / Réhabilitation / Forage with feature cards and CTA
-- ✅ **Gallery Lightbox** — Click-to-expand project images with keyboard navigation
-- ✅ **Theme Toggle** — Dark/Light mode with persistent localStorage
-- ✅ **Language Switcher** — FR / EN / MG with full i18n translations
-- ✅ **WhatsApp Floating Button** — Fixed position with pulse animation
-- ✅ **Newsletter Signup** — Inline form with success/error feedback
-- ✅ **Admin Dashboard** — Login-protected panel with stats, search, status management, CSV export, and image gallery manager
-- ✅ **Loader Navigation** — Animated section transitions on nav link click
-- ✅ **Animated Counters** — Number roll-up animation on scroll into view
-- ✅ **Project Map** — Embedded OpenStreetMap with project location pins
-- ✅ **Office Map** — Embedded OpenStreetMap with business locations
-- ✅ **Back to Top** — Fixed button appears on scroll
+- **Responsive Design** — Mobile-first, works on all devices (480px to 1440px+)
+- **SEO Optimized** — Meta tags, structured data (JSON-LD), Open Graph, Twitter Cards
+- **Google Analytics** — Event tracking for form submissions, CTA clicks, pricing tabs, theme toggle, language switch
+- **Smooth Animations** — Scroll-reveal effects, animated counters, loader overlay
+- **Interactive Forms** — Client-side validation and backend integration with auto-fill from pricing cards
+- **Pricing Calculator** — Live budget estimator with 3 service tiers, location multiplier, tax/contingency breakdown
+- **Interactive Pricing Tabs** — Construction / Rehabilitation / Forage with feature cards and CTA
+- **Gallery Lightbox** — Click-to-expand project images with keyboard navigation
+- **Theme Toggle** — Dark/Light mode with persistent localStorage
+- **Language Switcher** — FR / EN / MG with full i18n translations
+- **WhatsApp Floating Button** — Fixed position with pulse animation
+- **Admin Dashboard** — Login-protected SPA with stats, search/filter, status management, bulk actions, CSV export, image gallery manager, pricing editor, settings editor, activity log, and CRUD for team/services/projects/blog
+- **Loader Navigation** — Animated section transitions on nav link click
+- **Animated Counters** — Number roll-up animation on scroll into view
+- **Project Map** — Embedded OpenStreetMap with project location pins
+- **Office Map** — Embedded OpenStreetMap with business locations
+- **Back to Top** — Fixed button appears on scroll
 
 ### SEO & Analytics
-- ✅ **Meta Tags** — Comprehensive metadata for search engines and social media
-- ✅ **JSON-LD Schema** — Structured data for LocalBusiness and Organization
-- ✅ **Google Analytics** — Page views, event tracking (form submissions, CTA clicks, pricing tabs, theme changes, language switches)
-- ✅ **Sitemap.xml** — Proper XML sitemap for search engine crawling
-- ✅ **robots.txt** — Crawl directives and rate limiting
-- ✅ **Open Graph & Twitter Cards** — Social media preview optimization
+- Meta tags, JSON-LD Schema (LocalBusiness + Organization)
+- Google Analytics page views and event tracking
+- Sitemap.xml, robots.txt
+- Open Graph & Twitter Cards
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
-- Node.js 14+ installed
-- npm or yarn
+- Node.js 18+
+- npm
+- Supabase project (free tier)
 - Gmail account (for email sending)
 
 ### Step 1: Install Dependencies
@@ -58,479 +58,199 @@ npm install
 ```
 
 ### Step 2: Configure Environment Variables
-Create a `.env` file in the project root:
+Create a `.env` file:
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your configuration:
 ```env
 NODE_ENV=development
 PORT=3000
 
-# Gmail Configuration (use App Password, not regular password)
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+
+# Gmail (use App Password)
 EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-specific-password
+EMAIL_PASS=your-app-password
 ADMIN_EMAIL=admin@nordinvest.mg
 
 # Google Analytics
 GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 
-# Site Configuration
-SITE_URL=https://www.nordinvest.mg
+# Site
+SITE_URL=https://nordinvest.mg
+
+# Admin fallback (used only if admin_users table is empty)
+ADMIN_USER=admin
+ADMIN_PASS=nordinvest2026
 ```
 
-### Step 3: Gmail Setup (for Email Sending)
-1. Enable 2-Factor Authentication on your Gmail account
-2. Create an App Password: https://myaccount.google.com/apppasswords
-3. Copy the 16-character password to `EMAIL_PASS` in `.env`
+### Step 3: Database Setup
+Run the schema in `supabase-schema.sql` against your Supabase project's SQL editor. This creates all 13 tables.
 
-### Step 4: Run the Server
+### Step 4: Migrate existing data
 ```bash
-# Development mode (with nodemon auto-reload)
-npm run dev
-
-# Production mode
-npm start
+node src/migrate.js
 ```
 
-Server will run on `http://localhost:3000`
-
-## 📚 API Endpoints
-
-### Contact Form Submission
-**POST** `/api/contact`
-
-Request body:
-```json
-{
-  "name": "Jean Dupont",
-  "email": "jean@example.com",
-  "phone": "032 82 312 80",
-  "serviceType": "construction",
-  "projectType": "Villa",
-  "budget": "50 millions Ar",
-  "message": "Je souhaite construire une villa..."
-}
+### Step 5: Run the Server
+```bash
+npm run dev   # development with nodemon
+npm start     # production
 ```
 
-Response:
-```json
-{
-  "success": true,
-  "message": "Your request has been submitted successfully..."
-}
-```
+## API Endpoints
 
-### Pricing Calculator
-**POST** `/api/calculate-pricing`
+### Public
 
-Request body:
-```json
-{
-  "serviceType": "construction",
-  "squareMeters": 200,
-  "finishingLevel": "standard",
-  "location": "diego-suarez"
-}
-```
+| Method | Path | Rate Limit | Description |
+|--------|------|------------|-------------|
+| POST | `/api/contact` | 5/15min | Contact form submission |
+| POST | `/api/newsletter` | 3/15min | Newsletter signup |
+| POST | `/api/request-quote` | 5/15min | Quote request |
+| POST | `/api/calculate-pricing` | 30/15min | Pricing calculator |
+| GET | `/api/config` | — | Site configuration |
+| GET | `/api/team` | — | Team members (visible only) |
+| GET | `/api/services` | — | Services (visible only) |
+| GET | `/api/projects` | — | Projects (visible only) |
+| GET | `/api/blog` | — | Blog posts (published only) |
+| GET | `/api/pricing` | — | Pricing grid, rates, locations |
+| GET | `/api/health` | — | Health check |
 
-Response:
-```json
-{
-  "serviceType": "construction",
-  "squareMeters": 200,
-  "basePrice": 750000,
-  "subtotal": 150000000,
-  "contingency": 15000000,
-  "estimatedTotal": 165000000,
-  "tax": 33000000,
-  "grandTotal": 198000000,
-  "currency": "Ariary (Ar)"
-}
-```
+### Admin (all require `Authorization: Bearer <token>`)
 
-### Quote Request
-**POST** `/api/request-quote`
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/admin/login` | Authenticate (rate limited: 10/15min) |
+| POST | `/api/admin/logout` | Destroy session |
+| GET | `/api/admin/stats` | Dashboard statistics |
+| GET/PATCH/DELETE | `/api/admin/contacts/:id` | Contacts CRUD |
+| GET/PATCH/DELETE | `/api/admin/quotes/:id` | Quotes CRUD |
+| GET/DELETE | `/api/admin/subscribers/:email` | Newsletter subscribers |
+| GET/POST/PATCH/DELETE | `/api/admin/team` | Team members CRUD |
+| GET/POST/PATCH/DELETE | `/api/admin/services` | Services CRUD |
+| GET/POST/PATCH/DELETE | `/api/admin/projects` | Projects CRUD |
+| GET/POST/PATCH/DELETE | `/api/admin/blog` | Blog posts CRUD |
+| GET/PUT | `/api/admin/pricing` | Pricing grid editor |
+| GET/PUT | `/api/admin/contact-info` | Contact/social/mission/vision |
+| GET/PUT | `/api/admin/settings` | Site settings |
+| GET | `/api/admin/activity` | Activity log |
+| POST | `/api/admin/test-email` | Send test email |
 
-Request body:
-```json
-{
-  "name": "Jean Dupont",
-  "email": "jean@example.com",
-  "serviceType": "construction",
-  "location": "diego-suarez",
-  "details": "Je souhaite construire une villa R+1..."
-}
-```
+### Images
 
-### Newsletter Subscription
-**POST** `/api/newsletter`
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/images` | Bearer | List all images grouped by section |
+| POST | `/api/upload` | Bearer | Upload image (multipart) |
+| DELETE | `/api/images/:section/:filename` | Bearer | Delete image |
+| PUT | `/api/images/:section/:filename/rename` | Bearer | Rename image |
+| POST | `/api/images/:section/:filename/replace` | Bearer | Replace image file |
+| GET | `/api/images/slots` | — | List all slots |
+| PUT | `/api/images/slots/:id` | Bearer | Assign image to slot |
+| POST | `/api/images/slots` | Bearer | Create new slot |
 
-Request body:
-```json
-{
-  "email": "client@example.com"
-}
-```
+## Environment Variables
 
-Response:
-```json
-{
-  "success": true,
-  "message": "Inscription réussie"
-}
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SUPABASE_URL` | Yes | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
+| `NODE_ENV` | No | `development` or `production` |
+| `PORT` | No | Server port (default 3000) |
+| `EMAIL_USER` | No | Gmail address for sending emails |
+| `EMAIL_PASS` | No | Gmail App Password |
+| `ADMIN_EMAIL` | No | Where to receive contact alerts |
+| `GOOGLE_ANALYTICS_ID` | No | GA4 measurement ID |
+| `SITE_URL` | No | Canonical site URL |
+| `ADMIN_USER` | No | Admin username (fallback) |
+| `ADMIN_PASS` | No | Admin password (fallback) |
 
-### Health Check
-**GET** `/api/health`
-
-Response:
-```json
-{
-  "status": "Server is running",
-  "timestamp": "2026-06-02T10:30:00.000Z"
-}
-```
-
-### Configuration
-**GET** `/api/config`
-
-Returns the full site configuration (services, pricing, locations, contact info).
-
-### Image Listing (Enhanced)
-**GET** `/api/images`
-
-Returns a directory listing of all available images with metadata (size, type, lastModified), grouped by section.
-
-### Image Upload
-**POST** `/api/upload`
-
-Multipart form data with fields:
-- `image` — File (JPG, PNG, WebP, GIF, SVG; max 10MB)
-- `section` — Target directory (`hero`, `about`, `team`, `projects`, `blog`, `gallery`)
-- `slotId` — (Optional) Auto-assign to an image slot
-
-Response:
-```json
-{
-  "success": true,
-  "url": "/images/hero/my-photo-1717488826423.jpg",
-  "file": {
-    "name": "my-photo-1717488826423.jpg",
-    "path": "images/hero/my-photo-1717488826423.jpg",
-    "size": 123456,
-    "type": "jpg",
-    "lastModified": "2026-06-04T12:00:00.000Z"
-  }
-}
-```
-
-### Image Delete
-**DELETE** `/api/images/:section/:filename`
-
-Deletes an image file and resets any slot using it back to the original SVG.
-
-### Image Slots — Get Assignments
-**GET** `/api/images/slots`
-
-Returns all 16 image slots with their current assignments:
-```json
-[
-  {
-    "id": "hero",
-    "section": "hero",
-    "label": "Hero - Architecture",
-    "originalFile": "architecture.svg",
-    "uploadedFile": "my-photo.jpg",
-    "currentFile": "my-photo.jpg",
-    "currentUrl": "/images/hero/my-photo.jpg"
-  }
-]
-```
-
-### Image Slots — Assign
-**PUT** `/api/images/slots/:slotId`
-
-```json
-{ "filename": "my-photo.jpg" }
-```
-
-Set `filename` to `null` to reset to the original SVG placeholder.
-
-### Admin Login
-**POST** `/api/admin/login`
-
-Request body:
-```json
-{
-  "username": "admin",
-  "password": "nordinvest2026"
-}
-```
-
-Response:
-```json
-{
-  "success": true,
-  "token": "aa1d47d414aa38e64b6df68aac1f126862d57689830ce077a075698c2b6536bc"
-}
-```
-
-> **Note**: Default credentials can be changed via `ADMIN_USER` and `ADMIN_PASS` environment variables.
-
-### Admin: Dashboard Stats
-**GET** `/api/admin/stats`
-
-Requires `Authorization: Bearer <token>` header.
-
-Response:
-```json
-{
-  "totalContacts": 12,
-  "unreadContacts": 3,
-  "totalQuotes": 5,
-  "pendingQuotes": 2,
-  "totalSubscribers": 45,
-  "contactsThisMonth": 4,
-  "lastUpdate": "2026-06-04T06:39:57.546Z"
-}
-```
-
-### Admin: List Contacts
-**GET** `/api/admin/contacts`
-
-Returns all contact form submissions (newest first).
-
-### Admin: Update Contact Status
-**PATCH** `/api/admin/contacts/:id`
-
-```json
-{ "read": true, "resolved": true }
-```
-
-### Admin: Delete Contact
-**DELETE** `/api/admin/contacts/:id`
-
-### Admin: List Quotes
-**GET** `/api/admin/quotes`
-
-Returns all quote requests (newest first).
-
-### Admin: Update Quote Status
-**PATCH** `/api/admin/quotes/:id`
-
-```json
-{ "status": "in-progress" }
-```
-
-Status values: `pending`, `in-progress`, `completed`, `cancelled`
-
-### Admin: Delete Quote
-**DELETE** `/api/admin/quotes/:id`
-
-### Admin: List Subscribers
-**GET** `/api/admin/subscribers`
-
-Returns all newsletter subscribers (newest first).
-
-### Admin: Delete Subscriber
-**DELETE** `/api/admin/subscribers/:email`
-
-### Admin: Logout
-**POST** `/api/admin/logout`
-
-## 📊 Google Analytics Setup
-
-1. Create a Google Analytics property at https://analytics.google.com
-2. Get your Measurement ID (format: `G-XXXXXXXXXX`)
-3. Update in `index.html` and `.env`:
-   ```html
-   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-   ```
-
-### Tracked Events
-- `form_submission` - When users submit the contact form
-- `pricing_tab_view` - When users switch pricing tabs
-- `cta_click` - When users click call-to-action buttons
-- Page views (automatic)
-
-## 🔒 Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development` or `production` |
-| `PORT` | Server port | `3000` |
-| `EMAIL_USER` | Gmail address | `your-email@gmail.com` |
-| `EMAIL_PASS` | Gmail app password | `xxxx xxxx xxxx xxxx` |
-| `ADMIN_EMAIL` | Admin email for alerts | `admin@nordinvest.mg` |
-| `GOOGLE_ANALYTICS_ID` | GA measurement ID | `G-XXXXXXXXXX` |
-| `SITE_URL` | Production URL | `https://www.nordinvest.mg` |
-| `ADMIN_USER` | Admin dashboard username | `admin` |
-| `ADMIN_PASS` | Admin dashboard password | `nordinvest2026` |
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 orinvestmada/
 ├── src/
-│   ├── server.js              # Express.js backend (entry point)
-│   ├── admin.js               # Admin API router (auth, CRUD, stats)
-│   └── images.js              # Image upload/management API (multer, slots, CRUD)
+│   ├── server.js           # Express entry point (routes, rate limiters, email)
+│   ├── admin.js            # Admin API router (CRUD, pricing, settings, activity)
+│   ├── auth.js             # Auth middleware, session management (Supabase-backed)
+│   ├── images.js           # Image upload/management API (Multer, slots)
+│   ├── supabase.js         # Supabase client + generic CRUD helpers
+│   ├── validation.js       # Zod schemas + validate() middleware
+│   └── migrate.js          # One-time JSON → Supabase migration script
 ├── public/
-│   ├── index.html             # Main website (SPA with SEO & Analytics)
-│   ├── admin/                 # Admin dashboard
-│   │   ├── login.html         # Admin login page
-│   │   ├── dashboard.html     # Admin dashboard (stats, tables, actions)
-│   │   ├── css/admin.css      # Admin dashboard styles
-│   │   └── js/admin.js        # Admin dashboard logic
-│   ├── css/style.css          # Styles (theme, responsive, animations)
-│   ├── js/main.js             # Frontend logic (i18n, calculator, gallery, forms)
-│   ├── locales/               # i18n translations
-│   │   ├── fr.json            # French
-│   │   ├── en.json            # English
-│   │   └── mg.json            # Malagasy
-│   ├── images/                # SVG placeholders & logo (organised by section)
-│   │   ├── hero/              # Hero section image
-│   │   ├── about/             # About section images
-│   │   ├── team/              # Team member avatars
-│   │   ├── projects/          # Project thumbnails
-│   │   ├── blog/              # Blog article images
-│   │   ├── standards/         # Standards icons
-│   │   └── logo.jpeg          # Company logo
-│   ├── sitemap.xml            # SEO sitemap
-│   └── robots.txt             # Crawl directives
-├── data/
-│   ├── contacts.json          # Contact form submissions (created on first submission)
-│   ├── quotes.json            # Quote requests (created on first submission)
-│   ├── subscribers.json       # Newsletter subscriber storage
-│   └── image-slots.json       # Image slot definitions & assignments
-├── uploads/                   # User-generated uploads (runtime)
-├── docs/                      # Documentation
-├── config.json                # App configuration & metadata
-├── package.json               # Dependencies
-├── render.yaml                # Render blueprint config
-├── .env.example               # Environment template
-├── .env                       # Local configuration (ignored by git)
-├── .dockerignore              # Files to exclude from Docker build
-└── README.md                  # This file
+│   ├── index.html          # Main website (SPA)
+│   ├── admin/
+│   │   ├── login.html      # Admin login page
+│   │   ├── dashboard.html  # Admin dashboard shell
+│   │   ├── css/admin.css
+│   │   └── js/
+│   │       ├── main.js     # Module entry point + tab switching
+│   │       └── modules/
+│   │           ├── api.js         # Shared state & fetch helpers
+│   │           ├── helpers.js     # formatDate, escapeHtml, humanSize
+│   │           ├── ui.js          # Toast, confirm, skeleton, pagination, dark mode, lightbox
+│   │           ├── dashboard.js   # Stats, charts, dashboard widgets
+│   │           ├── contacts.js    # Contacts tab CRUD
+│   │           ├── quotes.js      # Quotes tab CRUD
+│   │           ├── subscribers.js # Newsletter tab
+│   │           ├── images.js      # Gallery upload, slots, editor
+│   │           ├── content.js     # Team/Services/Projects/Blog CRUD
+│   │           ├── pricing.js     # Pricing grid editor
+│   │           ├── settings.js    # Settings, contact info, email test
+│   │           └── activity.js    # Activity log viewer
+│   ├── css/
+│   ├── js/
+│   ├── locales/ (fr.json, en.json, mg.json)
+│   ├── images/ (hero/, about/, team/, projects/, blog/, standards/)
+│   ├── sitemap.xml
+│   └── robots.txt
+├── data/                   # JSON file fallbacks
+├── uploads/                # Runtime uploads
+├── docs/
+├── supabase-schema.sql     # Full database schema (13 tables)
+├── config.json             # Static app configuration
+├── package.json
+└── README.md
 ```
 
-## 🌐 Deployment
+## Database Schema
 
-### Render (Recommended — No payment method required)
+13 tables in Supabase:
 
-#### Quick Deploy (GitHub)
-1. Push this repo to GitHub
-2. Go to [dashboard.render.com](https://dashboard.render.com) → **New +** → **Web Service**
-3. Connect your GitHub repo
-4. Fill in:
-   - **Name**: `nord-invest-mada`
-   - **Region**: Frankfurt (closest to Madagascar)
-   - **Branch**: `main`
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node src/server.js`
-   - **Plan**: **Free**
-5. Add environment variables (see table below)
-6. Click **Create Web Service**
+| Table | Purpose |
+|-------|---------|
+| `admin_users` | bcrypt-hashed login credentials |
+| `sessions` | Persistent admin login sessions |
+| `contacts` | Contact form submissions |
+| `quotes` | Quote requests |
+| `subscribers` | Newsletter emails |
+| `team_members` | Team CRUD |
+| `services` | Service offerings |
+| `projects` | Portfolio projects |
+| `blog_posts` | Blog articles |
+| `activity_logs` | Admin action audit trail |
+| `image_slots` | Labeled image placeholders |
+| `settings` | Key-value store (GA, WhatsApp, SEO) |
+| `site_config` | Singleton — pricing grid, contact info, rates |
 
-#### Using render.yaml (Blueprint)
+## Deployment
+
+### Render
+1. Push to GitHub
+2. Create Web Service on [dashboard.render.com](https://dashboard.render.com)
+3. Set build command: `npm install`
+4. Set start command: `node src/server.js`
+5. Add environment variables (see table above)
+6. Deploy
+
+### Self-hosted
 ```bash
-# Push to GitHub, then:
-# 1. Go to dashboard.render.com → Blueprint → Connect repo
-# 2. Edit render.yaml to set your repo URL
-# 3. Add secret env vars via dashboard (EMAIL_USER, EMAIL_PASS, etc.)
-```
-
-> **⚠️ Render free tier notes:**
-> - Spins down after 15 min of inactivity (cold start ~30s)
-> - Filesystem is **ephemeral** — `data/` and `uploads/` content is lost on redeploy
-> - For persistence: add a [Render Disk](https://render.com/docs/disks) ($10/mo) or use external storage (MongoDB Atlas, Cloudinary)
-
-#### Environment Variables for Render
-
-| Variable | Required | Value |
-|----------|----------|-------|
-| `NODE_ENV` | Yes | `production` |
-| `SITE_URL` | Yes | `https://nord-invest-mada.onrender.com` |
-| `ADMIN_USER` | Yes | `admin` |
-| `ADMIN_PASS` | Yes | `nordinvest2026` |
-| `EMAIL_USER` | No | Your Gmail address |
-| `EMAIL_PASS` | No | Gmail App Password |
-| `ADMIN_EMAIL` | No | Where to receive contact alerts |
-| `GOOGLE_ANALYTICS_ID` | No | `G-XXXXXXXXXX` |
-
-### Self-hosted (VPS/Dedicated)
-```bash
-# Install Node.js on server
-# Clone repository
-# Install dependencies
-cd orinvestmada && npm install
-
-# Run with PM2 for persistence
 npm install -g pm2
 pm2 start src/server.js --name "nord-invest"
 pm2 startup
 pm2 save
 ```
 
-## 🔧 Troubleshooting
-
-### Emails not sending
-- Verify Gmail App Password (not regular password)
-- Check Gmail 2FA is enabled
-- Ensure `EMAIL_USER` and `EMAIL_PASS` are correct in `.env`
-
-### CORS errors in frontend
-- Ensure `API_BASE` in `index.html` matches server URL
-- Development: `http://localhost:3000`
-- Production: `https://www.nordinvest.mg`
-
-### Form submissions failing
-- Check browser console for error messages
-- Verify backend server is running (`npm run dev`)
-- Ensure email configuration is correct
-
-### Analytics not tracking
-- Replace `G-XXXXXXXXXX` with your actual Google Analytics ID
-- Allow 24-48 hours for data to appear in GA dashboard
-- Check browser console for gtag errors
-
-## 📞 Contact Information
-
-- **Phone**: +261 32 82 312 80 / +261 37 07 396 07
-- **Email**: nordinvestmada@gmail.com
-- **Address**: Tanambao 1, Rue Comores, Antsiranana (Diego Suarez)
-- **Branch**: Nosy Be
-
-## 📜 License
+## License
 
 © 2026 Nord Invest Madagascar — Immobilier & Construction. All rights reserved.
-
-## 🎯 Next Steps
-
-1. ✅ Backend form handling
-2. ✅ Email integration
-3. ✅ Pricing API + frontend calculator
-4. ✅ SEO optimization (JSON-LD, OG, sitemap, robots)
-5. ✅ Multi-language support (FR/EN/MG)
-6. ✅ Gallery lightbox with keyboard nav
-7. ✅ Newsletter subscription
-8. ✅ Theme toggle (dark/light)
-9. ✅ **Real project photos** — SVG placeholders can now be replaced via the admin image gallery uploader (16 managed slots)
-10. ✅ **JSON persistence** — Contact, quote, and subscriber data stored locally (MongoDB optional)
-11. ✅ **Admin dashboard** — Login-protected panel with stats, CRUD, search, CSV export, and image gallery manager
-12. ✅ **Image upload** — Admin panel with multer upload, slot assignment, preview, and delete
-13. ⏳ **Database integration (MongoDB)** — Replace JSON file storage with MongoDB/Mongoose models
-14. ⏳ **Blog CMS** — Manage blog articles from a dashboard
-15. ⏳ **SMS notifications** — Optional SMS alerts for new leads
-16. ⏳ **Payment gateway** — Online deposit/payment integration
-
----
-
-**Last Updated**: June 4, 2026  
-**Built with**: Node.js, Express.js, Vanilla JS, HTML5, CSS3  
-**Frontend Framework**: None (vanilla JavaScript)  
-**Deploy**: [Render](https://render.com) (recommended), or any Node.js host
