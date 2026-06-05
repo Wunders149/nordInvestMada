@@ -146,9 +146,19 @@ export function renderEntity(entity) {
   if (exportBtn) exportBtn.style.display = 'inline-flex';
 }
 
-export function openCrudForm(entity, editId) {
+export async function openCrudForm(entity, editId) {
   const cfg = ENTITY_CONFIG[entity];
   if (!cfg) return;
+  if (slots.length === 0) {
+    try {
+      const res = await fetch('/api/images/slots');
+      const data = await res.json();
+      slots.length = 0;
+      slots.push(...data);
+    } catch (err) {
+      console.error('Failed to load slots:', err);
+    }
+  }
   currentEntity = entity;
   currentEditId = editId || null;
 
