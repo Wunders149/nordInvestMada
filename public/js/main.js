@@ -658,7 +658,7 @@ async function loadTeam() {
     if (!grid) return;
     grid.innerHTML = team.map(m => `
       <div class="team-card">
-        <img src="/images/team/${m.imageSlot ? m.imageSlot.replace('team-', '') : 'director'}.svg" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy" data-image-slot="${m.imageSlot || ''}">
+        <img src="/images/team/${m.image_slot ? m.image_slot.replace('team-', '') : 'director'}.svg" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy" data-image-slot="${m.image_slot || ''}">
         <div class="team-name">${escapeHtml(m.name)}</div>
         <div class="team-role">${escapeHtml(m.role)}</div>
         <div class="team-desc">${escapeHtml(m.bio)}</div>
@@ -693,7 +693,7 @@ async function loadProjects() {
     if (!grid) return;
     grid.innerHTML = projects.map(p => `
       <div class="project-card">
-        <img src="/images/projects/${(p.images && p.images[0]) || 'placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img" loading="lazy" data-image-slot="project-${p.id}">
+        <img src="/images/projects/${(p.images && p.images[0]) || 'placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img" loading="lazy" data-image-slot="${p.image_slot || ''}">
         <div class="project-overlay">
           <div class="project-cat">${escapeHtml(p.category || '')}</div>
           <div class="project-name">${escapeHtml(p.title)}</div>
@@ -720,7 +720,7 @@ async function loadBlog() {
       const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
       return `
       <article class="blog-card">
-        <img src="/images/blog/${p.image || 'construction.svg'}" alt="${escapeHtml(p.title)}" class="blog-img" loading="lazy" data-image-slot="${p.imageSlot || ''}">
+        <img src="/images/blog/${p.image || 'construction.svg'}" alt="${escapeHtml(p.title)}" class="blog-img" loading="lazy" data-image-slot="${p.image_slot || ''}">
         <div class="blog-body">
           <div class="blog-date">${dateStr}</div>
           <div class="blog-title">${escapeHtml(p.title)}</div>

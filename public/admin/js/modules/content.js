@@ -43,6 +43,7 @@ const ENTITY_CONFIG = {
         { value: 'rehabilitation', label: 'Réhabilitation' },
         { value: 'forage', label: 'Forage' }
       ]},
+      { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'projects' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]

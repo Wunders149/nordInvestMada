@@ -81,6 +81,7 @@ CREATE TABLE projects (
   location TEXT,
   description TEXT,
   images TEXT[] DEFAULT '{}',
+  image_slot TEXT,
   category TEXT,
   "order" INTEGER DEFAULT 99,
   visible BOOLEAN DEFAULT true,
