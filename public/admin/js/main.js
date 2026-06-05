@@ -1,5 +1,5 @@
-import { checkAuth, markDirty, markClean, contactPage, quotePage, contentPage, loadedTabs } from './modules/api.js';
-import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox } from './modules/ui.js';
+import { checkAuth, markDirty, markClean, contactPage, quotePage, contentPage, loadedTabs, isDirty, API_BASE, getHeaders } from './modules/api.js';
+import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox, closeLightbox, updateDarkBtn, confirmCallback } from './modules/ui.js';
 import { loadStats, renderCharts, renderDashboard } from './modules/dashboard.js';
 import {
   loadContacts, renderContacts, setContactFilter, toggleContactSelect, toggleAllContacts,
@@ -84,7 +84,7 @@ function switchTab(tabId) {
 // ─── Expose everything to window for inline HTML event handlers ───
 Object.assign(window, {
   markDirty, markClean,
-  showConfirm, showToast, confirmNavigation, exportToCsv, openLightbox,
+  showConfirm, showToast, confirmNavigation, exportToCsv, openLightbox, closeLightbox,
   renderPagination,
   switchTab,
   loadStats, renderCharts,
@@ -124,6 +124,86 @@ if (sidebarToggle && sidebar && overlay) {
     overlay.classList.remove('open');
   });
 }
+
+// ─── Global event listeners ───
+
+// Unsaved changes warning
+window.addEventListener('beforeunload', (e) => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// Confirm modal buttons
+document.getElementById('confirmCancel')?.addEventListener('click', () => {
+  document.getElementById('confirmModal')?.classList.remove('open');
+  confirmCallback = null;
+});
+document.getElementById('confirmOk')?.addEventListener('click', () => {
+  document.getElementById('confirmModal')?.classList.remove('open');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+});
+
+// Logout
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  showConfirm('Déconnexion', 'Voulez-vous vraiment vous déconnecter ?', () => {
+    fetch(`${API_BASE}/logout`, { method: 'POST', headers: getHeaders() })
+      .catch(() => {})
+      .finally(() => {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin/login.html';
+      });
+  });
+});
+
+// Dark mode toggle
+document.getElementById('darkModeBtn')?.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('adminDarkMode', isDark);
+  updateDarkBtn();
+  renderCharts();
+});
+
+// Sidebar navigation
+document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => { switchTab(btn.dataset.tab); });
+});
+
+// Window resize — debounced chart re-render
+let chartResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(chartResizeTimer);
+  chartResizeTimer = setTimeout(renderCharts, 150);
+});
+window.addEventListener('orientationchange', () => {
+  setTimeout(renderCharts, 300);
+});
+
+// Auto-close sidebar on desktop resize
+let sidebarTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(sidebarTimer);
+  sidebarTimer = setTimeout(() => {
+    if (window.innerWidth > 900) {
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('open');
+    }
+  }, 200);
+});
+
+// Search inputs
+document.getElementById('contactSearch')?.addEventListener('input', () => { contactPage = 1; renderContacts(); });
+document.getElementById('quoteSearch')?.addEventListener('input', () => { quotePage = 1; renderQuotes(); });
+document.getElementById('subSearch')?.addEventListener('input', renderSubscribers);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog'];
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9 && tabs[num - 1]) { switchTab(tabs[num - 1]); return; }
+  if (num === 0) { switchTab('pricing'); return; }
+  if (e.key === '?') { document.getElementById('shortcutsModal')?.classList.toggle('open'); }
+});
 
 // ─── Init ───
 if (checkAuth()) {

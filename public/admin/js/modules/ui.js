@@ -130,3 +130,15 @@ export function openLightbox(src) {
   document.getElementById('lightboxImg').src = src;
   lb.classList.add('open');
 }
+
+export function closeLightbox() {
+  document.getElementById('lightbox')?.classList.remove('open');
+}
+
+document.getElementById('lightboxClose')?.addEventListener('click', closeLightbox);
+document.getElementById('lightbox')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeLightbox();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeLightbox();
+});

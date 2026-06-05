@@ -107,6 +107,25 @@ export function confirmDeleteImage(section, filename) {
 function getExt(p) { const i = p.lastIndexOf('.'); return i >= 0 ? p.slice(i) : ''; }
 function getBase(p) { const i = p.lastIndexOf('.'); return i >= 0 ? p.slice(0, i) : p; }
 
+function updatePreview() {
+  const file = document.getElementById('uploadFile')?.files[0];
+  const preview = document.getElementById('uploadPreview');
+  if (!file) { if (preview) preview.classList.add('hidden'); return; }
+  const dropZone = document.getElementById('dropZone');
+  if (dropZone) {
+    dropZone.querySelector('.drop-text').textContent = file.name;
+    dropZone.querySelector('.drop-icon').textContent = '\u{1F5BC}';
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (preview) {
+      preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu">`;
+      preview.classList.remove('hidden');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 const imageEditState = { section: '', filename: '' };
 
 export function openImageEditor(section, filename) {
@@ -208,3 +227,106 @@ export async function saveImageEdit() {
     btn.textContent = '💾 Enregistrer';
   }
 }
+
+// ─── Gallery: section change → populate slot select ───
+document.getElementById('uploadSection')?.addEventListener('change', populateSlotSelect);
+
+// ─── Drop zone + file input ───
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('uploadFile');
+if (dropZone) {
+  dropZone.addEventListener('click', () => fileInput?.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      updatePreview();
+    }
+  });
+}
+if (fileInput) fileInput.addEventListener('change', updatePreview);
+
+// ─── Upload form submit ───
+document.getElementById('imageUploadForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('uploadBtn');
+  const errorEl = document.getElementById('uploadError');
+  const file = document.getElementById('uploadFile')?.files[0];
+  if (!file) { showToast('Sélectionnez un fichier', 'error'); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('Fichier trop volumineux (max 10MB)', 'error'); return; }
+
+  if (btn) { btn.querySelector('.btn-text').textContent = 'Upload en cours...'; btn.querySelector('.btn-loader')?.classList.remove('hidden'); btn.disabled = true; }
+  if (errorEl) errorEl.classList.add('hidden');
+
+  try {
+    const fd = new FormData();
+    fd.append('section', document.getElementById('uploadSection').value);
+    fd.append('slotId', document.getElementById('uploadSlot').value);
+    fd.append('newSlotLabel', document.getElementById('newSlotLabel').value.trim());
+    fd.append('image', file);
+
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
+    if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+
+    document.getElementById('imageUploadForm').reset();
+    document.getElementById('newSlotLabel').value = '';
+    const preview = document.getElementById('uploadPreview');
+    if (preview) { preview.innerHTML = ''; preview.classList.add('hidden'); }
+    const dz = document.getElementById('dropZone');
+    if (dz) { dz.querySelector('.drop-text').textContent = 'Cliquez ou glissez-déposez une image ici'; dz.querySelector('.drop-icon').textContent = '\uD83D\uDCC1'; }
+    if (btn) btn.querySelector('.btn-text').textContent = 'Uploader';
+    showToast('Image uploadée avec succès', 'success');
+    loadImages();
+    loadSlots();
+  } catch (err) {
+    if (errorEl) { errorEl.textContent = err.message; errorEl.classList.remove('hidden'); }
+    if (btn) btn.querySelector('.btn-text').textContent = 'Uploader';
+    showToast(err.message, 'error');
+  } finally {
+    if (btn) { btn.querySelector('.btn-loader')?.classList.add('hidden'); btn.disabled = false; }
+  }
+});
+
+// ─── Filter section change → re-render ───
+document.getElementById('filterSection')?.addEventListener('change', renderImages);
+
+// ─── Image editor modal ───
+document.getElementById('imageEditClose')?.addEventListener('click', closeImageEditor);
+document.getElementById('imageEditCloseBtn')?.addEventListener('click', closeImageEditor);
+document.getElementById('imageEditModal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeImageEditor();
+});
+document.getElementById('imageEditSave')?.addEventListener('click', saveImageEdit);
+
+// ─── New slot ───
+document.getElementById('newSlotBtn')?.addEventListener('click', () => {
+  document.getElementById('newSlotForm')?.classList.toggle('hidden');
+});
+document.getElementById('newSlotCancel')?.addEventListener('click', () => {
+  document.getElementById('newSlotForm')?.classList.add('hidden');
+});
+document.getElementById('newSlotSubmit')?.addEventListener('click', async () => {
+  const section = document.getElementById('newSlotSection').value;
+  const label = document.getElementById('newSlotLabelInput').value.trim();
+  if (!label) { showToast('Veuillez entrer un libellé', 'error'); return; }
+  try {
+    const res = await fetch('/api/images/slots', {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ section, label })
+    });
+    if (!res.ok) throw new Error('Échec création');
+    document.getElementById('newSlotLabelInput').value = '';
+    document.getElementById('newSlotForm').classList.add('hidden');
+    showToast('Slot créé', 'success');
+    loadSlots();
+    loadImages();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+});

@@ -1,4 +1,4 @@
-import { API_BASE, getHeaders, contacts, selectedContactIds, contactPage, contactFilter, PER_PAGE, clearToken } from './api.js';
+import { API_BASE, getHeaders, contacts, selectedContactIds, contactPage, contactFilter, PER_PAGE, clearToken, contactDetailId } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
 import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState, showSkeletonStats } from './ui.js';
 import { loadStats } from './dashboard.js';
@@ -196,7 +196,7 @@ export function confirmDeleteContact(id) {
 export function openContactDetail(id) {
   const c = contacts.find(x => x.id === id);
   if (!c) return;
-  const contactDetailId = id;
+  contactDetailId = id;
   document.getElementById('detailName').textContent = c.name;
   const detailDate = document.getElementById('detailDate');
   if (detailDate) detailDate.textContent = formatDate(c.date);
@@ -234,4 +234,68 @@ export function openContactDetail(id) {
 
 export function closeContactDetail() {
   document.getElementById('contactDetailModal').classList.remove('open');
+  contactDetailId = null;
 }
+
+// ─── Contact detail modal event listeners ───
+
+document.getElementById('detailClose')?.addEventListener('click', closeContactDetail);
+document.getElementById('contactDetailModal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeContactDetail();
+});
+
+document.getElementById('detailMarkRead')?.addEventListener('click', async () => {
+  if (!contactDetailId) return;
+  await markRead(contactDetailId);
+  const c = contacts.find(x => x.id === contactDetailId);
+  if (c) c.read = true;
+  openContactDetail(contactDetailId);
+  renderContacts();
+});
+
+document.getElementById('detailMarkResolved')?.addEventListener('click', async () => {
+  if (!contactDetailId) return;
+  await markResolved(contactDetailId);
+  const c = contacts.find(x => x.id === contactDetailId);
+  if (c) { c.read = true; c.resolved = true; }
+  openContactDetail(contactDetailId);
+  renderContacts();
+  loadStats();
+});
+
+document.getElementById('detailDelete')?.addEventListener('click', () => {
+  if (!contactDetailId) return;
+  const id = contactDetailId;
+  closeContactDetail();
+  confirmDeleteContact(id);
+});
+
+document.getElementById('detailNotesEdit')?.addEventListener('click', () => {
+  document.getElementById('detailNotes').style.display = 'none';
+  document.getElementById('detailNotesEditor')?.classList.remove('hidden');
+  document.getElementById('detailNotesTextarea')?.focus();
+});
+
+document.getElementById('detailNotesCancel')?.addEventListener('click', () => {
+  document.getElementById('detailNotesEditor')?.classList.add('hidden');
+  document.getElementById('detailNotes').style.display = '';
+});
+
+document.getElementById('detailNotesSave')?.addEventListener('click', async () => {
+  const notes = document.getElementById('detailNotesTextarea').value.trim();
+  if (!contactDetailId) return;
+  try {
+    const res = await fetch(`${API_BASE}/contacts/${contactDetailId}`, {
+      method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ notes })
+    });
+    if (!res.ok) throw new Error('Failed');
+    const c = contacts.find(x => x.id === contactDetailId);
+    if (c) c.notes = notes;
+    showToast('Notes enregistrées', 'success');
+    openContactDetail(contactDetailId);
+  } catch (err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('contactDetailModal')?.classList.contains('open')) closeContactDetail();
+});
