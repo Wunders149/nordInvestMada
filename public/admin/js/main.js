@@ -209,5 +209,6 @@ document.addEventListener('keydown', (e) => {
 if (checkAuth()) {
   initDarkMode();
   loadStats();
+
   _switchTab('dashboard');
 }

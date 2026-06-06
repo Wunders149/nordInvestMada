@@ -70,6 +70,14 @@ export async function loadEntity(entity) {
   const cfg = ENTITY_CONFIG[entity];
   if (!cfg) return;
   if (!contentPage[entity]) contentPage[entity] = 1;
+  if (slots.length === 0) {
+    try {
+      const res = await fetch('/api/images/slots');
+      const data = await res.json();
+      slots.length = 0;
+      slots.push(...data);
+    } catch (err) { console.error('Failed to load slots:', err); }
+  }
   showSkeletonGrid(`${entity}List`, 4);
   try {
     const res = await fetch(`${API_BASE}/${cfg.api}`, { headers: getHeaders() });
