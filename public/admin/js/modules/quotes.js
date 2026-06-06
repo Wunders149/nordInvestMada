@@ -1,14 +1,14 @@
-import { API_BASE, getHeaders, quotes, selectedQuoteIds, quotePage, quoteFilter, PER_PAGE, clearToken } from './api.js';
+import { API_BASE, getHeaders, quotes, selectedQuoteIds, PER_PAGE, clearToken, state } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
 import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState } from './ui.js';
 import { loadStats } from './dashboard.js';
 
 export function setQuoteFilter(filter) {
-  quoteFilter = filter;
-  document.querySelectorAll('#quoteFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`#quoteFilterBar .filter-btn[data-filter="${filter}"]`);
+  state.quoteFilter = filter;
+  document.querySelectorAll('#state.quoteFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`#state.quoteFilterBar .filter-btn[data-filter="${filter}"]`);
   if (btn) btn.classList.add('active');
-  quotePage = 1;
+  state.quotePage = 1;
   renderQuotes();
 }
 
@@ -20,7 +20,7 @@ export async function loadQuotes() {
     quotes.length = 0;
     const data = await res.json();
     quotes.push(...data);
-    quotePage = 1;
+    state.quotePage = 1;
     renderQuotes();
     loadStats();
   } catch (err) { console.error('Quotes error:', err); }
@@ -39,8 +39,8 @@ export function toggleAllQuotes(checked) {
     q.email.toLowerCase().includes(search) ||
     (q.quoteNumber || '').toLowerCase().includes(search)
   );
-  if (quoteFilter !== 'all') {
-    filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
+  if (state.quoteFilter !== 'all') {
+    filtered = filtered.filter(q => (q.status || 'pending') === state.quoteFilter);
   }
   if (checked) { filtered.forEach(q => selectedQuoteIds.add(q.id)); }
   else { selectedQuoteIds.clear(); }
@@ -88,20 +88,20 @@ export function renderQuotes() {
     q.email.toLowerCase().includes(search) ||
     (q.quoteNumber || '').toLowerCase().includes(search)
   );
-  if (quoteFilter !== 'all') {
-    filtered = filtered.filter(q => (q.status || 'pending') === quoteFilter);
+  if (state.quoteFilter !== 'all') {
+    filtered = filtered.filter(q => (q.status || 'pending') === state.quoteFilter);
   }
   const totalPending = quotes.filter(q => (q.status || 'pending') === 'pending').length;
   const pendEl = document.getElementById('filterQuotePending');
   if (pendEl) pendEl.textContent = totalPending;
-  if (quotePage > Math.ceil(filtered.length / PER_PAGE)) quotePage = 1;
+  if (state.quotePage > Math.ceil(filtered.length / PER_PAGE)) state.quotePage = 1;
   if (filtered.length === 0) {
-    tbody.innerHTML = emptyState('📋', 'Aucun devis', quoteFilter === 'pending' ? 'Aucun devis en attente.' : 'Les demandes de devis apparaîtront ici.');
+    tbody.innerHTML = emptyState('📋', 'Aucun devis', state.quoteFilter === 'pending' ? 'Aucun devis en attente.' : 'Les demandes de devis apparaîtront ici.');
     document.getElementById('quotesPagination').innerHTML = '';
     return;
   }
   const total = filtered.length;
-  const start = (quotePage - 1) * PER_PAGE;
+  const start = (state.quotePage - 1) * PER_PAGE;
   const page = filtered.slice(start, start + PER_PAGE);
   tbody.innerHTML = page.map(q => `
     <tr>
@@ -127,7 +127,7 @@ export function renderQuotes() {
       </td>
     </tr>
   `).join('');
-  renderPagination('quotesPagination', quotePage, total, PER_PAGE, 'quote');
+  renderPagination('quotesPagination', state.quotePage, total, PER_PAGE, 'quote');
   updateQuoteBulkBar();
 }
 

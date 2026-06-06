@@ -1,5 +1,5 @@
 import { escapeHtml } from './helpers.js';
-import { isDirty, markClean, API_BASE, getHeaders, loadedTabs, contactPage, quotePage } from './api.js';
+import { isDirty, markClean, API_BASE, getHeaders, loadedTabs } from './api.js';
 
 export let confirmCallback = null;
 

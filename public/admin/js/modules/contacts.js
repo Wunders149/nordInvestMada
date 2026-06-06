@@ -1,14 +1,14 @@
-import { API_BASE, getHeaders, contacts, selectedContactIds, contactPage, contactFilter, PER_PAGE, clearToken, contactDetailId } from './api.js';
+import { API_BASE, getHeaders, contacts, selectedContactIds, PER_PAGE, clearToken, state } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
 import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState, showSkeletonStats } from './ui.js';
 import { loadStats } from './dashboard.js';
 
 export function setContactFilter(filter) {
-  contactFilter = filter;
-  document.querySelectorAll('#contactFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`#contactFilterBar .filter-btn[data-filter="${filter}"]`);
+  state.contactFilter = filter;
+  document.querySelectorAll('#state.contactFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`#state.contactFilterBar .filter-btn[data-filter="${filter}"]`);
   if (btn) btn.classList.add('active');
-  contactPage = 1;
+  state.contactPage = 1;
   renderContacts();
 }
 
@@ -20,7 +20,7 @@ export async function loadContacts() {
     contacts.length = 0;
     const data = await res.json();
     contacts.push(...data);
-    contactPage = 1;
+    state.contactPage = 1;
     renderContacts();
     loadStats();
   } catch (err) { console.error('Contacts error:', err); }
@@ -39,10 +39,10 @@ export function toggleAllContacts(checked) {
     c.email.toLowerCase().includes(search) ||
     c.phone.toLowerCase().includes(search)
   );
-  if (contactFilter !== 'all') {
-    if (contactFilter === 'new') filtered = filtered.filter(c => !c.read);
-    else if (contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
-    else if (contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
+  if (state.contactFilter !== 'all') {
+    if (state.contactFilter === 'new') filtered = filtered.filter(c => !c.read);
+    else if (state.contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
+    else if (state.contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
   }
   if (checked) {
     filtered.forEach(c => selectedContactIds.add(c.id));
@@ -121,22 +121,22 @@ export function renderContacts() {
     c.email.toLowerCase().includes(search) ||
     c.phone.toLowerCase().includes(search)
   );
-  if (contactFilter !== 'all') {
-    if (contactFilter === 'new') filtered = filtered.filter(c => !c.read);
-    else if (contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
-    else if (contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
+  if (state.contactFilter !== 'all') {
+    if (state.contactFilter === 'new') filtered = filtered.filter(c => !c.read);
+    else if (state.contactFilter === 'read') filtered = filtered.filter(c => c.read && !c.resolved);
+    else if (state.contactFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
   }
   const totalNew = contacts.filter(c => !c.read).length;
   const newEl = document.getElementById('filterContactNew');
   if (newEl) newEl.textContent = totalNew;
-  if (contactPage > Math.ceil(filtered.length / PER_PAGE)) contactPage = 1;
+  if (state.contactPage > Math.ceil(filtered.length / PER_PAGE)) state.contactPage = 1;
   if (filtered.length === 0) {
-    tbody.innerHTML = emptyState('✉', 'Aucun message', contactFilter === 'new' ? 'Aucun nouveau message.' : contactFilter === 'resolved' ? 'Aucun message résolu.' : 'Les messages de contact apparaîtront ici.');
+    tbody.innerHTML = emptyState('✉', 'Aucun message', state.contactFilter === 'new' ? 'Aucun nouveau message.' : state.contactFilter === 'resolved' ? 'Aucun message résolu.' : 'Les messages de contact apparaîtront ici.');
     document.getElementById('contactsPagination').innerHTML = '';
     return;
   }
   const total = filtered.length;
-  const start = (contactPage - 1) * PER_PAGE;
+  const start = (state.contactPage - 1) * PER_PAGE;
   const page = filtered.slice(start, start + PER_PAGE);
   tbody.innerHTML = page.map(c => `
     <tr class="${!c.read ? 'unread' : ''}" style="cursor:pointer" onclick="openContactDetail('${c.id}')">
@@ -158,7 +158,7 @@ export function renderContacts() {
       </td>
     </tr>
   `).join('');
-  renderPagination('contactsPagination', contactPage, total, PER_PAGE, 'contact');
+  renderPagination('contactsPagination', state.contactPage, total, PER_PAGE, 'contact');
   updateContactBulkBar();
 }
 
@@ -196,7 +196,7 @@ export function confirmDeleteContact(id) {
 export function openContactDetail(id) {
   const c = contacts.find(x => x.id === id);
   if (!c) return;
-  contactDetailId = id;
+  state.contactDetailId = id;
   document.getElementById('detailName').textContent = c.name;
   const detailDate = document.getElementById('detailDate');
   if (detailDate) detailDate.textContent = formatDate(c.date);
@@ -234,7 +234,7 @@ export function openContactDetail(id) {
 
 export function closeContactDetail() {
   document.getElementById('contactDetailModal').classList.remove('open');
-  contactDetailId = null;
+  state.contactDetailId = null;
 }
 
 // ─── Contact detail modal event listeners ───
@@ -245,27 +245,27 @@ document.getElementById('contactDetailModal')?.addEventListener('click', (e) => 
 });
 
 document.getElementById('detailMarkRead')?.addEventListener('click', async () => {
-  if (!contactDetailId) return;
-  await markRead(contactDetailId);
-  const c = contacts.find(x => x.id === contactDetailId);
+  if (!state.contactDetailId) return;
+  await markRead(state.contactDetailId);
+  const c = contacts.find(x => x.id === state.contactDetailId);
   if (c) c.read = true;
-  openContactDetail(contactDetailId);
+  openContactDetail(state.contactDetailId);
   renderContacts();
 });
 
 document.getElementById('detailMarkResolved')?.addEventListener('click', async () => {
-  if (!contactDetailId) return;
-  await markResolved(contactDetailId);
-  const c = contacts.find(x => x.id === contactDetailId);
+  if (!state.contactDetailId) return;
+  await markResolved(state.contactDetailId);
+  const c = contacts.find(x => x.id === state.contactDetailId);
   if (c) { c.read = true; c.resolved = true; }
-  openContactDetail(contactDetailId);
+  openContactDetail(state.contactDetailId);
   renderContacts();
   loadStats();
 });
 
 document.getElementById('detailDelete')?.addEventListener('click', () => {
-  if (!contactDetailId) return;
-  const id = contactDetailId;
+  if (!state.contactDetailId) return;
+  const id = state.contactDetailId;
   closeContactDetail();
   confirmDeleteContact(id);
 });
@@ -283,16 +283,16 @@ document.getElementById('detailNotesCancel')?.addEventListener('click', () => {
 
 document.getElementById('detailNotesSave')?.addEventListener('click', async () => {
   const notes = document.getElementById('detailNotesTextarea').value.trim();
-  if (!contactDetailId) return;
+  if (!state.contactDetailId) return;
   try {
-    const res = await fetch(`${API_BASE}/contacts/${contactDetailId}`, {
+    const res = await fetch(`${API_BASE}/contacts/${state.contactDetailId}`, {
       method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ notes })
     });
     if (!res.ok) throw new Error('Failed');
-    const c = contacts.find(x => x.id === contactDetailId);
+    const c = contacts.find(x => x.id === state.contactDetailId);
     if (c) c.notes = notes;
     showToast('Notes enregistrées', 'success');
-    openContactDetail(contactDetailId);
+    openContactDetail(state.contactDetailId);
   } catch (err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
 });
 

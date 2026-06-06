@@ -10,16 +10,18 @@ export let selectedContactIds = new Set();
 export let selectedQuoteIds = new Set();
 
 export const PER_PAGE = 10;
-export let contactPage = 1;
-export let quotePage = 1;
-export let contentPage = {};
-export let contactDetailId = null;
-
-export let contactFilter = 'all';
-export let quoteFilter = 'all';
+export const contentPage = {};
 
 export const loadedTabs = new Set();
 export let isDirty = false;
+
+export const state = {
+  contactPage: 1,
+  quotePage: 1,
+  contactDetailId: null,
+  contactFilter: 'all',
+  quoteFilter: 'all'
+};
 
 export function getHeaders() {
   return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };

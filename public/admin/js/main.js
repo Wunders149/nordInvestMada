@@ -1,4 +1,4 @@
-import { checkAuth, markDirty, markClean, contactPage, quotePage, contentPage, loadedTabs, isDirty, API_BASE, getHeaders } from './modules/api.js';
+import { checkAuth, markDirty, markClean, contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state } from './modules/api.js';
 import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox, closeLightbox, updateDarkBtn, confirmCallback } from './modules/ui.js';
 import { loadStats, renderCharts, renderDashboard } from './modules/dashboard.js';
 import {
@@ -105,8 +105,8 @@ Object.assign(window, {
 });
 
 // ─── Pagination globals ───
-window._pg_contact = (p) => { contactPage = p; renderContacts(); };
-window._pg_quote = (p) => { quotePage = p; renderQuotes(); };
+window._pg_contact = (p) => { state.contactPage = p; renderContacts(); };
+window._pg_quote = (p) => { state.quotePage = p; renderQuotes(); };
 window._pg_content = (entity, p) => { contentPage[entity] = p; renderEntity(entity); };
 
 // ─── Sidebar toggle (mobile) ───
