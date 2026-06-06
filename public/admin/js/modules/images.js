@@ -61,6 +61,7 @@ export function renderImages() {
         ${slotInfo ? `<span class="slot-badge">${escapeHtml(slotInfo.label)}</span>` : ''}
         <div class="img-wrap" onclick="openLightbox('${escapeHtml(lightboxUrl)}')">
           <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(f.name)}" loading="lazy">
+          <span class="view-hint">Afficher</span>
         </div>
         <div class="img-info">
           <span class="img-name">${escapeHtml(f.name)}</span>
