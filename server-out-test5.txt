@@ -1,0 +1,4 @@
+✓ Nord Invest Madagascar server running on http://localhost:3000
+✓ Environment: development
+✓ Uploads directory: C:\Users\Administrateur\Documents\STEM\Philibert\project\orinvestmada\uploads
+✓ API endpoints available at: /api/*

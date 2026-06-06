@@ -73,6 +73,25 @@ async function deleteImageSlot(id) {
   return true;
 }
 
+async function findSlotsByFile(section, filename) {
+  const { data: byUploaded } = await supabase
+    .from('image_slots')
+    .select('*')
+    .eq('section', section)
+    .eq('uploaded_file', filename);
+  const { data: byOriginal } = await supabase
+    .from('image_slots')
+    .select('*')
+    .eq('section', section)
+    .eq('original_file', filename);
+  const seen = new Set();
+  return [...(byUploaded || []), ...(byOriginal || [])].filter(s => {
+    if (seen.has(s.id)) return false;
+    seen.add(s.id);
+    return true;
+  });
+}
+
 function getLocalUrl(s, filename) {
   return `/images/${s.section}/${filename}`;
 }
@@ -117,6 +136,11 @@ router.post('/upload', requireAuth, (req, res) => {
 
     const section = req.body.section || 'gallery';
     const slotId = req.body.slotId || null;
+
+    if (!req.body.newSlotLabel && !slotId) {
+      return res.status(400).json({ error: 'Spécifiez un slot (slotId) ou un nouveau label (newSlotLabel)' });
+    }
+
     const ext = path.extname(req.file.originalname);
     const sanitized = sanitizeName(path.basename(req.file.originalname, ext));
     const ts = Date.now();
@@ -163,19 +187,19 @@ router.post('/upload', requireAuth, (req, res) => {
         console.error('Failed to create image slot:', dbErr);
         return res.status(500).json({ error: 'Failed to create slot' });
       }
-    } else if (slotId) {
+    } else {
       try {
         const slot = await getImageSlotById(slotId);
-        if (slot) {
-          await updateImageSlot(slotId, { uploaded_file: filename });
-          await setCloudinaryMapping(slotId, {
-            public_id: cloudinaryPublicId,
-            url: cloudinaryUrl,
-            uploaded_file: filename
-          });
-        }
+        if (!slot) return res.status(404).json({ error: 'Slot introuvable' });
+        await updateImageSlot(slotId, { uploaded_file: filename });
+        await setCloudinaryMapping(slotId, {
+          public_id: cloudinaryPublicId,
+          url: cloudinaryUrl,
+          uploaded_file: filename
+        });
       } catch (dbErr) {
         console.error('Failed to update slot:', dbErr);
+        return res.status(500).json({ error: 'Échec de la mise à jour du slot' });
       }
     }
 
@@ -260,11 +284,7 @@ router.delete('/images/:section/:filename', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid path' });
     }
 
-    const { data: slots } = await supabase
-      .from('image_slots')
-      .select('*')
-      .eq('section', section)
-      .or(`uploaded_file.eq.${filename},original_file.eq.${filename}`);
+    const slots = await findSlotsByFile(section, filename);
 
     const mapping = await getCloudinaryMapping();
 
@@ -316,11 +336,7 @@ router.put('/images/:section/:filename/rename', requireAuth, async (req, res) =>
     if (!baseNew) return res.status(400).json({ error: 'Nom invalide après nettoyage' });
     const newFilename = `${baseNew}${ext}`;
 
-    const { data: slots } = await supabase
-      .from('image_slots')
-      .select('*')
-      .eq('section', section)
-      .or(`uploaded_file.eq.${filename},original_file.eq.${filename}`);
+    const slots = await findSlotsByFile(section, filename);
 
     const mapping = await getCloudinaryMapping();
 
@@ -399,11 +415,7 @@ router.post('/images/:section/:filename/replace', requireAuth, (req, res) => {
       return res.status(500).json({ error: 'Échec de l\'upload vers Cloudinary' });
     }
 
-    const { data: slots } = await supabase
-      .from('image_slots')
-      .select('*')
-      .eq('section', section)
-      .or(`uploaded_file.eq.${filename},original_file.eq.${filename}`);
+    const slots = await findSlotsByFile(section, filename);
 
     const mapping = await getCloudinaryMapping();
 
@@ -466,15 +478,10 @@ router.put('/images/slots/:slotId', requireAuth, async (req, res) => {
     if (!slot) return res.status(404).json({ error: 'Slot non trouvé' });
 
     if (filename) {
-      const { data: sourceSlots } = await supabase
-        .from('image_slots')
-        .select('*')
-        .eq('section', slot.section)
-        .or(`uploaded_file.eq.${filename},original_file.eq.${filename}`)
-        .limit(1);
+      const sourceSlots = await findSlotsByFile(slot.section, filename);
 
       const mapping = await getCloudinaryMapping();
-      const sourceMapping = sourceSlots?.[0] ? mapping[sourceSlots[0].id] : null;
+      const sourceMapping = sourceSlots[0] ? mapping[sourceSlots[0].id] : null;
 
       await updateImageSlot(slotId, { uploaded_file: filename });
       if (sourceMapping) {

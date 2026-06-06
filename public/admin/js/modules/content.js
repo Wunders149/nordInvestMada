@@ -320,6 +320,18 @@ export async function saveCrudItem() {
     }
   }
 
+  const slotFields = cfg.fields.filter(f => f.type === 'slot-select');
+  for (const field of slotFields) {
+    const slotId = body[field.key];
+    if (slotId) {
+      const slot = slots.find(s => s.id === slotId);
+      if (slot && !slot.uploadedFile) {
+        const proceed = confirm(`Le slot "${slot.label}" n'a pas d'image uploadée. Voulez-vous quand même enregistrer ?`);
+        if (!proceed) return;
+      }
+    }
+  }
+
   try {
     let url = `${API_BASE}/${cfg.api}`;
     let method = 'POST';

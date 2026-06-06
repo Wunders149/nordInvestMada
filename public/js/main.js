@@ -721,12 +721,14 @@ async function loadBlog() {
     const posts = await res.json();
     const grid = document.getElementById('blogGrid');
     if (!grid) return;
+    const blogSvgs = { 'blog-construction': 'construction.svg', 'blog-forage': 'forage.svg', 'blog-immobilier': 'immobilier.svg' };
     grid.innerHTML = posts.map(p => {
       const date = new Date(p.date);
       const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
       return `
       <article class="blog-card">
-        <img src="/images/blog/${p.image || 'construction.svg'}" alt="${escapeHtml(p.title)}" class="blog-img" loading="lazy" data-image-slot="${p.image_slot || ''}">
+        <img src="/images/blog/${blogSvg}" alt="${escapeHtml(p.title)}" class="blog-img" loading="lazy" data-image-slot="${p.image_slot || ''}">
         <div class="blog-body">
           <div class="blog-date">${dateStr}</div>
           <div class="blog-title">${escapeHtml(p.title)}</div>
