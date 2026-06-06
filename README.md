@@ -50,7 +50,7 @@ Professional real estate and construction website built with Node.js/Express bac
 - Node.js 18+
 - npm
 - Supabase project (free tier)
-- Gmail account (for email sending)
+- Brevo account (free tier — 300 emails/day for email sending)
 
 ### Step 1: Install Dependencies
 ```bash
@@ -68,9 +68,9 @@ PORT=3000
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
 
-# Gmail (use App Password)
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
+# Brevo SMTP
+SMTP_USER=your-brevo-login@email.com
+SMTP_PASS=your-brevo-smtp-key
 ADMIN_EMAIL=admin@nordinvest.mg
 
 # Google Analytics
@@ -157,8 +157,8 @@ npm start     # production
 | `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
 | `NODE_ENV` | No | `development` or `production` |
 | `PORT` | No | Server port (default 3000) |
-| `EMAIL_USER` | No | Gmail address for sending emails |
-| `EMAIL_PASS` | No | Gmail App Password |
+| `SMTP_USER` | Yes | Brevo login email (SMTP username) |
+| `SMTP_PASS` | Yes | Brevo SMTP key |
 | `ADMIN_EMAIL` | No | Where to receive contact alerts |
 | `GOOGLE_ANALYTICS_ID` | No | GA4 measurement ID |
 | `SITE_URL` | No | Canonical site URL |
