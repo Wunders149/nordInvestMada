@@ -204,10 +204,10 @@ router.get('/activity', requireAuth, async (req, res) => {
 });
 
 // ─── GENERIC CRUD HELPER ───
-function crudRoutes(entityName, tableName) {
+function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']]) {
   router.get(`/${entityName}`, requireAuth, async (req, res) => {
     try {
-      const items = await list(tableName, { order: [['order', 'asc']] });
+      const items = await list(tableName, { order: orderOption });
       res.json(items.map(i => camelizeKeys(i)));
     } catch (err) {
       console.error(`${entityName} list error:`, err);
@@ -263,7 +263,7 @@ function crudRoutes(entityName, tableName) {
 crudRoutes('team', 'team_members');
 crudRoutes('services', 'services');
 crudRoutes('projects', 'projects');
-crudRoutes('blog', 'blog_posts');
+crudRoutes('blog', 'blog_posts', [['date', 'desc']]);
 
 // ─── PRICING MANAGEMENT ───
 router.get('/pricing', requireAuth, async (req, res) => {

@@ -74,7 +74,9 @@ export async function loadEntity(entity) {
   try {
     const res = await fetch(`${API_BASE}/${cfg.api}`, { headers: getHeaders() });
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
+    if (!res.ok) { const errData = await res.json().catch(() => ({})); throw new Error(errData.error || `HTTP ${res.status}`); }
     const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('Expected array response');
     if (entity === 'team') { teamData.length = 0; teamData.push(...data); }
     else if (entity === 'services') { servicesData.length = 0; servicesData.push(...data); }
     else if (entity === 'projects') { projectsData.length = 0; projectsData.push(...data); }
