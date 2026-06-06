@@ -121,16 +121,48 @@ export function renderEntity(entity) {
     const title = item.name || item.title || item.label || 'Sans titre';
     const subtitle = item.role || item.location || '';
     const preview = item.description || item.excerpt || item.bio || '';
+
+    let thumbUrl = '';
+    let thumbIcon = '';
+    if (item.imageSlot) {
+      const slot = slots.find(s => s.id === item.imageSlot);
+      if (slot && slot.currentUrl) thumbUrl = slot.currentUrl;
+    }
+    if (!thumbUrl) {
+      if (entity === 'services') thumbIcon = item.icon || '🔧';
+      else if (entity === 'team') thumbIcon = '👤';
+      else if (entity === 'projects') thumbIcon = '🏗️';
+      else if (entity === 'blog') thumbIcon = '📝';
+    }
+
+    let metaHtml = '';
+    if (entity === 'blog' && item.date) {
+      const d = new Date(item.date);
+      metaHtml = `<span class="admin-card-meta">${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`;
+    } else if (entity === 'projects' && item.category) {
+      const catLabels = { construction: 'Construction', rehabilitation: 'Réhabilitation', forage: 'Forage' };
+      metaHtml = `<span class="admin-card-meta admin-card-cat">${catLabels[item.category] || item.category}</span>`;
+    } else if (entity === 'team' && item.role) {
+      metaHtml = `<span class="admin-card-meta">${escapeHtml(item.role)}</span>`;
+    }
+
     return `<div class="admin-card">
       <div class="admin-card-body">
-        <div class="admin-card-title">${escapeHtml(title)}</div>
-        ${subtitle ? `<div class="admin-card-sub">${escapeHtml(subtitle)}</div>` : ''}
-        <div class="admin-card-desc">${escapeHtml(preview).substring(0, 120)}${preview.length > 120 ? '…' : ''}</div>
+        <div class="admin-card-top">
+          <div class="admin-card-thumb${thumbUrl ? ' has-img' : ''}">
+            ${thumbUrl ? `<img src="${thumbUrl}" alt="" loading="lazy">` : thumbIcon}
+          </div>
+          <div class="admin-card-info">
+            <div class="admin-card-title">${escapeHtml(title)}</div>
+            ${metaHtml}
+          </div>
+        </div>
+        ${preview ? `<div class="admin-card-desc">${escapeHtml(preview).substring(0, 120)}${preview.length > 120 ? '…' : ''}</div>` : ''}
       </div>
       <div class="admin-card-actions">
         <span class="badge ${item.visible !== false ? 'badge-success' : 'badge-warning'}">${item.visible !== false ? 'Visible' : 'Masqué'}</span>
-        <button class="btn-icon info" onclick="openCrudForm('${entity}', '${item.id}')" title="Modifier">✏</button>
-        <button class="btn-icon danger" onclick="confirmDeleteItem('${entity}', '${item.id}')" title="Supprimer">✕</button>
+        <button class="admin-card-btn" onclick="openCrudForm('${entity}', '${item.id}')" title="Modifier">✏ Modifier</button>
+        <button class="admin-card-btn admin-card-btn--danger" onclick="confirmDeleteItem('${entity}', '${item.id}')" title="Supprimer">✕</button>
       </div>
     </div>`;
   }).join('');

@@ -23,8 +23,8 @@ export async function loadStats() {
 
 export function renderCharts() {
   const isDark = document.body.classList.contains('dark');
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const gridColor = isDark ? '#334155' : '#e2e8f0';
+  const textColor = isDark ? '#B0B3B8' : '#65676B';
+  const gridColor = isDark ? '#3A3B3C' : '#E4E6EB';
 
   const ctx1 = document.getElementById('contactsChart');
   if (ctx1) {
@@ -78,8 +78,8 @@ export function renderCharts() {
       const y = pad.top + chartH - barH;
 
       const grad = c.createLinearGradient(x, y, x, pad.top + chartH);
-      grad.addColorStop(0, '#8B4513');
-      grad.addColorStop(1, '#A0522D');
+      grad.addColorStop(0, '#1877F2');
+      grad.addColorStop(1, '#72AAFF');
       c.fillStyle = grad;
       if (c.roundRect) {
         c.beginPath();
@@ -111,7 +111,7 @@ export function renderCharts() {
 
     const statuses = ['pending', 'in-progress', 'completed', 'cancelled'];
     const labels = ['En attente', 'En cours', 'Terminé', 'Annulé'];
-    const colors = ['#d97706', '#2563eb', '#059669', '#94a3b8'];
+    const colors = ['#F5A623', '#1877F2', '#31A24C', '#8A8D91'];
     const counts = statuses.map(s => quotes.filter(q => (q.status || 'pending') === s).length);
     const total = counts.reduce((a, b) => a + b, 0);
 
