@@ -72,9 +72,10 @@ const pricingLimiter = rateLimit({
 });
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
+  host: 'smtp.gmail.com',
   port: 587,
   secure: false,
+  requireTLS: true,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
@@ -164,169 +165,174 @@ app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), asyn
 });
 
 app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, res) => {
+  const { name, email, phone, projectType, budget, message, serviceType } = req.body;
+
+  const contactEntry = {
+    id: `contact_${Date.now()}`,
+    name, email, phone,
+    project_type: projectType,
+    budget, message,
+    service_type: serviceType || projectType,
+    date: new Date().toISOString(),
+    read: false,
+    resolved: false,
+    notes: ''
+  };
+
   try {
-    const { name, email, phone, projectType, budget, message, serviceType } = req.body;
-
-    const contactEntry = {
-      id: `contact_${Date.now()}`,
-      name, email, phone,
-      project_type: projectType,
-      budget, message,
-      service_type: serviceType || projectType,
-      date: new Date().toISOString(),
-      read: false,
-      resolved: false,
-      notes: ''
-    };
-
     const { error: dbError } = await supabase.from('contacts').insert(contactEntry);
-    if (dbError) throw dbError;
-
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
-        subject: `Nouvelle demande de contact - ${projectType}`,
-        html: `
-          <h2>Nouvelle Demande de Contact</h2>
-          <p><strong>Nom:</strong> ${escapeHtml(name)}</p>
-          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          <p><strong>Téléphone:</strong> ${escapeHtml(phone || 'Non fourni')}</p>
-          <p><strong>Type de Service:</strong> ${escapeHtml(serviceType || projectType)}</p>
-          <p><strong>Type de Projet:</strong> ${escapeHtml(projectType)}</p>
-          <p><strong>Budget Estimé:</strong> ${escapeHtml(budget || 'Non spécifié')}</p>
-          <p><strong>Message:</strong></p>
-          <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
-          <hr>
-          <p><em>Date: ${new Date().toLocaleString('fr-FR')}</em></p>
-        `
-      });
-
-      await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: email,
-        subject: 'Confirmation - Nord Invest Madagascar',
-        html: `
-          <h2>Merci de votre intérêt!</h2>
-          <p>Bonjour ${escapeHtml(name)},</p>
-          <p>Nous avons bien reçu votre demande de contact. Notre équipe vous répondra sous 24 heures ouvrables.</p>
-          <p><strong>Récapitulatif de votre demande:</strong></p>
-          <ul>
-            <li>Type de projet: ${escapeHtml(projectType)}</li>
-            <li>Service demandé: ${escapeHtml(serviceType || projectType)}</li>
-            <li>Budget: ${escapeHtml(budget || 'Non spécifié')}</li>
-          </ul>
-          <p>En attendant, n'hésitez pas à nous contacter directement:</p>
-          <p>📞 <strong>032 82 312 80</strong></p>
-          <p>📧 contact@nordinvest.mg</p>
-          <p>Cordialement,<br>L'équipe Nord Invest Madagascar</p>
-        `
-      });
-    } catch (mailErr) {
-      console.warn('Email sending failed (contact saved to DB):', mailErr.message);
-    }
-
-    res.json({
-      success: true,
-      message: 'Your request has been submitted successfully. You will receive a confirmation email shortly.'
-    });
-  } catch (error) {
-    console.error('Contact form error:', error);
-    res.status(500).json({
-      error: 'Failed to submit form. Please try again or contact us directly.'
-    });
+    if (dbError) console.warn('Contact DB save failed:', dbError.message);
+  } catch (dbErr) {
+    console.warn('Contact DB save failed:', dbErr.message);
   }
+
+  let emailSent = false;
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+      subject: `Nouvelle demande de contact - ${projectType}`,
+      html: `
+        <h2>Nouvelle Demande de Contact</h2>
+        <p><strong>Nom:</strong> ${escapeHtml(name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Téléphone:</strong> ${escapeHtml(phone || 'Non fourni')}</p>
+        <p><strong>Type de Service:</strong> ${escapeHtml(serviceType || projectType)}</p>
+        <p><strong>Type de Projet:</strong> ${escapeHtml(projectType)}</p>
+        <p><strong>Budget Estimé:</strong> ${escapeHtml(budget || 'Non spécifié')}</p>
+        <p><strong>Message:</strong></p>
+        <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
+        <hr>
+        <p><em>Date: ${new Date().toLocaleString('fr-FR')}</em></p>
+      `
+    });
+
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: 'Confirmation - Nord Invest Madagascar',
+      html: `
+        <h2>Merci de votre intérêt!</h2>
+        <p>Bonjour ${escapeHtml(name)},</p>
+        <p>Nous avons bien reçu votre demande de contact. Notre équipe vous répondra sous 24 heures ouvrables.</p>
+        <p><strong>Récapitulatif de votre demande:</strong></p>
+        <ul>
+          <li>Type de projet: ${escapeHtml(projectType)}</li>
+          <li>Service demandé: ${escapeHtml(serviceType || projectType)}</li>
+          <li>Budget: ${escapeHtml(budget || 'Non spécifié')}</li>
+        </ul>
+        <p>En attendant, n'hésitez pas à nous contacter directement:</p>
+        <p>📞 <strong>032 82 312 80</strong></p>
+        <p>📧 contact@nordinvest.mg</p>
+        <p>Cordialement,<br>L'équipe Nord Invest Madagascar</p>
+      `
+    });
+    emailSent = true;
+  } catch (mailErr) {
+    console.warn('Email sending failed:', mailErr.message);
+  }
+
+  res.json({
+    success: true,
+    emailSent,
+    message: emailSent
+      ? 'Votre demande a été envoyée. Vous recevrez un email de confirmation.'
+      : 'Votre demande a été reçue (l\'email de confirmation n\'a pas pu être envoyé).'
+  });
 });
 
 app.post('/api/newsletter', newsletterLimiter, validate(newsletterSchema), async (req, res) => {
-  try {
-    const { email } = req.body;
+  const { email: subscriberEmail } = req.body;
 
-    const { data: existing } = await supabase.from('subscribers').select('email').eq('email', email).maybeSingle();
+  try {
+    const { data: existing } = await supabase.from('subscribers').select('email').eq('email', subscriberEmail).maybeSingle();
     if (existing) {
       return res.json({ success: true, message: 'Déjà inscrit' });
     }
 
-    const { error: dbError } = await supabase.from('subscribers').insert({ email, date: new Date().toISOString() });
-    if (dbError) throw dbError;
-
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
-        subject: 'Nouvel abonné newsletter',
-        html: `<p>Nouvel abonné : <strong>${escapeHtml(email)}</strong></p>`
-      });
-    } catch (mailErr) {
-      console.warn('Newsletter email notification failed:', mailErr.message);
-    }
-
-    res.json({ success: true, message: 'Inscription réussie' });
-  } catch (error) {
-    console.error('Newsletter error:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    const { error: dbError } = await supabase.from('subscribers').insert({ email: subscriberEmail, date: new Date().toISOString() });
+    if (dbError) console.warn('Newsletter DB save failed:', dbError.message);
+  } catch (dbErr) {
+    console.warn('Newsletter DB save failed:', dbErr.message);
   }
+
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+      subject: 'Nouvel abonné newsletter',
+      html: `<p>Nouvel abonné : <strong>${escapeHtml(subscriberEmail)}</strong></p>`
+    });
+  } catch (mailErr) {
+    console.warn('Newsletter email notification failed:', mailErr.message);
+  }
+
+  res.json({ success: true, message: 'Inscription réussie' });
 });
 
 app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, res) => {
+  const { name, email, serviceType, details, location } = req.body;
+
+  const quoteNumber = `NIM-${Date.now()}`;
+  const quoteEntry = {
+    id: `quote_${Date.now()}`,
+    quote_number: quoteNumber, name, email,
+    service_type: serviceType,
+    details, location,
+    date: new Date().toISOString(),
+    status: 'pending',
+    notes: ''
+  };
+
   try {
-    const { name, email, serviceType, details, location } = req.body;
-
-    const quoteNumber = `NIM-${Date.now()}`;
-    const quoteEntry = {
-      id: `quote_${Date.now()}`,
-      quote_number: quoteNumber, name, email,
-      service_type: serviceType,
-      details, location,
-      date: new Date().toISOString(),
-      status: 'pending',
-      notes: ''
-    };
-
     const { error: dbError } = await supabase.from('quotes').insert(quoteEntry);
-    if (dbError) throw dbError;
-
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: email,
-        cc: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
-        subject: `Demande de Devis - ${quoteNumber}`,
-        html: `
-          <h2>Demande de Devis - Nord Invest Madagascar</h2>
-          <p><strong>Numéro de Devis:</strong> ${quoteNumber}</p>
-          <p><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
-          <p><strong>Client:</strong> ${escapeHtml(name)}</p>
-          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          <p><strong>Type de Service:</strong> ${escapeHtml(serviceType)}</p>
-          <p><strong>Localisation:</strong> ${escapeHtml(location || 'À déterminer')}</p>
-          <h3>Détails du Projet:</h3>
-          <p>${escapeHtml(details).replace(/\n/g, '<br>')}</p>
-          <hr>
-          <p><strong>Prochaines étapes:</strong></p>
-          <ol>
-            <li>Visite du terrain (gratuit)</li>
-            <li>Analyse des besoins</li>
-            <li>Devis personnalisé détaillé</li>
-            <li>Présentation et discussion</li>
-          </ol>
-          <p>Notre équipe vous contactera sous 24 heures pour programmer une visite.</p>
-          <p>📞 032 82 312 80 | 📧 contact@nordinvest.mg</p>
-        `
-      });
-    } catch (mailErr) {
-      console.warn('Email sending failed (quote saved to DB):', mailErr.message);
-    }
-
-    res.json({
-      success: true,
-      quoteNumber,
-      message: 'Your quote request has been submitted. A representative will contact you within 24 hours.'
-    });
-  } catch (error) {
-    console.error('Quote request error:', error);
-    res.status(500).json({ error: 'Failed to submit quote request' });
+    if (dbError) console.warn('Quote DB save failed:', dbError.message);
+  } catch (dbErr) {
+    console.warn('Quote DB save failed:', dbErr.message);
   }
+
+  let emailSent = false;
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      cc: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+      subject: `Demande de Devis - ${quoteNumber}`,
+      html: `
+        <h2>Demande de Devis - Nord Invest Madagascar</h2>
+        <p><strong>Numéro de Devis:</strong> ${quoteNumber}</p>
+        <p><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
+        <p><strong>Client:</strong> ${escapeHtml(name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Type de Service:</strong> ${escapeHtml(serviceType)}</p>
+        <p><strong>Localisation:</strong> ${escapeHtml(location || 'À déterminer')}</p>
+        <h3>Détails du Projet:</h3>
+        <p>${escapeHtml(details).replace(/\n/g, '<br>')}</p>
+        <hr>
+        <p><strong>Prochaines étapes:</strong></p>
+        <ol>
+          <li>Visite du terrain (gratuit)</li>
+          <li>Analyse des besoins</li>
+          <li>Devis personnalisé détaillé</li>
+          <li>Présentation et discussion</li>
+        </ol>
+        <p>Notre équipe vous contactera sous 24 heures pour programmer une visite.</p>
+        <p>📞 032 82 312 80 | 📧 contact@nordinvest.mg</p>
+      `
+    });
+    emailSent = true;
+  } catch (mailErr) {
+    console.warn('Email sending failed:', mailErr.message);
+  }
+
+  res.json({
+    success: true,
+    emailSent,
+    quoteNumber,
+    message: emailSent
+      ? 'Votre demande de devis a été envoyée. Vous recevrez un email de confirmation.'
+      : 'Votre demande de devis a été reçue (l\'email n\'a pas pu être envoyé).'
+  });
 });
 
 app.get('/api/config', async (req, res) => {

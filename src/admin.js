@@ -395,7 +395,7 @@ router.post('/test-email', requireAuth, async (req, res) => {
   try {
     const nodemailer = (await import('nodemailer')).default;
     const transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
+      host: 'smtp.gmail.com',
       port: 587,
       secure: false,
       auth: {
@@ -407,7 +407,7 @@ router.post('/test-email', requireAuth, async (req, res) => {
       from: process.env.SMTP_USER,
       to,
       subject: 'Test — Nord Invest Madagascar',
-      html: `<h2>Test d'envoi d'email</h2><p>Cet email confirme que votre configuration SMTP Brevo fonctionne correctement.</p><p><small>${new Date().toISOString()}</small></p>`
+      html: `<h2>Test d'envoi d'email</h2><p>Cet email confirme que votre configuration SMTP Gmail fonctionne correctement.</p><p><small>${new Date().toISOString()}</small></p>`
     });
     logActivity('email_test', `Email test envoyé à ${to}`, req.admin.username);
     res.json({ success: true, message: 'Email test envoyé avec succès' });
