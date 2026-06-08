@@ -1,8 +1,38 @@
 import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { requireAuth, loginLimiter, createSession, destroySession, loginUser, hashPassword, logActivity } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
 import { validate, loginSchema } from './validation.js';
 import crypto from 'crypto';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, '..');
+const dossierDir = path.join(projectRoot, 'public', 'Dossier');
+
+const dossierUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      if (!fs.existsSync(dossierDir)) fs.mkdirSync(dossierDir, { recursive: true });
+      cb(null, dossierDir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname) || '.pdf';
+      let name = path.basename(file.originalname, ext).trim();
+      if (!name) name = `dossier_${Date.now()}`;
+      cb(null, `${name}${ext}`);
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Seuls les fichiers PDF sont acceptés'));
+    }
+  }
+});
 
 const router = Router();
 
@@ -414,6 +444,87 @@ router.post('/test-email', requireAuth, async (req, res) => {
   } catch (err) {
     logActivity('email_test_failed', `Échec envoi test à ${to}: ${err.message}`, req.admin.username);
     res.status(500).json({ error: `Échec: ${err.message}` });
+  }
+});
+
+// ─── DOSSIERS MANAGEMENT (PDF files in public/Dossier/) ───
+
+router.get('/dossiers', requireAuth, async (req, res) => {
+  try {
+    if (!fs.existsSync(dossierDir)) {
+      fs.mkdirSync(dossierDir, { recursive: true });
+      return res.json([]);
+    }
+    const files = fs.readdirSync(dossierDir)
+      .filter(f => f.toLowerCase().endsWith('.pdf'))
+      .map(f => {
+        const stat = fs.statSync(path.join(dossierDir, f));
+        return { name: f, size: stat.size, mtime: stat.mtime.toISOString() };
+      })
+      .sort((a, b) => b.mtime.localeCompare(a.mtime));
+    res.json(files);
+  } catch (err) {
+    console.error('Dossiers list error:', err);
+    res.status(500).json({ error: 'Failed to list dossiers' });
+  }
+});
+
+router.post('/dossiers', requireAuth, (req, res) => {
+  dossierUpload.single('pdf')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ error: `Upload error: ${err.message}` });
+      }
+      return res.status(400).json({ error: err.message });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Aucun fichier sélectionné' });
+
+    logActivity('dossier_upload', `Dossier uploadé: ${req.file.filename}`, req.admin.username);
+    res.json({ success: true, name: req.file.filename, size: req.file.size, mtime: new Date(req.file.mtime || Date.now()).toISOString() });
+  });
+});
+
+router.patch('/dossiers/:file', requireAuth, async (req, res) => {
+  try {
+    const oldName = decodeURIComponent(req.params.file);
+    const { name: newName } = req.body;
+    if (!newName || !newName.trim()) return res.status(400).json({ error: 'Nouveau nom requis' });
+    let safeName = newName.trim();
+    if (!safeName.toLowerCase().endsWith('.pdf')) safeName += '.pdf';
+
+    const oldPath = path.join(dossierDir, oldName);
+    const newPath = path.join(dossierDir, safeName);
+
+    if (!fs.existsSync(oldPath)) return res.status(404).json({ error: 'Fichier introuvable' });
+    if (fs.existsSync(newPath)) return res.status(409).json({ error: 'Un fichier avec ce nom existe déjà' });
+
+    fs.renameSync(oldPath, newPath);
+    logActivity('dossier_rename', `Dossier renommé: ${oldName} → ${safeName}`, req.admin.username);
+    res.json({ success: true, name: safeName });
+  } catch (err) {
+    console.error('Dossier rename error:', err);
+    res.status(500).json({ error: 'Failed to rename dossier' });
+  }
+});
+
+router.delete('/dossiers/:file', requireAuth, async (req, res) => {
+  try {
+    const fileName = decodeURIComponent(req.params.file);
+    const filePath = path.join(dossierDir, fileName);
+
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Fichier introuvable' });
+
+    fs.unlinkSync(filePath);
+
+    // Clean up thumbnail if exists
+    const thumbPath = path.join(projectRoot, 'uploads', 'thumbnails', fileName.replace(/\.pdf$/i, '.jpg'));
+    if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
+
+    logActivity('dossier_delete', `Dossier supprimé: ${fileName}`, req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Dossier delete error:', err);
+    res.status(500).json({ error: 'Failed to delete dossier' });
   }
 });
 

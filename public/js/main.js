@@ -826,6 +826,102 @@ function escapeHtml(text) {
 }
 
 // ═══════════════════════════════════════════════════════
+// DOSSIERS — Vente de Terrains
+// ═══════════════════════════════════════════════════════
+
+let currentPdfFile = '';
+
+function formatFileSize(bytes) {
+  if (!bytes) return '';
+  const kb = bytes / 1024;
+  if (kb < 1024) return kb.toFixed(0) + ' Ko';
+  return (kb / 1024).toFixed(1) + ' Mo';
+}
+
+function openPdfViewer(file, name) {
+  currentPdfFile = file;
+  const modal = document.getElementById('pdfModal');
+  const viewer = document.getElementById('pdfViewer');
+  const title = document.getElementById('pdfModalTitle');
+  if (!modal || !viewer) return;
+  title.textContent = name || file;
+  viewer.src = `/api/dossiers/${encodeURIComponent(file)}`;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePdfViewer(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('pdfModal');
+  const viewer = document.getElementById('pdfViewer');
+  if (modal) modal.classList.remove('active');
+  if (viewer) viewer.src = '';
+  document.body.style.overflow = '';
+}
+
+function downloadCurrentPdf() {
+  if (!currentPdfFile) return;
+  const a = document.createElement('a');
+  a.href = `/api/dossiers/${encodeURIComponent(currentPdfFile)}?download=1`;
+  a.download = currentPdfFile;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePdfViewer();
+});
+
+async function loadDossiers() {
+  const grid = document.getElementById('dossiersGrid');
+  if (!grid) return;
+  try {
+    const res = await fetch(`/api/dossiers`);
+    const dossiers = await res.json();
+    if (!dossiers.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
+        <p style="font-size:1.1rem">Aucun dossier disponible pour le moment.</p>
+        <p style="font-size:0.85rem;margin-top:8px">Revenez bientôt pour découvrir nos nouvelles offres.</p>
+      </div>`;
+      return;
+    }
+    function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+    function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    grid.innerHTML = dossiers.map(d => {
+      const thumbUrl = `/api/dossiers/${encodeURIComponent(d.file)}/thumbnail`;
+      return `
+      <div class="dossier-card" data-file="${escAttr(d.file)}" data-name="${escAttr(d.name)}">
+        <div class="dossier-thumb">
+          <img src="${thumbUrl}" alt="${escAttr(d.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="dossier-thumb-fallback" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+        </div>
+        <div class="dossier-name">${escHtml(d.name)}</div>
+        <div class="dossier-meta">${formatFileSize(d.size)} — PDF</div>
+        <span class="dossier-badge">Visualiser</span>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.dossier-card').forEach(card => {
+      card.addEventListener('click', () => {
+        openPdfViewer(card.dataset.file, card.dataset.name);
+      });
+    });
+  } catch (err) {
+    console.warn('Dossiers load error:', err);
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
+      <p>Impossible de charger les dossiers. Réessayez plus tard.</p>
+    </div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT — Load default language
 // ═══════════════════════════════════════════════════════
 
@@ -836,6 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTeam();
   loadServices();
   loadProjects();
+  loadDossiers();
   loadBlog();
   loadPricingData();
   loadConfigData();

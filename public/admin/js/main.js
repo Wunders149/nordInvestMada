@@ -23,6 +23,7 @@ import {
 import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pricing.js';
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
+import { loadDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
 
 // ─── Tab switching ───
 function _switchTab(tabId) {
@@ -35,7 +36,7 @@ function _switchTab(tabId) {
 
   const titles = {
     dashboard: 'Tableau de bord', contacts: 'Messages', quotes: 'Devis',
-    subscribers: 'Newsletter', images: 'Galerie',
+    subscribers: 'Newsletter', images: 'Galerie', dossiers: 'Dossiers',
     team: 'Équipe', services: 'Services', projects: 'Projets',
     blog: 'Blog', pricing: 'Tarifs', settings: 'Paramètres',
     activity: "Journal d'activité"
@@ -56,6 +57,7 @@ function _switchTab(tabId) {
       case 'quotes': loadQuotes(); break;
       case 'subscribers': loadSubscribers(); break;
       case 'images': loadSlots(); loadImages(); break;
+      case 'dossiers': loadDossiers(); break;
       case 'team': loadEntity('team'); break;
       case 'services': loadEntity('services'); break;
       case 'projects': loadEntity('projects'); break;
@@ -101,7 +103,8 @@ Object.assign(window, {
   exportEntity,
   loadPricingEditor, addPricingFeature, savePricing,
   loadSettings, saveSettings, testEmail,
-  loadActivityLog
+  loadActivityLog,
+  loadDossiers, closeDossierRename, confirmDossierRename
 });
 
 // ─── Pagination globals ───

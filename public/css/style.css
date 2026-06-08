@@ -706,6 +706,206 @@ h2 {
 }
 .project-loc { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 6px; }
 
+/* ─── DOSSIERS (VENTE DE TERRAIN) ─── */
+#dossiers {
+  background: var(--bg-secondary);
+  padding: 100px 60px;
+}
+#dossiers .section-tag { color: var(--rust); }
+#dossiers .section-tag::before { background: var(--rust); }
+#dossiers h2 { color: var(--text-primary); }
+#dossiers .section-lead { color: var(--text-secondary); }
+.dossiers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 60px;
+}
+.dossier-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.dossier-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--rust-dark), var(--rust-light));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.dossier-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--rust); }
+.dossier-card:hover::before { transform: scaleX(1); }
+.dossier-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;
+  margin: 0 auto 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-light);
+  transition: border-color 0.3s, transform 0.3s;
+}
+.dossier-card:hover .dossier-thumb {
+  border-color: var(--rust);
+  transform: scale(1.02);
+}
+.dossier-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.dossier-card:hover .dossier-thumb img {
+  transform: scale(1.05);
+}
+.dossier-thumb-fallback {
+  width: 64px; height: 64px;
+  background: rgba(192,64,42,0.08);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.dossier-thumb-fallback svg { width: 32px; height: 32px; color: var(--rust); }
+.dossier-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.dossier-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.dossier-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: var(--rust);
+  color: white;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: 20px;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+.dossier-card:hover .dossier-badge { background: var(--rust-light); }
+
+[data-theme="light"] .dossier-card { background: var(--bg-card); }
+[data-theme="light"] .dossier-card:hover { border-color: var(--rust); }
+[data-theme="light"] .dossier-name { color: var(--text-primary); }
+[data-theme="light"] .dossier-thumb { background: var(--bg-secondary); border-color: var(--border-light); }
+[data-theme="light"] .dossier-thumb-fallback { background: rgba(192,64,42,0.06); }
+[data-theme="light"] #dossiers { background: var(--bg-secondary); }
+
+/* ─── PDF VIEWER MODAL ─── */
+.pdf-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.pdf-modal.active { display: flex; }
+.pdf-modal-content {
+  width: 100%;
+  max-width: 1000px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: pdfFadeIn 0.3s ease;
+}
+@keyframes pdfFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pdf-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
+}
+.pdf-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pdf-modal-actions {
+  display: flex;
+  gap: 8px;
+}
+.pdf-modal-actions button {
+  background: none;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pdf-modal-actions button:hover {
+  border-color: var(--rust);
+  color: var(--rust);
+  background: rgba(192,64,42,0.06);
+}
+.pdf-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.pdf-modal-close:hover { color: var(--rust-light); }
+.pdf-modal-body {
+  flex: 1;
+  background: #525659;
+  position: relative;
+}
+.pdf-modal-body embed {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+[data-theme="dark"] .pdf-modal-content { background: var(--charcoal); }
+[data-theme="dark"] .pdf-modal-header { background: var(--charcoal); border-bottom-color: rgba(255,255,255,0.08); }
+[data-theme="light"] .pdf-modal-content { background: var(--bg-elevated); }
+[data-theme="light"] .pdf-modal-header { background: var(--bg-primary); border-bottom-color: var(--border-light); }
+
 /* ─── GALLERY MODAL ─── */
 .gallery-modal {
   display: none;

@@ -414,6 +414,153 @@ app.get('/api/pricing', async (req, res) => {
 app.use('/api/admin', adminRouter);
 app.use('/api', imageRouter);
 
+// ─── DOSSIERS (PDF listings) ───
+app.get('/api/dossiers', (req, res) => {
+  const dossierDir = path.join(projectRoot, 'public', 'Dossier');
+  try {
+    if (!fs.existsSync(dossierDir)) {
+      return res.json([]);
+    }
+    const thumbDir = path.join(projectRoot, 'uploads', 'thumbnails');
+    const files = fs.readdirSync(dossierDir)
+      .filter(f => f.toLowerCase().endsWith('.pdf'))
+      .map(f => {
+        const stat = fs.statSync(path.join(dossierDir, f));
+        const thumbFile = path.join(thumbDir, f.replace(/\.pdf$/i, '.jpg'));
+        return {
+          name: f.replace(/\.pdf$/i, ''),
+          file: f,
+          size: stat.size,
+          modified: stat.mtime,
+          hasThumbnail: fs.existsSync(thumbFile)
+        };
+      })
+      .sort((a, b) => b.modified - a.modified);
+    res.json(files);
+  } catch (err) {
+    console.error('Dossier list error:', err);
+    res.status(500).json({ error: 'Failed to list dossiers' });
+  }
+});
+
+// ─── Thumbnail cache dir ───
+const thumbDir = path.join(projectRoot, 'uploads', 'thumbnails');
+if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir, { recursive: true });
+
+async function generateThumbnail(pdfPath, outputPath) {
+  try {
+    if (fs.existsSync(outputPath)) return;
+    const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const { createCanvas } = await import('canvas');
+    const buf = fs.readFileSync(pdfPath);
+    const data = new Uint8Array(buf);
+    class NodeFactory {
+      create(w, h) { const c = createCanvas(w, h); return { canvas: c, context: c.getContext('2d') }; }
+      reset(c, w, h) { c.canvas.width = w; c.canvas.height = h; }
+      destroy() {}
+    }
+    const doc = await getDocument({ data, canvasFactory: new NodeFactory(), disableFontFace: true }).promise;
+    const page = await doc.getPage(1);
+    const scale = 0.4;
+    const vp = page.getViewport({ scale });
+    const canvas = createCanvas(vp.width, vp.height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, vp.width, vp.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    doc.destroy();
+    fs.writeFileSync(outputPath, canvas.toBuffer('image/jpeg', { quality: 0.75 }));
+  } catch (err) {
+    console.error('Thumbnail gen error for', pdfPath, err.message);
+  }
+}
+
+function pregenerateThumbnails() {
+  const dossierDir = path.join(projectRoot, 'public', 'Dossier');
+  if (!fs.existsSync(dossierDir)) return;
+  const files = fs.readdirSync(dossierDir).filter(f => f.toLowerCase().endsWith('.pdf'));
+  files.forEach(f => {
+    const pdfPath = path.join(dossierDir, f);
+    const thumbFile = path.join(thumbDir, f.replace(/\.pdf$/i, '.jpg'));
+    generateThumbnail(pdfPath, thumbFile);
+  });
+}
+
+app.get('/api/dossiers/:file/thumbnail', async (req, res) => {
+  const dossierDir = path.join(projectRoot, 'public', 'Dossier');
+  const requestedFile = path.basename(req.params.file);
+  const filePath = path.join(dossierDir, requestedFile);
+  try {
+    if (!requestedFile.toLowerCase().endsWith('.pdf')) {
+      return res.status(400).json({ error: 'Invalid file type' });
+    }
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    const thumbFile = path.join(thumbDir, requestedFile.replace(/\.pdf$/i, '.jpg'));
+    if (fs.existsSync(thumbFile)) {
+      return res.sendFile(thumbFile);
+    }
+    const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const { createCanvas } = await import('canvas');
+    const buf = fs.readFileSync(filePath);
+    const data = new Uint8Array(buf);
+    class NodeFactory {
+      create(w, h) { const c = createCanvas(w, h); return { canvas: c, context: c.getContext('2d') }; }
+      reset(c, w, h) { c.canvas.width = w; c.canvas.height = h; }
+      destroy() {}
+    }
+    const doc = await getDocument({ data, canvasFactory: new NodeFactory(), disableFontFace: true }).promise;
+    const page = await doc.getPage(1);
+    const scale = 0.4;
+    const vp = page.getViewport({ scale });
+    const canvas = createCanvas(vp.width, vp.height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, vp.width, vp.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    doc.destroy();
+    const jpeg = canvas.toBuffer('image/jpeg', { quality: 0.75 });
+    fs.writeFileSync(thumbFile, jpeg);
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.end(jpeg);
+  } catch (err) {
+    console.error('Thumbnail error:', err);
+    res.status(500).json({ error: 'Failed to generate thumbnail' });
+  }
+});
+
+app.get('/api/dossiers/:file', (req, res) => {
+  const dossierDir = path.join(projectRoot, 'public', 'Dossier');
+  const requestedFile = path.basename(req.params.file);
+  const filePath = path.join(dossierDir, requestedFile);
+  try {
+    if (!requestedFile.toLowerCase().endsWith('.pdf')) {
+      return res.status(400).json({ error: 'Invalid file type' });
+    }
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    const allowedPath = path.resolve(dossierDir);
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(allowedPath)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    const isDownload = req.query.download === '1';
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', isDownload
+      ? `attachment; filename="${encodeURIComponent(requestedFile)}"`
+      : `inline; filename="${encodeURIComponent(requestedFile)}"`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  } catch (err) {
+    console.error('Dossier serve error:', err);
+    res.status(500).json({ error: 'Failed to serve dossier' });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'Server is running',
@@ -421,6 +568,9 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+app.get('/admin', (req, res) => res.redirect('/admin/login.html'));
+app.get('/admin/', (req, res) => res.redirect('/admin/login.html'));
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/admin')) {
@@ -451,4 +601,7 @@ app.listen(PORT, () => {
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`✓ Uploads directory: ${uploadsDir}`);
   console.log(`✓ API endpoints available at: /api/*`);
+  if (process.env.NODE_ENV !== 'production') {
+    setImmediate(() => pregenerateThumbnails());
+  }
 });

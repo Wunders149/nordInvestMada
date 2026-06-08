@@ -139,6 +139,7 @@
     <li><a href="#about" data-i18n="nav.about">À Propos</a></li>
     <li><a href="#team" data-i18n="nav.team">Équipe</a></li>
     <li><a href="#services" data-i18n="nav.services">Services</a></li>
+    <li><a href="#dossiers" style="font-size:0.7rem;opacity:0.8">— Vente Terrain</a></li>
     <li><a href="#pricing" data-i18n="nav.pricing">Tarifs</a></li>
     <li><a href="#projects" data-i18n="nav.projects">Réalisations</a></li>
     <li><a href="#blog" data-i18n="nav.blog">Blog</a></li>
@@ -453,6 +454,18 @@
   <div id="projectsGrid" class="projects-grid reveal"></div>
 </section>
 
+<!-- DOSSIERS VENTE DE TERRAIN -->
+<section id="dossiers">
+  <div class="reveal">
+    <div class="section-tag">Vente de Terrains</div>
+    <h2>Dossiers de terrains<br>à vendre</h2>
+    <p class="section-lead">Consultez nos dossiers détaillés de terrains disponibles à la vente dans le nord de Madagascar. Cliquez sur un dossier pour le consulter.</p>
+  </div>
+  <div id="dossiersGrid" class="dossiers-grid reveal">
+    <div class="loading-spinner" style="margin: 0 auto;"></div>
+  </div>
+</section>
+
 <!-- BLOG -->
 <section id="blog">
   <div class="reveal">
@@ -624,6 +637,25 @@
     <a href="#contact" data-i18n="footer.contact">Contact</a>
   </div>
 </footer>
+
+<!-- PDF VIEWER MODAL -->
+<div id="pdfModal" class="pdf-modal" onclick="closePdfViewer(event)">
+  <div class="pdf-modal-content" onclick="event.stopPropagation()">
+    <div class="pdf-modal-header">
+      <div class="pdf-modal-title" id="pdfModalTitle">Document</div>
+      <div class="pdf-modal-actions">
+        <button onclick="downloadCurrentPdf()" title="Télécharger">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Télécharger
+        </button>
+        <button class="pdf-modal-close" onclick="closePdfViewer()" title="Fermer">&times;</button>
+      </div>
+    </div>
+    <div class="pdf-modal-body">
+      <embed id="pdfViewer" type="application/pdf" />
+    </div>
+  </div>
+</div>
 
 <!-- GALLERY MODAL -->
 <div id="galleryModal" class="gallery-modal" onclick="closeGallery(event)">

@@ -1727,6 +1727,55 @@ body.dark .admin-card-cat { background: rgba(24,119,242,0.15); }
 .admin-card-btn:hover { background: var(--bg-card); color: var(--text-primary); }
 .admin-card-btn--danger:hover { background: var(--danger-light); color: var(--danger); }
 
+/* ─── Dossier cards ─── */
+.dossier-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  cursor: default;
+}
+.dossier-thumb-wrap {
+  flex-shrink: 0;
+  width: 64px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dossier-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dossier-info {
+  flex: 1;
+  min-width: 0;
+}
+.dossier-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dossier-meta {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+.dossier-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
 /* ─── PRICING EDITOR ─── */
 .pricing-editor { display: flex; flex-direction: column; gap: 1.25rem; }
 .pricing-cat {
