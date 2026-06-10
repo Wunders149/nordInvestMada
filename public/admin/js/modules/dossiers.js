@@ -35,12 +35,19 @@ export function renderDossiers() {
         <div class="dossier-meta">${humanSize(d.size)} · ${d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : ''}</div>
       </div>
       <div class="dossier-actions">
+        <button class="btn-icon" title="Voir" data-action="view">👁️</button>
         <button class="btn-icon" title="Renommer" data-action="rename">✏️</button>
-        <button class="btn-icon" title="Supprimer" data-action="delete">🗑️</button>
+        <button class="btn-icon danger" title="Supprimer" data-action="delete">🗑️</button>
       </div>
     </div>`;
   }).join('');
 
+  el.querySelectorAll('[data-action="view"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const card = e.target.closest('.dossier-card');
+      window.open(`/api/dossiers/${card.dataset.id}/view`, '_blank');
+    });
+  });
   el.querySelectorAll('[data-action="rename"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const card = e.target.closest('.dossier-card');

@@ -345,6 +345,7 @@ app.get('/api/config', async (req, res) => {
       locations: siteCfg.locations || staticConfig.locations || [],
       contingency_rate: siteCfg.contingency_rate ?? staticConfig.contingency_rate ?? 0.1,
       tax_rate: siteCfg.tax_rate ?? staticConfig.tax_rate ?? 0.2,
+      experience_years: siteCfg.experience_years ?? staticConfig.experience_years ?? 10,
       contact: siteCfg.contact || staticConfig.contact || {},
       social: siteCfg.social || staticConfig.social || {},
       mission: siteCfg.mission || staticConfig.mission || '',

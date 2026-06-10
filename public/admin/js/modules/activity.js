@@ -12,7 +12,7 @@ export async function loadActivityLog() {
     const data = await res.json();
     activityLogs.push(...data);
     renderActivityLog();
-  } catch (err) { console.error('Activity log error:', err); }
+  } catch (err) { console.error('Activity log error:', err); showToast('Erreur lors du chargement du journal', 'error'); }
 }
 
 function renderActivityLog() {

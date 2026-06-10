@@ -23,7 +23,7 @@ export async function loadContacts() {
     state.contactPage = 1;
     renderContacts();
     loadStats();
-  } catch (err) { console.error('Contacts error:', err); }
+  } catch (err) { console.error('Contacts error:', err); showToast('Erreur lors du chargement des messages', 'error'); }
 }
 
 export function toggleContactSelect(id, checked) {
@@ -168,7 +168,7 @@ export async function markRead(id) {
     const c = contacts.find(x => x.id === id);
     if (c) c.read = true;
     renderContacts(); loadStats();
-  } catch (err) { console.error(err); }
+  } catch (err) { console.error(err); showToast('Erreur', 'error'); }
 }
 
 export async function markResolved(id) {
@@ -178,7 +178,7 @@ export async function markResolved(id) {
     if (c) { c.read = true; c.resolved = true; }
     renderContacts(); loadStats();
     showToast('Message marqué comme résolu', 'success');
-  } catch (err) { console.error(err); }
+  } catch (err) { console.error(err); showToast('Erreur', 'error'); }
 }
 
 export function confirmDeleteContact(id) {
@@ -189,7 +189,7 @@ export function confirmDeleteContact(id) {
       if (idx >= 0) contacts.splice(idx, 1);
       renderContacts(); loadStats();
       showToast('Message supprimé', 'success');
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); showToast('Erreur lors de la suppression', 'error'); }
   });
 }
 

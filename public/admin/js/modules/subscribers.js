@@ -12,7 +12,7 @@ export async function loadSubscribers() {
     const data = await res.json();
     subscribers.push(...data);
     renderSubscribers();
-  } catch (err) { console.error('Subscribers error:', err); }
+  } catch (err) { console.error('Subscribers error:', err); showToast('Erreur lors du chargement', 'error'); }
 }
 
 export function renderSubscribers() {
@@ -43,6 +43,6 @@ export function confirmDeleteSubscriber(email) {
       if (idx >= 0) subscribers.splice(idx, 1);
       renderSubscribers(); loadStats();
       showToast('Abonné supprimé', 'success');
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); showToast('Erreur lors de la suppression', 'error'); }
   });
 }

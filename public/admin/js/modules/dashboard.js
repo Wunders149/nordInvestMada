@@ -18,7 +18,7 @@ export async function loadStats() {
     if (data.unreadContacts > 0) { badge.textContent = data.unreadContacts; badge.style.display = ''; }
     else { badge.style.display = 'none'; }
     document.getElementById('lastUpdate').textContent = `Mis à jour ${formatDateShort(data.lastUpdate)}`;
-  } catch (err) { console.error('Stats error:', err); }
+  } catch (err) { console.error('Stats error:', err); showToast('Erreur lors du chargement des statistiques', 'error'); }
 }
 
 export function renderCharts() {

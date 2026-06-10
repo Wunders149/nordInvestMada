@@ -23,7 +23,7 @@ export async function loadQuotes() {
     state.quotePage = 1;
     renderQuotes();
     loadStats();
-  } catch (err) { console.error('Quotes error:', err); }
+  } catch (err) { console.error('Quotes error:', err); showToast('Erreur lors du chargement des devis', 'error'); }
 }
 
 export function toggleQuoteSelect(id, checked) {
@@ -138,7 +138,7 @@ export async function updateQuoteStatus(id, status) {
     if (q) q.status = status;
     loadStats();
     showToast('Statut mis à jour', 'success');
-  } catch (err) { console.error(err); }
+  } catch (err) { console.error(err); showToast('Erreur lors de la mise à jour', 'error'); }
 }
 
 export function confirmDeleteQuote(id) {
@@ -149,6 +149,6 @@ export function confirmDeleteQuote(id) {
       if (idx >= 0) quotes.splice(idx, 1);
       renderQuotes(); loadStats();
       showToast('Devis supprimé', 'success');
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); showToast('Erreur lors de la suppression', 'error'); }
   });
 }

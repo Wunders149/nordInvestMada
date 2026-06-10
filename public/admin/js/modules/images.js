@@ -10,7 +10,7 @@ export async function loadSlots() {
     slots.push(...data);
     populateSlotSelect();
     renderImages();
-  } catch (err) { console.error('Slots error:', err); }
+  } catch (err) { console.error('Slots error:', err); showToast('Erreur lors du chargement des slots', 'error'); }
 }
 
 function populateSlotSelect() {
@@ -35,7 +35,7 @@ export async function loadImages() {
     Object.keys(images).forEach(k => delete images[k]);
     Object.assign(images, data);
     renderImages();
-  } catch (err) { console.error('Images error:', err); }
+  } catch (err) { console.error('Images error:', err); showToast('Erreur lors du chargement des images', 'error'); }
 }
 
 export function renderImages() {
@@ -91,7 +91,7 @@ export async function assignSlot(section, filename, slotId) {
     if (!res.ok) throw new Error('Assignment failed');
     loadSlots(); loadImages();
     showToast('Image assignée', 'success');
-  } catch (err) { console.error('Assign error:', err); }
+  } catch (err) { console.error('Assign error:', err); showToast('Erreur lors de l\'assignation', 'error'); }
 }
 
 export function confirmDeleteImage(section, filename) {

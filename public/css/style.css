@@ -1311,6 +1311,9 @@ footer {
 .footer-links { display: flex; gap: 24px; }
 .footer-links a { font-size: 0.75rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; }
 .footer-links a:hover { color: var(--rust-light); }
+.footer-social { display: flex; gap: 12px; align-items: center; }
+.footer-social .social-link { color: rgba(255,255,255,0.4); transition: color 0.2s; display: flex; }
+.footer-social .social-link:hover { color: var(--rust-light); }
 
 /* ─── WHATSAPP FLOATING ─── */
 .whatsapp-float {
@@ -2389,6 +2392,8 @@ h1 { animation-delay: 0.2s; }
 [data-theme="light"] .footer-copy { color: var(--text-muted); }
 [data-theme="light"] .footer-links a { color: var(--text-secondary); }
 [data-theme="light"] .footer-links a:hover { color: var(--rust); }
+[data-theme="light"] .footer-social .social-link { color: var(--text-secondary); }
+[data-theme="light"] .footer-social .social-link:hover { color: var(--rust); }
 
 /* ─── THEME TRANSITION ─── */
 body, nav, section, footer, .price-card, .service-card, .feat, .contact-form,
