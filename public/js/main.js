@@ -416,8 +416,10 @@ async function runCalculation() {
   const rUnit = getNestedTranslation('calculator.resultUnit') || 'Toutes Taxes Comprises (TTC)';
   const dBase = getNestedTranslation('calculator.detailBase') || 'Base';
   const dSub = getNestedTranslation('calculator.detailSubtotal') || 'Sous-total HT';
-  const dCont = getNestedTranslation('calculator.detailContingency') || 'Marge de sécurité (10%)';
-  const dTax = getNestedTranslation('calculator.detailTax') || 'TVA (20%)';
+  const contRate = data.subtotal > 0 ? Math.round((data.contingency / data.subtotal) * 100) : 10;
+  const taxRate = data.estimatedTotal > 0 ? Math.round((data.tax / data.estimatedTotal) * 100) : 20;
+  const dCont = (getNestedTranslation('calculator.detailContingency') || 'Marge de sécurité').replace(/\(\d+%\)/, '') + `(${contRate}%)`;
+  const dTax = (getNestedTranslation('calculator.detailTax') || 'TVA').replace(/\(\d+%\)/, '') + `(${taxRate}%)`;
   const dTotal = getNestedTranslation('calculator.detailTotal') || 'Total estimé';
   const rNote = getNestedTranslation('calculator.resultNote') || '* Cette estimation est fournie à titre indicatif.';
   const rCTA = getNestedTranslation('calculator.resultCTA') || 'Demander un devis officiel';
@@ -478,7 +480,9 @@ function transferToForm(service, tier, surface, location, total) {
 let galleryImages = [];
 
 function rebuildGallery() {
-  galleryImages = Array.from(document.querySelectorAll('.project-card img')).map(img => ({
+  const grid = document.getElementById('projectsGrid');
+  if (!grid || !grid.querySelector('.project-card')) return;
+  galleryImages = Array.from(grid.querySelectorAll('.project-card img')).map(img => ({
     src: img.src,
     alt: img.alt
   }));
@@ -523,10 +527,24 @@ function changeGallery(dir) {
   }, 150);
 }
 
-// Attach click listeners to project cards
-document.querySelectorAll('.project-card').forEach((card, index) => {
-  card.addEventListener('click', () => openGallery(index));
-});
+// Touch/swipe support for gallery
+(function initGalleryTouch() {
+  const galleryContent = document.getElementById('galleryImg');
+  if (!galleryContent) return;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  galleryContent.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  galleryContent.addEventListener('touchend', (e) => {
+    const deltaX = e.changedTouches[0].screenX - touchStartX;
+    const deltaY = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+      changeGallery(deltaX < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+})();
 
 // Keyboard support for gallery
 document.addEventListener('keydown', (e) => {
@@ -667,6 +685,30 @@ async function handleNewsletter(e) {
     if (heroBadge) heroBadge.style.transform = 'translate(0, 0)';
     shapes.forEach(shape => shape.style.transform = 'translate(0, 0)');
   });
+
+  heroRight.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    const rect = heroRight.getBoundingClientRect();
+    const x = (touch.clientX - rect.left) / rect.width - 0.5;
+    const y = (touch.clientY - rect.top) / rect.height - 0.5;
+    if (heroImg) {
+      heroImg.style.transform = `scale(1.05) translate(${x * -20}px, ${y * -20}px)`;
+    }
+    if (heroBadge) {
+      heroBadge.style.transform = `translate(${x * 15}px, ${y * 15}px)`;
+    }
+    shapes.forEach((shape, i) => {
+      const depth = (i + 1) * 10;
+      shape.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+    });
+  }, { passive: true });
+
+  heroRight.addEventListener('touchend', () => {
+    if (heroImg) heroImg.style.transform = 'scale(1) translate(0, 0)';
+    if (heroBadge) heroBadge.style.transform = 'translate(0, 0)';
+    shapes.forEach(shape => shape.style.transform = 'translate(0, 0)');
+  });
 })();
 
 // ═══════════════════════════════════════════════════════
@@ -746,7 +788,7 @@ async function loadTeam() {
     `).join('');
     loadImageSlots();
     initImageReveal();
-  } catch (err) { console.warn('Team load error:', err); }
+  } catch (err) { console.warn('Team load error:', err); showSectionError('teamGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
 async function loadServices() {
@@ -764,7 +806,7 @@ async function loadServices() {
       </div>
     `).join('');
     initImageReveal();
-  } catch (err) { console.warn('Services load error:', err); }
+  } catch (err) { console.warn('Services load error:', err); showSectionError('servicesGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
 async function loadProjects() {
@@ -789,7 +831,7 @@ async function loadProjects() {
     });
     loadImageSlots();
     initImageReveal();
-  } catch (err) { console.warn('Projects load error:', err); }
+  } catch (err) { console.warn('Projects load error:', err); showSectionError('projectsGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
 async function loadBlog() {
@@ -804,8 +846,9 @@ async function loadBlog() {
       const dateLocale = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
       const dateStr = date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
+      const content = escapeHtml(p.content || '');
       return `
-      <article class="blog-card">
+      <article class="blog-card" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${content}">
         <img src="/images/blog/${blogSvg}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
         <div class="blog-body">
           <div class="blog-date">${dateStr}</div>
@@ -815,10 +858,40 @@ async function loadBlog() {
         </div>
       </article>`;
     }).join('');
+    grid.querySelectorAll('.blog-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.blog-link')) e.preventDefault();
+        openBlogPost(card.dataset.title, card.dataset.date, card.dataset.content);
+      });
+    });
     loadImageSlots();
     initImageReveal();
-  } catch (err) { console.warn('Blog load error:', err); }
+  } catch (err) { console.warn('Blog load error:', err); showSectionError('blogGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
+
+function openBlogPost(title, date, content) {
+  const modal = document.getElementById('blogModal');
+  const titleEl = document.getElementById('blogModalTitle');
+  const dateEl = document.getElementById('blogModalDate');
+  const bodyEl = document.getElementById('blogModalBody');
+  if (!modal || !titleEl || !bodyEl) return;
+  titleEl.textContent = title;
+  dateEl.textContent = date;
+  bodyEl.innerHTML = content.replace(/\n/g, '<br>');
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBlogPost(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('blogModal');
+  if (modal) modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeBlogPost();
+});
 
 async function loadPricingData() {
   try {
@@ -867,7 +940,7 @@ async function loadPricingData() {
         </div>`;
       }).join('');
     });
-  } catch (err) { console.warn('Pricing load error:', err); }
+  } catch (err) { console.warn('Pricing load error:', err); ['construction', 'rehabilitation', 'forage'].forEach(cat => showSectionError('pricingGrid-' + cat, getNestedTranslation('dossiers.error') || 'Unable to load.')); }
 }
 
 async function loadConfigData() {
@@ -893,6 +966,12 @@ async function loadConfigData() {
     if (cfg.team?.total_staff) document.getElementById('numStaff').textContent = cfg.team.total_staff;
     if (cfg.team?.civil_engineers) document.getElementById('numEngineers').textContent = cfg.team.civil_engineers;
   } catch (err) { console.warn('Config load error:', err); }
+}
+
+function showSectionError(containerId, message) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--text-muted)"><p>${message}</p></div>`;
 }
 
 function escapeHtml(text) {
@@ -921,11 +1000,14 @@ function openPdfViewer(id, name, url) {
   const modal = document.getElementById('pdfModal');
   const viewer = document.getElementById('pdfViewer');
   const title = document.getElementById('pdfModalTitle');
+  const loading = document.getElementById('pdfLoading');
   if (!modal || !viewer) return;
   title.textContent = name || '';
+  if (loading) loading.classList.remove('hidden');
   viewer.src = url;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  setTimeout(() => { if (loading) loading.classList.add('hidden'); }, 2000);
 }
 
 function closePdfViewer(e) {
@@ -1001,6 +1083,85 @@ async function loadDossiers() {
 }
 
 // ═══════════════════════════════════════════════════════
+// INTERACTIVE MAPS (Leaflet)
+// ═══════════════════════════════════════════════════════
+
+const CITY_COORDS = {
+  'antsiranana': [-12.2833, 49.2833],
+  'diego': [-12.2833, 49.2833],
+  'nosybe': [-13.3167, 48.2667],
+  'sambava': [-14.2667, 50.1667],
+  'antalaha': [-14.8833, 50.2667],
+  'ramena': [-12.3333, 49.3667],
+  'mahalina': [-12.4167, 49.4667],
+  'nosyhara': [-12.2333, 49.0],
+  'anjianjia': [-12.3833, 49.3],
+  'djabala': [-13.4167, 48.3],
+  'mahatsinjo': [-13.35, 48.25]
+};
+
+function getCityCoords(location) {
+  if (!location) return null;
+  const loc = location.toLowerCase().replace(/\s/g, '');
+  for (const [key, coords] of Object.entries(CITY_COORDS)) {
+    if (loc.includes(key)) return coords;
+  }
+  return null;
+}
+
+let officeMap = null;
+let projectMap = null;
+
+function initOfficeMap() {
+  const el = document.getElementById('officeMap');
+  if (!el || officeMap) return;
+  officeMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-12.28, 49.32], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(officeMap);
+
+  L.marker([-12.2833, 49.2833]).addTo(officeMap)
+    .bindPopup('<strong>Antsiranana (Siège)</strong><br>Tanambao 1, face Madahoufi');
+  L.marker([-13.3167, 48.2667]).addTo(officeMap)
+    .bindPopup('<strong>Nosy Be (Antenne)</strong><br>Mahatsinjo');
+
+  setTimeout(() => officeMap.invalidateSize(), 500);
+}
+
+function initProjectMap() {
+  const el = document.getElementById('projectMap');
+  if (!el || projectMap) return;
+  projectMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-13.5, 49.2], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(projectMap);
+
+  fetch(`${API_BASE}/api/projects`).then(r => r.json()).then(projects => {
+    projects.forEach(p => {
+      const coords = getCityCoords(p.location);
+      if (!coords) return;
+      const img = p.images && p.images[0] ? `/images/projects/${p.images[0]}` : null;
+      const popupHtml = `<div style="min-width:160px">
+        ${img ? `<img src="${img}" alt="${escapeHtml(p.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:3px;margin-bottom:6px;">` : ''}
+        <strong>${escapeHtml(p.title)}</strong><br>
+        <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
+      </div>`;
+      L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
+    });
+  }).catch(() => {});
+
+  setTimeout(() => projectMap.invalidateSize(), 500);
+}
+
+function initMaps() {
+  if (typeof L === 'undefined') return;
+  initOfficeMap();
+  initProjectMap();
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT — Load default language
 // ═══════════════════════════════════════════════════════
 
@@ -1016,4 +1177,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPricingData();
   loadConfigData();
   initImageReveal();
+  initMaps();
 });
