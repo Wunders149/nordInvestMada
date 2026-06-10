@@ -192,8 +192,15 @@
       </div>
     </div>
   </div>
-  <div class="hero-right">
+  <div class="hero-right" data-parallax="true">
     <div class="hero-decor"></div>
+    <div class="hero-shapes" aria-hidden="true">
+      <div class="shape shape-circle shape-1"></div>
+      <div class="shape shape-circle shape-2"></div>
+      <div class="shape shape-square shape-3"></div>
+      <div class="shape shape-triangle shape-4"></div>
+      <div class="shape shape-circle shape-5"></div>
+    </div>
     <img src="/images/hero/architecture.svg" alt="Nord Invest Madagascar - Architecture" class="hero-img" loading="eager" data-image-slot="hero">
     <div class="hero-overlay"></div>
     <div class="hero-badge">
@@ -206,14 +213,14 @@
 <!-- ABOUT -->
 <section id="about">
   <div class="about-image-wrap reveal">
-    <img src="/images/about/team.svg" alt="Nord Invest Madagascar - Équipe technique" class="about-img" loading="lazy" data-image-slot="about-team">
-    <img src="/images/about/accent.svg" alt="Nord Invest Madagascar - Architecture" class="about-img-accent" loading="lazy" data-image-slot="about-accent">
+    <img src="/images/about/team.svg" alt="Nord Invest Madagascar - Équipe technique" class="about-img img-reveal" loading="lazy" data-image-slot="about-team">
+    <img src="/images/about/accent.svg" alt="Nord Invest Madagascar - Architecture" class="about-img-accent img-reveal" loading="lazy" data-image-slot="about-accent">
   </div>
   <div class="reveal">
     <div class="section-tag" data-i18n="about.tag">À Propos</div>
     <h2 data-i18n-html="about.title">Une expertise<br>technique au service<br>de vos projets.</h2>
     <p class="section-lead" data-i18n="about.lead">Fondée en 2015 à Antsiranana, Nord Invest Madagascar est spécialisée dans la construction, le forage d'eau et l'immobilier. Nous mettons en œuvre notre expertise technique pour garantir des infrastructures modernes, durables et économiques.</p>
-    <div class="about-features">
+    <div class="about-features reveal reveal-stagger">
       <div class="feat">
         <div class="feat-icon">🏛️</div>
         <div>
@@ -239,21 +246,31 @@
   </div>
 </section>
 
+<!-- SECTION DIVIDER -->
+<div class="section-divider">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-secondary)"/></svg>
+</div>
+
 <!-- VISION & MISSION -->
 <section id="vision-mission">
   <div class="calculator-container">
-    <div class="vision-mission-grid" id="visionMissionGrid">
-      <div class="vm-card reveal">
+    <div class="vision-mission-grid reveal reveal-stagger" id="visionMissionGrid">
+      <div class="vm-card">
         <div class="vm-label" data-i18n="vision.title">Notre Vision</div>
         <div class="vm-text" id="visionText">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
       </div>
-      <div class="vm-card mission reveal">
+      <div class="vm-card mission">
         <div class="vm-label" data-i18n="mission.title">Notre Mission</div>
         <div class="vm-text" id="missionText">"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider section-divider--flip">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-primary)"/></svg>
+</div>
 
 <!-- TECHNICAL STANDARDS & SAFETY -->
 <section id="technical-standards">
@@ -265,7 +282,7 @@
 
   <div class="standards-grid reveal">
     <div class="standard-item">
-      <div class="standard-icon"><img src="/images/standards/safety.svg" alt="Safety First" data-image-slot="standards-safety"></div>
+      <div class="standard-icon"><img src="/images/standards/safety.svg" alt="Safety First" class="img-reveal" data-image-slot="standards-safety"></div>
       <div class="standard-content">
         <h3>Safety First</h3>
         <p>Priorité absolue à la sécurité des hommes et des équipements. Zones de travail balisées, équipements de protection individuels (EPI) obligatoires et contrôles réguliers des procédures.</p>
@@ -273,7 +290,7 @@
     </div>
 
     <div class="standard-item">
-      <div class="standard-icon"><img src="/images/standards/engineering.svg" alt="Calculs Structurels" data-image-slot="standards-engineering"></div>
+      <div class="standard-icon"><img src="/images/standards/engineering.svg" alt="Calculs Structurels" class="img-reveal" data-image-slot="standards-engineering"></div>
       <div class="standard-content">
         <h3>Calculs Structurels (VEx)</h3>
         <p>Nos études intègrent les normes de <strong>Vent Extrême (VEx 1 à 4)</strong> de Madagascar. Chaque structure est calculée pour résister aux conditions cycloniques spécifiques du Nord.</p>
@@ -282,7 +299,7 @@
     </div>
 
     <div class="standard-item">
-      <div class="standard-icon"><img src="/images/standards/bim.svg" alt="Conception BIM" data-image-slot="standards-bim"></div>
+      <div class="standard-icon"><img src="/images/standards/bim.svg" alt="Conception BIM" class="img-reveal" data-image-slot="standards-bim"></div>
       <div class="standard-content">
         <h3>Conception BIM</h3>
         <p>Utilisation des logiciels leaders du marché : <strong>AutoCAD, Revit et ArchiCAD</strong> pour la conception, et <strong>Robot Structural Analysis</strong> pour la validation des calculs de charge.</p>
@@ -290,7 +307,7 @@
     </div>
 
     <div class="standard-item">
-      <div class="standard-icon"><img src="/images/standards/administration.svg" alt="Régularité Administrative" data-image-slot="standards-administration"></div>
+      <div class="standard-icon"><img src="/images/standards/administration.svg" alt="Régularité Administrative" class="img-reveal" data-image-slot="standards-administration"></div>
       <div class="standard-content">
         <h3>Régularité Administrative</h3>
         <p>Accompagnement pour l'obtention des permis de construire. Collaboration systématique avec des architectes agréés inscrits à l'Ordre National des Architectes.</p>
@@ -299,6 +316,11 @@
   </div>
 </section>
 
+<!-- SECTION DIVIDER -->
+<div class="section-divider">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-primary)"/></svg>
+</div>
+
 <!-- TEAM -->
 <section id="team">
   <div class="reveal">
@@ -306,7 +328,7 @@
     <h2 data-i18n-html="team.title">Des experts<br>à votre service.</h2>
     <p class="section-lead" data-i18n="team.lead">Une équipe de 34 techniciens et ingénieurs passionnés, mobilisés pour vos projets dans tout le nord de Madagascar.</p>
   </div>
-  <div id="teamGrid" class="team-grid reveal"></div>
+  <div id="teamGrid" class="team-grid reveal reveal-stagger"></div>
 </section>
 
 <!-- VALUES -->
@@ -327,6 +349,11 @@
   </div>
 </section>
 
+<!-- SECTION DIVIDER -->
+<div class="section-divider section-divider--flip">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-secondary)"/></svg>
+</div>
+
 <!-- SERVICES -->
 <section id="services">
   <div class="reveal">
@@ -334,8 +361,13 @@
     <h2 data-i18n-html="services.title">Ce que nous<br>réalisons pour vous.</h2>
     <p class="section-lead" data-i18n="services.lead">Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.</p>
   </div>
-  <div id="servicesGrid" class="services-grid reveal"></div>
+  <div id="servicesGrid" class="services-grid reveal reveal-stagger"></div>
 </section>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-secondary)"/></svg>
+</div>
 
 <!-- PRICING -->
 <section id="pricing">
@@ -353,23 +385,28 @@
 
   <!-- Construction -->
   <div class="pricing-panel active" id="tab-construction">
-    <div id="pricingGrid-construction" class="pricing-grid reveal"></div>
+    <div id="pricingGrid-construction" class="pricing-grid reveal reveal-stagger"></div>
   </div>
 
   <!-- Réhabilitation -->
   <div class="pricing-panel" id="tab-rehab">
-    <div id="pricingGrid-rehabilitation" class="pricing-grid reveal"></div>
+    <div id="pricingGrid-rehabilitation" class="pricing-grid reveal reveal-stagger"></div>
   </div>
 
   <!-- Forage -->
   <div class="pricing-panel" id="tab-forage">
-    <div id="pricingGrid-forage" class="pricing-grid reveal"></div>
+    <div id="pricingGrid-forage" class="pricing-grid reveal reveal-stagger"></div>
   </div>
 
   <div class="pricing-footer reveal">
     <strong>Note importante :</strong> Les prix indiqués sont des tarifs de référence hors taxes. Le coût réel dépend des conditions d'accès au site, du type de sol, des matériaux locaux disponibles et des spécificités de votre projet. <strong>Un devis personnalisé gratuit et sans engagement est réalisé après visite du terrain.</strong> Contactez-nous au <strong>032 82 312 80</strong> ou par email.
   </div>
 </section>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider section-divider--flip">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-primary)"/></svg>
+</div>
 
 <!-- CALCULATOR -->
 <section id="calculator">
@@ -446,6 +483,14 @@
     <div class="num-val">2</div>
     <div class="num-label">Sites d'opération</div>
   </div>
+  <div class="counter-progress" id="counterProgress">
+    <div class="counter-progress-bar" id="counterProgressBar"></div>
+  </div>
+</div>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-primary)"/></svg>
 </div>
 
 <!-- PROJECTS -->
@@ -455,7 +500,7 @@
     <h2 data-i18n-html="projects.title">Nos chantiers<br>parlent d'eux-mêmes.</h2>
     <p class="section-lead" data-i18n="projects.lead">Un aperçu de nos projets récents à Antsiranana, Nosy Be et dans tout le nord de Madagascar.</p>
   </div>
-  <div id="projectsGrid" class="projects-grid reveal"></div>
+  <div id="projectsGrid" class="projects-grid reveal reveal-stagger"></div>
 </section>
 
 <!-- DOSSIERS VENTE DE TERRAIN -->
@@ -465,10 +510,15 @@
     <h2>Dossiers de terrains<br>à vendre</h2>
     <p class="section-lead">Consultez nos dossiers détaillés de terrains disponibles à la vente dans le nord de Madagascar. Cliquez sur un dossier pour le consulter.</p>
   </div>
-  <div id="dossiersGrid" class="dossiers-grid reveal">
+  <div id="dossiersGrid" class="dossiers-grid reveal reveal-stagger">
     <div class="loading-spinner" style="margin: 0 auto;"></div>
   </div>
 </section>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider section-divider--flip">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-secondary)"/></svg>
+</div>
 
 <!-- BLOG -->
 <section id="blog">
@@ -477,8 +527,13 @@
     <h2 data-i18n-html="blog.title">Conseils &<br>actualités du bâtiment.</h2>
     <p class="section-lead" data-i18n="blog.lead">Découvrez nos conseils techniques, guides pratiques et actualités sur la construction, le forage et l'immobilier à Madagascar.</p>
   </div>
-  <div id="blogGrid" class="blog-grid reveal"></div>
+  <div id="blogGrid" class="blog-grid reveal reveal-stagger"></div>
 </section>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-secondary)"/></svg>
+</div>
 
 <!-- CONTACT -->
 <section id="contact">

@@ -129,15 +129,30 @@ const navLinks = document.getElementById('navLinks');
 if (hamburger) {
   hamburger.addEventListener('click', (e) => {
     e.stopPropagation();
-    hamburger.classList.toggle('active');
-    navLinks.classList.toggle('active');
+    const isOpening = !hamburger.classList.contains('active');
+    if (isOpening) {
+      navLinks.classList.remove('closing');
+      hamburger.classList.add('active');
+      navLinks.classList.add('active');
+    } else {
+      closeMobileMenu();
+    }
   });
   navLinks.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      navLinks.classList.remove('active');
+      if (navLinks.classList.contains('active')) {
+        closeMobileMenu();
+      }
     });
   });
+}
+function closeMobileMenu() {
+  navLinks.classList.add('closing');
+  navLinks.classList.remove('active');
+  hamburger.classList.remove('active');
+  setTimeout(() => {
+    navLinks.classList.remove('closing');
+  }, 350);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -542,16 +557,19 @@ document.querySelectorAll('.btn-primary, .nav-cta').forEach(btn => {
 });
 
 // ═══════════════════════════════════════════════════════
-// ANIMATED COUNTERS
+// ANIMATED COUNTERS with progress bar
 // ═══════════════════════════════════════════════════════
 
 function animateCounters() {
-  document.querySelectorAll('#numbers .num-val').forEach(el => {
+  const progressBar = document.getElementById('counterProgressBar');
+  const countItems = document.querySelectorAll('#numbers .num-val');
+
+  countItems.forEach(el => {
     const text = el.textContent.trim();
     const suffix = text.includes('+') ? '+' : '';
     const target = parseInt(text.replace('+', '').replace(/\s/g, ''), 10);
     if (isNaN(target)) return;
-    const duration = 1500;
+    const duration = 1800;
     const start = performance.now();
     el.innerHTML = `<span class="num-count">0</span>${suffix}`;
     const countEl = el.querySelector('.num-count');
@@ -561,6 +579,9 @@ function animateCounters() {
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = Math.round(eased * target);
       countEl.textContent = current;
+      if (progressBar) {
+        progressBar.style.width = `${eased * 100}%`;
+      }
       if (progress < 1) requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
@@ -613,6 +634,41 @@ async function handleNewsletter(e) {
 }
 
 // ═══════════════════════════════════════════════════════
+// HERO MOUSE PARALLAX
+// ═══════════════════════════════════════════════════════
+
+(function initHeroParallax() {
+  const heroRight = document.querySelector('.hero-right[data-parallax]');
+  if (!heroRight) return;
+  const heroImg = heroRight.querySelector('.hero-img');
+  const heroBadge = heroRight.querySelector('.hero-badge');
+  const shapes = heroRight.querySelectorAll('.shape');
+
+  heroRight.addEventListener('mousemove', (e) => {
+    const rect = heroRight.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    if (heroImg) {
+      heroImg.style.transform = `scale(1.08) translate(${x * -35}px, ${y * -35}px)`;
+    }
+    if (heroBadge) {
+      heroBadge.style.transform = `translate(${x * 25}px, ${y * 25}px)`;
+    }
+    shapes.forEach((shape, i) => {
+      const depth = (i + 1) * 18;
+      shape.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+    });
+  });
+
+  heroRight.addEventListener('mouseleave', () => {
+    if (heroImg) heroImg.style.transform = 'scale(1) translate(0, 0)';
+    if (heroBadge) heroBadge.style.transform = 'translate(0, 0)';
+    shapes.forEach(shape => shape.style.transform = 'translate(0, 0)');
+  });
+})();
+
+// ═══════════════════════════════════════════════════════
 // SCROLL REVEAL (IntersectionObserver)
 // ═══════════════════════════════════════════════════════
 
@@ -624,7 +680,24 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
 
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => observer.observe(el));
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger').forEach(el => observer.observe(el));
+
+// ═══════════════════════════════════════════════════════
+// IMAGE REVEAL ON SCROLL
+// ═══════════════════════════════════════════════════════
+
+const imgObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('img-visible');
+      imgObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+function initImageReveal() {
+  document.querySelectorAll('.img-reveal:not(.img-visible)').forEach(el => imgObserver.observe(el));
+}
 
 // ═══════════════════════════════════════════════════════
 // IMAGE SLOT SWAP — Replace SVG placeholders with uploaded images
@@ -664,13 +737,14 @@ async function loadTeam() {
     if (!grid) return;
     grid.innerHTML = team.map(m => `
       <div class="team-card">
-        <img src="/images/placeholder.svg" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy" data-image-slot="${m.image_slot || ''}">
+        <img src="/images/placeholder.svg" alt="${escapeHtml(m.name)}" class="team-avatar img-reveal" loading="lazy" data-image-slot="${m.image_slot || ''}">
         <div class="team-name">${escapeHtml(m.name)}</div>
         <div class="team-role">${escapeHtml(m.role)}</div>
         <div class="team-desc">${escapeHtml(m.bio)}</div>
       </div>
     `).join('');
     loadImageSlots();
+    initImageReveal();
   } catch (err) { console.warn('Team load error:', err); }
 }
 
@@ -688,6 +762,7 @@ async function loadServices() {
         <p class="service-desc">${escapeHtml(s.description)}</p>
       </div>
     `).join('');
+    initImageReveal();
   } catch (err) { console.warn('Services load error:', err); }
 }
 
@@ -699,7 +774,7 @@ async function loadProjects() {
     if (!grid) return;
     grid.innerHTML = projects.map(p => `
       <div class="project-card">
-        <img src="/images/projects/${(p.images && p.images[0]) || 'placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img" loading="lazy" data-image-slot="${p.image_slot || ''}">
+        <img src="/images/projects/${(p.images && p.images[0]) || 'placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
         <div class="project-overlay">
           <div class="project-cat">${escapeHtml(p.category || '')}</div>
           <div class="project-name">${escapeHtml(p.title)}</div>
@@ -712,6 +787,7 @@ async function loadProjects() {
       card.addEventListener('click', () => openGallery(index));
     });
     loadImageSlots();
+    initImageReveal();
   } catch (err) { console.warn('Projects load error:', err); }
 }
 
@@ -728,7 +804,7 @@ async function loadBlog() {
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
       return `
       <article class="blog-card">
-        <img src="/images/blog/${blogSvg}" alt="${escapeHtml(p.title)}" class="blog-img" loading="lazy" data-image-slot="${p.image_slot || ''}">
+        <img src="/images/blog/${blogSvg}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
         <div class="blog-body">
           <div class="blog-date">${dateStr}</div>
           <div class="blog-title">${escapeHtml(p.title)}</div>
@@ -738,6 +814,7 @@ async function loadBlog() {
       </article>`;
     }).join('');
     loadImageSlots();
+    initImageReveal();
   } catch (err) { console.warn('Blog load error:', err); }
 }
 
@@ -895,7 +972,7 @@ async function loadDossiers() {
       return `
       <div class="dossier-card" data-id="${escAttr(d.id)}" data-name="${escAttr(d.name)}" data-url="${escAttr(d.cloudinary_url || '')}">
         <div class="dossier-thumb">
-          <img src="${escAttr(thumbUrl)}" alt="${escAttr(d.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <img src="${escAttr(thumbUrl)}" alt="${escAttr(d.name)}" class="img-reveal" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="dossier-thumb-fallback" style="display:none">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -915,6 +992,7 @@ async function loadDossiers() {
         openPdfViewer(card.dataset.id, card.dataset.name, card.dataset.url);
       });
     });
+    initImageReveal();
   } catch (err) {
     console.warn('Dossiers load error:', err);
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
@@ -938,4 +1016,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadBlog();
   loadPricingData();
   loadConfigData();
+  initImageReveal();
 });
