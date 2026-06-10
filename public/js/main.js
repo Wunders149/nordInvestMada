@@ -290,7 +290,7 @@ function handleSubmit(e) {
   const messageDiv = document.getElementById('formMessage');
   const form = document.getElementById('contactForm');
 
-  btn.textContent = '⏳ Envoi en cours...';
+  btn.textContent = getNestedTranslation('contact.sending');
   btn.disabled = true;
   messageDiv.style.display = 'none';
 
@@ -313,9 +313,9 @@ function handleSubmit(e) {
   })
   .then(response => response.json())
   .then(result => {
-    btn.textContent = '\u2713 Message envoy\u00e9 !';
+    btn.textContent = getNestedTranslation('contact.sent');
     btn.style.background = '#2a7a4a';
-    messageDiv.textContent = '\u2713 Votre demande a \u00e9t\u00e9 re\u00e7ue. Nous vous r\u00e9pondrons sous 24h.';
+    messageDiv.textContent = getNestedTranslation('contact.sentMessage');
     messageDiv.style.display = 'block';
     messageDiv.style.color = '#2a7a4a';
     form.reset();
@@ -328,7 +328,7 @@ function handleSubmit(e) {
     }
 
     setTimeout(() => {
-      btn.textContent = 'Envoyer ma Demande';
+      btn.textContent = getNestedTranslation('contact.formSubmit');
       btn.style.background = '';
       btn.disabled = false;
       messageDiv.style.display = 'none';
@@ -336,10 +336,10 @@ function handleSubmit(e) {
   })
   .catch(error => {
     console.error('Error:', error);
-    messageDiv.textContent = '\u274c Erreur lors de l\'envoi. Contactez-nous au 032 82 312 80.';
+    messageDiv.textContent = getNestedTranslation('contact.errorMessage');
     messageDiv.style.display = 'block';
     messageDiv.style.color = '#E8614A';
-    btn.textContent = 'Envoyer ma Demande';
+    btn.textContent = getNestedTranslation('contact.formSubmit');
     btn.disabled = false;
   });
 }
@@ -369,11 +369,10 @@ function updateCalcFields() {
   const inputSurface = document.getElementById('calc-surface');
 
   if (service === 'forage') {
-    const depthKey = currentLang === 'en' ? 'calculator.depthLabel' : currentLang === 'mg' ? 'calculator.depthLabel' : 'calculator.depthLabel';
-    labelSurface.textContent = getNestedTranslation(`calculator.depthLabel`) || 'Profondeur estimée (ML)';
+    labelSurface.textContent = getNestedTranslation(`calculator.depthLabel`);
     inputSurface.value = 40;
   } else {
-    labelSurface.textContent = getNestedTranslation(`calculator.surfaceLabel`) || 'Surface estimée (m²)';
+    labelSurface.textContent = getNestedTranslation(`calculator.surfaceLabel`);
     inputSurface.value = 100;
   }
 }
@@ -386,7 +385,7 @@ async function runCalculation() {
   const resultPanel = document.getElementById('calc-result-panel');
 
   if (isNaN(squareMeters) || squareMeters <= 0) {
-    alert('Veuillez entrer une surface valide.');
+    alert(getNestedTranslation('calculator.alertInvalidSurface'));
     return;
   }
 
@@ -410,7 +409,8 @@ async function runCalculation() {
     return;
   }
 
-  const formatPrice = (val) => new Intl.NumberFormat('fr-MG').format(val) + ' Ar';
+  const priceLocale = currentLang === 'en' ? 'en-US' : 'fr-MG';
+  const formatPrice = (val) => new Intl.NumberFormat(priceLocale).format(val) + ' Ar';
 
   const rTitle = getNestedTranslation('calculator.resultTitle') || 'Estimation Prévisionnelle';
   const rUnit = getNestedTranslation('calculator.resultUnit') || 'Toutes Taxes Comprises (TTC)';
@@ -463,7 +463,8 @@ function transferToForm(service, tier, surface, location, total) {
   serviceSelect.value = service;
   projectInput.value = `Simulation: ${service} ${tier} (${surface} units) \u00e0 ${location}`;
 
-  messageTextarea.value = `Bonjour, j'ai effectu\u00e9 une simulation sur votre site :\n- Service : ${service}\n- Gamme : ${tier}\n- Volume : ${surface}\n- Lieu : ${location}\n- Estimation : ${new Intl.NumberFormat('fr-MG').format(total)} Ar TTC\n\nJe souhaite obtenir un devis d\u00e9finitif.`;
+  const tLocale = currentLang === 'en' ? 'en-US' : 'fr-MG';
+  messageTextarea.value = `Bonjour, j'ai effectu\u00e9 une simulation sur votre site :\n- Service : ${service}\n- Gamme : ${tier}\n- Volume : ${surface}\n- Lieu : ${location}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\nJe souhaite obtenir un devis d\u00e9finitif.`;
 
   setTimeout(() => {
     document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
@@ -609,7 +610,7 @@ async function handleNewsletter(e) {
   const email = document.getElementById('newsletterEmail').value;
   const msg = document.getElementById('newsletterMsg');
   if (!email) return;
-  msg.textContent = '...';
+  msg.textContent = getNestedTranslation('newsletter.sending');
   msg.className = 'newsletter-msg';
   const API_BASE = window.location.origin;
   try {
@@ -620,15 +621,15 @@ async function handleNewsletter(e) {
     });
     const data = await res.json();
     if (data.success) {
-      msg.textContent = '\u2713 Merci pour votre inscription !';
+      msg.textContent = getNestedTranslation('newsletter.success');
       msg.className = 'newsletter-msg success';
       document.getElementById('newsletterForm').reset();
     } else {
-      msg.textContent = data.error || 'Erreur. R\u00e9essayez.';
+      msg.textContent = data.error || getNestedTranslation('newsletter.error');
       msg.className = 'newsletter-msg error';
     }
   } catch {
-    msg.textContent = 'Erreur de connexion. R\u00e9essayez.';
+    msg.textContent = getNestedTranslation('newsletter.errorGeneric');
     msg.className = 'newsletter-msg error';
   }
 }
@@ -800,7 +801,8 @@ async function loadBlog() {
     const blogSvgs = { 'blog-construction': 'construction.svg', 'blog-forage': 'forage.svg', 'blog-immobilier': 'immobilier.svg' };
     grid.innerHTML = posts.map(p => {
       const date = new Date(p.date);
-      const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      const dateLocale = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
+      const dateStr = date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
       return `
       <article class="blog-card">
@@ -809,7 +811,7 @@ async function loadBlog() {
           <div class="blog-date">${dateStr}</div>
           <div class="blog-title">${escapeHtml(p.title)}</div>
           <div class="blog-excerpt">${escapeHtml(p.excerpt)}</div>
-          <a href="#" class="blog-link">Lire l'article</a>
+          <a href="#" class="blog-link">${getNestedTranslation('blog.readmore')}</a>
         </div>
       </article>`;
     }).join('');
@@ -839,17 +841,14 @@ async function loadPricingData() {
         const price = t.pricePerM2 || t.pricePerML || t.price || 0;
         const unit = t.unit || catLabels[cat]?.unit || 'm²';
         const budget = catLabels[cat]?.budgetMap[tier] || '';
-        const typeMap = {
-          construction: { economic: 'Gros Œuvre Simple', standard: 'Clé en Main Résidentiel', premium: 'Finition Haut de Gamme' },
-          rehabilitation: { economic: 'Rafraîchissement', standard: 'Rénovation Complète', premium: 'Confortement & Extension' },
-          forage: { economic: 'Géophysique Préalable', standard: 'Forage + Équipement', premium: 'Entretien & Réhabilitation' }
-        };
-        const type = typeMap[cat]?.[tier] || t.name;
+        const type = getNestedTranslation(`pricing.tiers.${cat}.${tier}`) || t.name;
         const isFeatured = ti === 1;
-        const priceStr = price.toLocaleString('fr-FR');
-        const badge = cat === 'construction' && tier === 'standard' ? 'Le plus demandé'
-          : cat === 'rehabilitation' && tier === 'standard' ? 'Recommandé'
-          : cat === 'forage' && tier === 'standard' ? 'Tout inclus' : '';
+        const priceLocale = currentLang === 'en' ? 'en-US' : 'fr-MG';
+        const priceStr = price.toLocaleString(priceLocale);
+        const badgeKey = cat === 'construction' && tier === 'standard' ? 'popular'
+          : cat === 'rehabilitation' && tier === 'standard' ? 'recommended'
+          : cat === 'forage' && tier === 'standard' ? 'allInclusive' : '';
+        const badge = badgeKey ? getNestedTranslation(`pricing.badge.${badgeKey}`) : '';
         return `
         <div class="price-card${isFeatured ? ' featured' : ''}" data-service="${cat}" data-tier="${tier}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
           ${badge ? `<div class="price-badge">${badge}</div>` : ''}
@@ -863,8 +862,8 @@ async function loadPricingData() {
           <ul class="price-features">
             ${(t.features || []).map(f => `<li>${escapeHtml(f)}</li>`).join('')}
           </ul>
-          <div class="price-note">Tarif de référence. Devis personnalisé après visite.</div>
-          <a href="#contact" class="price-cta" onclick="fillContactForm(this)">Demander un devis</a>
+          <div class="price-note">${getNestedTranslation('pricing.priceNote')}</div>
+          <a href="#contact" class="price-cta" onclick="fillContactForm(this)">${getNestedTranslation('pricing.cta')}</a>
         </div>`;
       }).join('');
     });
@@ -912,8 +911,8 @@ let currentPdfUrl = '';
 function formatFileSize(bytes) {
   if (!bytes) return '';
   const kb = bytes / 1024;
-  if (kb < 1024) return kb.toFixed(0) + ' Ko';
-  return (kb / 1024).toFixed(1) + ' Mo';
+  if (kb < 1024) return kb.toFixed(0) + getNestedTranslation('format.kb');
+  return (kb / 1024).toFixed(1) + getNestedTranslation('format.mb');
 }
 
 function openPdfViewer(id, name, url) {
@@ -960,8 +959,8 @@ async function loadDossiers() {
     const dossiers = await res.json();
     if (!dossiers.length) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
-        <p style="font-size:1.1rem">Aucun dossier disponible pour le moment.</p>
-        <p style="font-size:0.85rem;margin-top:8px">Revenez bientôt pour découvrir nos nouvelles offres.</p>
+        <p style="font-size:1.1rem">${getNestedTranslation('dossiers.empty')}</p>
+        <p style="font-size:0.85rem;margin-top:8px">${getNestedTranslation('dossiers.emptySub')}</p>
       </div>`;
       return;
     }
@@ -984,7 +983,7 @@ async function loadDossiers() {
         </div>
         <div class="dossier-name">${escHtml(d.name)}</div>
         <div class="dossier-meta">${formatFileSize(d.size)} — PDF</div>
-        <span class="dossier-badge">Visualiser</span>
+        <span class="dossier-badge">${getNestedTranslation('dossiers.badge')}</span>
       </div>`;
     }).join('');
     grid.querySelectorAll('.dossier-card').forEach(card => {
@@ -996,7 +995,7 @@ async function loadDossiers() {
   } catch (err) {
     console.warn('Dossiers load error:', err);
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
-      <p>Impossible de charger les dossiers. Réessayez plus tard.</p>
+      <p>${getNestedTranslation('dossiers.error')}</p>
     </div>`;
   }
 }

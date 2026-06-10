@@ -6,10 +6,12 @@
     "pricing": "Pricing",
     "projects": "Projects",
     "blog": "Blog",
-    "contact": "Contact"
+    "contact": "Contact",
+    "dossiers": "Land Sales"
   },
   "hero": {
     "tag": "Real Estate & Construction — Madagascar",
+    "badge": "Since 2015",
     "title": "Building<br><em>excellence</em><br>in the North.",
     "subtitle": "Since 2015, Nord Invest Madagascar designs and executes your construction, rehabilitation, water drilling and real estate projects with rigor and expertise.",
     "btnPricing": "View pricing",
@@ -81,7 +83,14 @@
     "tab2": "Rehabilitation",
     "tab3": "Water Drilling",
     "cta": "Request a quote",
-    "note": "<strong>Important note:</strong> The prices shown are reference prices excluding taxes. The actual cost depends on site access conditions, soil type, available local materials and your project specifics. <strong>A free personalized quote with no obligation is provided after a site visit.</strong> Contact us at <strong>032 82 312 80</strong> or by email."
+    "note": "<strong>Important note:</strong> The prices shown are reference prices excluding taxes. The actual cost depends on site access conditions, soil type, available local materials and your project specifics. <strong>A free personalized quote with no obligation is provided after a site visit.</strong> Contact us at <strong>032 82 312 80</strong> or by email.",
+    "tiers": {
+      "construction": { "economic": "Simple Structural Work", "standard": "Residential Turnkey", "premium": "High-End Finishing" },
+      "rehabilitation": { "economic": "Refresh", "standard": "Complete Renovation", "premium": "Strengthening & Extension" },
+      "forage": { "economic": "Preliminary Geophysical", "standard": "Drilling + Equipment", "premium": "Maintenance & Rehabilitation" }
+    },
+    "badge": { "popular": "Most popular", "recommended": "Recommended", "allInclusive": "All inclusive" },
+    "priceNote": "Reference price. Custom quote after site visit."
   },
   "calculator": {
     "tag": "Simulator",
@@ -94,6 +103,16 @@
     "tierLabel": "Finishing Grade",
     "locationLabel": "Project Location",
     "btnCalculate": "Calculate estimate",
+    "optConstruction": "New Construction",
+    "optRehab": "Rehabilitation",
+    "optForage": "Water Drilling",
+    "optEconomic": "Economic / Basic",
+    "optStandard": "Standard / Recommended",
+    "optPremium": "Premium / Luxury",
+    "optDiego": "Antsiranana (Diego Suarez)",
+    "optNosyBe": "Nosy Be",
+    "optSambava": "Sambava",
+    "optAntalaha": "Antalaha",
     "resultTitle": "Preliminary Estimate",
     "resultUnit": "All Taxes Included",
     "detailBase": "Base",
@@ -105,7 +124,8 @@
     "resultCTA": "Request official quote",
     "placeholder": "Configure your project on the left to get a preliminary estimate.",
     "loading": "Calculating your estimate...",
-    "error": "Calculation error. Please try again."
+    "error": "Calculation error. Please try again.",
+    "alertInvalidSurface": "Please enter a valid surface area."
   },
   "numbers": {
     "exp": "Years of experience",
@@ -157,7 +177,18 @@
     "formMessage": "Project Description *",
     "formSubmit": "Send Request",
     "formSuccess": "Your request has been received. We will respond within 24 hours.",
-    "formError": "Error sending. Contact us at 032 82 312 80."
+    "formError": "Error sending. Contact us at 032 82 312 80.",
+    "optSelect": "-- Select --",
+    "optConstruction": "New Construction",
+    "optRehab": "Rehabilitation",
+    "optForage": "Water Drilling",
+    "optImmobilier": "Real Estate Sales & Purchase",
+    "optSuivi": "Monitoring & Quality Control",
+    "optAutre": "Other",
+    "sending": "⏳ Sending...",
+    "sent": "✓ Message sent!",
+    "sentMessage": "✓ Your request has been received. We will respond within 24 hours.",
+    "errorMessage": "✘ Error sending. Contact us at 032 82 312 80."
   },
   "footer": {
     "copyright": "© 2026 Nord Invest Madagascar — Real Estate & Construction. All rights reserved.",
@@ -208,15 +239,42 @@
   "newsletter": {
     "title": "Stay Informed",
     "desc": "Receive our news, technical tips and special offers by email. No spam, unsubscribe at any time.",
-    "btn": "Subscribe"
+    "btn": "Subscribe",
+    "sending": "...",
+    "success": "✓ Thank you for subscribing!",
+    "error": "Error. Try again.",
+    "errorGeneric": "Connection error. Try again."
   },
   "lang": {
     "fr": "Français",
     "en": "English",
-    "mg": "Malagasy"
+    "mg": "Malagasy",
+    "frShort": "FR",
+    "enShort": "EN",
+    "mgShort": "MG"
   },
   "gallery": {
     "close": "Close"
+  },
+  "dossiers": {
+    "tag": "Land Sales",
+    "title": "Land files<br>for sale",
+    "lead": "Browse our detailed files of available land for sale in northern Madagascar. Click a file to view it.",
+    "badge": "View",
+    "empty": "No files available at the moment.",
+    "emptySub": "Come back soon to discover our new listings.",
+    "error": "Unable to load files. Try again later."
+  },
+  "pdf": {
+    "title": "Document",
+    "download": "Download"
+  },
+  "page": {
+    "title": "Nord Invest Madagascar — Real Estate & Construction in Antsiranana"
+  },
+  "format": {
+    "kb": " KB",
+    "mb": " MB"
   },
   "whatsapp": {
     "text": ""

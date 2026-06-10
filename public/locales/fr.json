@@ -6,7 +6,8 @@
     "pricing": "Tarifs",
     "projects": "Réalisations",
     "blog": "Blog",
-    "contact": "Contact"
+    "contact": "Contact",
+    "dossiers": "— Vente Terrain"
   },
   "hero": {
     "tag": "Immobilier & Construction — Madagascar",
@@ -19,7 +20,8 @@
     "stat2Val": "34",
     "stat2Label": "Techniciens",
     "stat3Val": "2",
-    "stat3Label": "Sites — Antsiranana & Nosy Be"
+    "stat3Label": "Sites — Antsiranana & Nosy Be",
+    "badge": "Fondée à Diego Suarez"
   },
   "about": {
     "tag": "À Propos",
@@ -81,31 +83,14 @@
     "tab2": "Réhabilitation",
     "tab3": "Forage d'Eau",
     "cta": "Demander un devis",
-    "note": "<strong>Note importante :</strong> Les prix indiqués sont des tarifs de référence hors taxes. Le coût réel dépend des conditions d'accès au site, du type de sol, des matériaux locaux disponibles et des spécificités de votre projet. <strong>Un devis personnalisé gratuit et sans engagement est réalisé après visite du terrain.</strong> Contactez-nous au <strong>032 82 312 80</strong> ou par email."
-  },
-  "calculator": {
-    "tag": "Simulateur",
-    "title": "Estimez votre<br>budget en un clic.",
-    "lead": "Sélectionnez vos options pour obtenir une estimation budgétaire instantanée basée sur nos tarifs actuels.",
-    "serviceLabel": "Type de Service",
-    "servicePlaceholder": "Sélectionnez un service",
-    "surfaceLabel": "Surface estimée (m²)",
-    "depthLabel": "Profondeur estimée (ML)",
-    "tierLabel": "Gamme de Finition",
-    "locationLabel": "Localisation du Projet",
-    "btnCalculate": "Calculer l'estimation",
-    "resultTitle": "Estimation Prévisionnelle",
-    "resultUnit": "Toutes Taxes Comprises (TTC)",
-    "detailBase": "Base",
-    "detailSubtotal": "Sous-total HT",
-    "detailContingency": "Marge de sécurité (10%)",
-    "detailTax": "TVA (20%)",
-    "detailTotal": "Total estimé",
-    "resultNote": "* Cette estimation est fournie à titre indicatif. Elle ne remplace pas un devis formel après visite technique.",
-    "resultCTA": "Demander un devis officiel",
-    "placeholder": "Configurez votre projet ci-contre pour obtenir un chiffrage prévisionnel.",
-    "loading": "Calcul de votre estimation en cours...",
-    "error": "Erreur lors du calcul. Veuillez réessayer."
+    "note": "<strong>Note importante :</strong> Les prix indiqués sont des tarifs de référence hors taxes. Le coût réel dépend des conditions d'accès au site, du type de sol, des matériaux locaux disponibles et des spécificités de votre projet. <strong>Un devis personnalisé gratuit et sans engagement est réalisé après visite du terrain.</strong> Contactez-nous au <strong>032 82 312 80</strong> ou par email.",
+    "tiers": {
+      "construction": { "economic": "Gros Œuvre Simple", "standard": "Clé en Main Résidentiel", "premium": "Finition Haut de Gamme" },
+      "rehabilitation": { "economic": "Rafraîchissement", "standard": "Rénovation Complète", "premium": "Confortement & Extension" },
+      "forage": { "economic": "Géophysique Préalable", "standard": "Forage + Équipement", "premium": "Entretien & Réhabilitation" }
+    },
+    "badge": { "popular": "Le plus demandé", "recommended": "Recommandé", "allInclusive": "Tout inclus" },
+    "priceNote": "Tarif de référence. Devis personnalisé après visite."
   },
   "numbers": {
     "exp": "Années d'expérience",
@@ -135,29 +120,6 @@
     "proj6Cat": "Institutionnel · Anjianjia",
     "proj6Name": "Bureaux Communaux",
     "proj6Loc": "Anjianjia et Mahalina"
-  },
-  "contact": {
-    "tag": "Contact",
-    "title": "Parlons de<br>votre projet.",
-    "lead": "Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.",
-    "phoneLabel": "Téléphone",
-    "phoneVal": "032 82 312 80 / 037 07 396 07",
-    "emailLabel": "Email",
-    "emailVal": "nordinvestmada@gmail.com",
-    "addressLabel": "Siège Social",
-    "addressVal": "Tanambao 1, en face de Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)",
-    "officeLabel": "Antenne",
-    "officeVal": "Nosy Be",
-    "formName": "Nom Complet *",
-    "formEmail": "Email *",
-    "formPhone": "Téléphone",
-    "formService": "Service Demandé *",
-    "formProject": "Type de Projet *",
-    "formBudget": "Budget Estimé",
-    "formMessage": "Description du Projet *",
-    "formSubmit": "Envoyer ma Demande",
-    "formSuccess": "Votre demande a été reçue. Nous vous répondrons sous 24h.",
-    "formError": "Erreur lors de l'envoi. Contactez-nous au 032 82 312 80."
   },
   "footer": {
     "copyright": "© 2026 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.",
@@ -208,15 +170,111 @@
   "newsletter": {
     "title": "Restez informé",
     "desc": "Recevez nos actualités, conseils techniques et offres spéciales par email. Pas de spam, désabonnement à tout moment.",
-    "btn": "S'abonner"
+    "btn": "S'abonner",
+    "sending": "...",
+    "success": "✓ Merci pour votre inscription !",
+    "error": "Erreur. Réessayez.",
+    "errorGeneric": "Erreur de connexion. Réessayez."
   },
   "lang": {
     "fr": "Français",
     "en": "English",
-    "mg": "Malagasy"
+    "mg": "Malagasy",
+    "frShort": "FR",
+    "enShort": "EN",
+    "mgShort": "MG"
   },
   "gallery": {
     "close": "Fermer"
+  },
+  "dossiers": {
+    "tag": "Vente de Terrains",
+    "title": "Dossiers de terrains<br>à vendre",
+    "lead": "Consultez nos dossiers détaillés de terrains disponibles à la vente dans le nord de Madagascar. Cliquez sur un dossier pour le consulter.",
+    "badge": "Visualiser",
+    "empty": "Aucun dossier disponible pour le moment.",
+    "emptySub": "Revenez bientôt pour découvrir nos nouvelles offres.",
+    "error": "Impossible de charger les dossiers. Réessayez plus tard."
+  },
+  "calculator": {
+    "tag": "Simulateur",
+    "title": "Estimez votre<br>budget en un clic.",
+    "lead": "Sélectionnez vos options pour obtenir une estimation budgétaire instantanée basée sur nos tarifs actuels.",
+    "serviceLabel": "Type de Service",
+    "surfaceLabel": "Surface estimée (m²)",
+    "depthLabel": "Profondeur estimée (ML)",
+    "tierLabel": "Gamme de Finition",
+    "locationLabel": "Localisation du Projet",
+    "btnCalculate": "Calculer l'estimation",
+    "placeholder": "Configurez votre projet ci-contre pour obtenir un chiffrage prévisionnel.",
+    "optConstruction": "Construction Neuve",
+    "optRehab": "Réhabilitation",
+    "optForage": "Forage d'Eau",
+    "optEconomic": "Économique / Basique",
+    "optStandard": "Standard / Recommandé",
+    "optPremium": "Premium / Luxe",
+    "optDiego": "Antsiranana (Diego Suarez)",
+    "optNosyBe": "Nosy Be",
+    "optSambava": "Sambava",
+    "optAntalaha": "Antalaha",
+    "servicePlaceholder": "Sélectionnez un service",
+    "resultTitle": "Estimation Prévisionnelle",
+    "resultUnit": "Toutes Taxes Comprises (TTC)",
+    "detailBase": "Base",
+    "detailSubtotal": "Sous-total HT",
+    "detailContingency": "Marge de sécurité (10%)",
+    "detailTax": "TVA (20%)",
+    "detailTotal": "Total estimé",
+    "resultNote": "* Cette estimation est fournie à titre indicatif. Elle ne remplace pas un devis formel après visite technique.",
+    "resultCTA": "Demander un devis officiel",
+    "loading": "Calcul de votre estimation en cours...",
+    "error": "Erreur lors du calcul. Veuillez réessayer.",
+    "alertInvalidSurface": "Veuillez entrer une surface valide."
+  },
+  "contact": {
+    "sending": "⏳ Envoi en cours...",
+    "sent": "✓ Message envoyé !",
+    "sentMessage": "✓ Votre demande a été reçue. Nous vous répondrons sous 24h.",
+    "errorMessage": "✘ Erreur lors de l'envoi. Contactez-nous au 032 82 312 80.",
+    "tag": "Contact",
+    "title": "Parlons de<br>votre projet.",
+    "lead": "Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.",
+    "phoneLabel": "Téléphone",
+    "phoneVal": "032 82 312 80 / 037 07 396 07",
+    "emailLabel": "Email",
+    "emailVal": "nordinvestmada@gmail.com",
+    "addressLabel": "Siège Social",
+    "addressVal": "Tanambao 1, en face de Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)",
+    "officeLabel": "Antenne",
+    "officeVal": "Nosy Be",
+    "formName": "Nom Complet *",
+    "formEmail": "Email *",
+    "formPhone": "Téléphone",
+    "formService": "Service Demandé *",
+    "formProject": "Type de Projet *",
+    "formBudget": "Budget Estimé",
+    "formMessage": "Description du Projet *",
+    "formSubmit": "Envoyer ma Demande",
+    "formSuccess": "Votre demande a été reçue. Nous vous répondrons sous 24h.",
+    "formError": "Erreur lors de l'envoi. Contactez-nous au 032 82 312 80.",
+    "optSelect": "-- Sélectionner --",
+    "optConstruction": "Construction Neuve",
+    "optRehab": "Réhabilitation",
+    "optForage": "Forage d'Eau",
+    "optImmobilier": "Vente & Achat Immobilier",
+    "optSuivi": "Suivi & Contrôle Qualité",
+    "optAutre": "Autre"
+  },
+  "pdf": {
+    "title": "Document",
+    "download": "Télécharger"
+  },
+  "page": {
+    "title": "Nord Invest Madagascar — Immobilier & Construction à Antsiranana"
+  },
+  "format": {
+    "kb": " Ko",
+    "mb": " Mo"
   },
   "whatsapp": {
     "text": ""

@@ -6,10 +6,12 @@
     "pricing": "Vidiny",
     "projects": "Tetikasa",
     "blog": "Blaogy",
-    "contact": "Mifandraisa"
+    "contact": "Mifandraisa",
+    "dossiers": "Fivarotana Tany"
   },
   "hero": {
     "tag": "Trano sy Fananana — Madagasikara",
+    "badge": "Hatramin'ny 2015",
     "title": "Manorina<br><em>fahaizana</em><br>any Avaratra.",
     "subtitle": "Nanomboka tamin'ny 2015, Nord Invest Madagascar dia mamolavola sy manatanteraka ny tetikasanao momba ny fanorenana, fanamboarana, fandavahana rano ary varotra trano amin'ny fahaizana sy fahamalinana.",
     "btnPricing": "Jereo ny vidiny",
@@ -81,7 +83,14 @@
     "tab2": "Fanamboarana",
     "tab3": "Fandavahana Rano",
     "cta": "Mangataka tombana",
-    "note": "<strong>Fanamarihana manan-danja:</strong> Ny vidiny aseho dia vidiny fototra tsy tafiditra ny hetra. Ny vidiny tena izy dia miankina amin'ny toerana, ny karazana tany, ny fitaovana eo an-toerana ary ny mampiavaka ny tetikasanao. <strong>Tombana maimaimpoana sy tsy misy fanoloran-tena dia atao aorian'ny fitsidihana ny toerana.</strong> Mifandraisa aminay amin'ny <strong>032 82 312 80</strong> na amin'ny mailaka."
+    "note": "<strong>Fanamarihana manan-danja:</strong> Ny vidiny aseho dia vidiny fototra tsy tafiditra ny hetra. Ny vidiny tena izy dia miankina amin'ny toerana, ny karazana tany, ny fitaovana eo an-toerana ary ny mampiavaka ny tetikasanao. <strong>Tombana maimaimpoana sy tsy misy fanoloran-tena dia atao aorian'ny fitsidihana ny toerana.</strong> Mifandraisa aminay amin'ny <strong>032 82 312 80</strong> na amin'ny mailaka.",
+    "tiers": {
+      "construction": { "economic": "Asa Lehibe Tsotra", "standard": "Vonona Tanteraka", "premium": "Famaranana Avonavona" },
+      "rehabilitation": { "economic": "Fanavaozana Kely", "standard": "Fanavaozana Feno", "premium": "Fanamafisana & Fanitarana" },
+      "forage": { "economic": "Fandalinana Géophysique", "standard": "Fandavahana + Fitaovana", "premium": "Fikojakojana & Fanamboarana" }
+    },
+    "badge": { "popular": "Be mpangataka", "recommended": "Soso-kevitra", "allInclusive": "Tafiditra rehetra" },
+    "priceNote": "Vidin'ny référence. Tombana manokana aorian'ny fitsidihana."
   },
   "calculator": {
     "tag": "Mpanisa",
@@ -94,6 +103,16 @@
     "tierLabel": "Karazana Famaranana",
     "locationLabel": "Toerana misy ny Tetikasa",
     "btnCalculate": "Kajio ny tombana",
+    "optConstruction": "Fanorenana Vaovao",
+    "optRehab": "Fanamboarana",
+    "optForage": "Fandavahana Rano",
+    "optEconomic": "Economique / Fototra",
+    "optStandard": "Standard / Soso-kevitra",
+    "optPremium": "Premium / Laoka",
+    "optDiego": "Antsiranana (Diego Suarez)",
+    "optNosyBe": "Nosy Be",
+    "optSambava": "Sambava",
+    "optAntalaha": "Antalaha",
     "resultTitle": "Tombana Mialoha",
     "resultUnit": "Tafiditra ny Hetra rehetra",
     "detailBase": "Fototra",
@@ -105,7 +124,8 @@
     "resultCTA": "Mangataka tombana ofisialy",
     "placeholder": "Ampifanaraho ny tetikasanao etsy ankavia mba hahazoana tombana mialoha.",
     "loading": "Kajy ny tombanao...",
-    "error": "Tsy nahomby ny kajy. Andramo indray azafady."
+    "error": "Tsy nahomby ny kajy. Andramo indray azafady.",
+    "alertInvalidSurface": "Ampidiro ny velarana marina."
   },
   "numbers": {
     "exp": "Taona niainana",
@@ -157,7 +177,18 @@
     "formMessage": "Famaritana ny Tetikasa *",
     "formSubmit": "Alefaso ny Fangatahana",
     "formSuccess": "Voaray ny fangatahanao. Hamaly ao anatin'ny 24 ora izahay.",
-    "formError": "Tsy nahomby ny fandefasana. Mifandraisa aminay amin'ny 032 82 312 80."
+    "formError": "Tsy nahomby ny fandefasana. Mifandraisa aminay amin'ny 032 82 312 80.",
+    "optSelect": "-- Safidio --",
+    "optConstruction": "Fanorenana Vaovao",
+    "optRehab": "Fanamboarana",
+    "optForage": "Fandavahana Rano",
+    "optImmobilier": "Fividianana sy Fivarotana Trano",
+    "optSuivi": "Fanaraha-maso & Kalitao",
+    "optAutre": "Hafa",
+    "sending": "⏳ Mandefa...",
+    "sent": "✓ Hafatra nalefa!",
+    "sentMessage": "✓ Voaray ny fangatahanao. Hamaly ao anatin'ny 24 ora izahay.",
+    "errorMessage": "✘ Tsy nahomby ny fandefasana. Mifandraisa aminay amin'ny 032 82 312 80."
   },
   "footer": {
     "copyright": "© 2026 Nord Invest Madagascar — Trano sy Fananana. Zo rehetra voatokana.",
@@ -208,15 +239,42 @@
   "newsletter": {
     "title": "Mahazoa vaovao",
     "desc": "Raiso ny vaovao, torohevitra ara-teknika ary tolotra manokana amin'ny mailaka. Tsy misy spam, mialà amin'ny fotoana rehetra.",
-    "btn": "Misoratra anarana"
+    "btn": "Misoratra anarana",
+    "sending": "...",
+    "success": "✓ Misaotra anao ny fisoratana anarana!",
+    "error": "Tsy nahomby. Andramo indray.",
+    "errorGeneric": "Tsy nahomby ny fifandraisana. Andramo indray."
   },
   "lang": {
     "fr": "Français",
     "en": "English",
-    "mg": "Malagasy"
+    "mg": "Malagasy",
+    "frShort": "FR",
+    "enShort": "EN",
+    "mgShort": "MG"
   },
   "gallery": {
     "close": "Hidiana"
+  },
+  "dossiers": {
+    "tag": "Fivarotana Tany",
+    "title": "Rakitry ny tany<br>hovarotra",
+    "lead": "Jereo ny rakitry ny tany misy hivarotra any avaratr'i Madagasikara. Tsindrio ny rakitra iray hijerena azy.",
+    "badge": "Hijery",
+    "empty": "Tsy misy rakitra misy amin'izao fotoana izao.",
+    "emptySub": "Miverena tsy ho ela hahita ny tolotra vaovao.",
+    "error": "Tsy afaka mampiditra ny rakitra. Andramo indray."
+  },
+  "pdf": {
+    "title": "Antontan-taratasy",
+    "download": "Haka"
+  },
+  "page": {
+    "title": "Nord Invest Madagascar — Trano sy Fananana any Antsiranana"
+  },
+  "format": {
+    "kb": " Ko",
+    "mb": " Mo"
   },
   "whatsapp": {
     "text": ""
