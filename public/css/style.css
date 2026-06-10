@@ -395,8 +395,7 @@ nav.scrolled::after {
     0% { opacity: 1; transform: translateY(0) scaleY(1); max-height: 600px; }
     100% { opacity: 0; transform: translateY(-15px) scaleY(0.95); max-height: 0; }
   }
-  .nav-links > li {
-    opacity: 0;
+  .nav-links.active > li {
     animation: mobileLinkSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
   .nav-links.active > li:nth-child(1) { animation-delay: 0.05s; }
@@ -409,6 +408,7 @@ nav.scrolled::after {
   .nav-links.active > li:nth-child(8) { animation-delay: 0.40s; }
   .nav-links.active > li:nth-child(9) { animation-delay: 0.45s; }
   .nav-links.active > li:nth-child(10) { animation-delay: 0.50s; }
+  .nav-links.closing > li { opacity: 1; }
   @keyframes mobileLinkSlide {
     0% { opacity: 0; transform: translateX(-15px); }
     100% { opacity: 1; transform: translateX(0); }
@@ -1939,9 +1939,10 @@ h1 { animation-delay: 0.2s; }
               border-color 0.4s ease;
 }
 
-/* About accent image dramatic float */
+/* About accent image: pop-in then dramatic float */
 .about-img-accent.img-visible {
-  animation: gentleFloatDramatic 5s ease-in-out infinite;
+  animation: imgPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+             gentleFloatDramatic 5s ease-in-out 0.8s infinite;
 }
 @keyframes gentleFloatDramatic {
   0%, 100% { transform: translateY(0) rotate(0deg); box-shadow: var(--shadow-lg); }
@@ -2214,7 +2215,8 @@ h1 { animation-delay: 0.2s; }
 [data-theme="light"] .nav-links a:hover { color: var(--rust); }
 [data-theme="light"] .nav-cta { color: white !important; }
 [data-theme="light"] .hamburger span { background: var(--black); }
-[data-theme="light"] .nav-links.active { background: rgba(250,248,245,0.98); border-bottom-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .nav-links.active,
+[data-theme="light"] .nav-links.closing { background: rgba(250,248,245,0.98); border-bottom-color: rgba(0,0,0,0.08); }
 [data-theme="light"] .lang-btn { color: rgba(0,0,0,0.4); }
 [data-theme="light"] .lang-btn.active { color: white; }
 [data-theme="light"] .nav-lang-selector { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.08); }
