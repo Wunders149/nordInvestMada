@@ -5,8 +5,8 @@ import { loadStats } from './dashboard.js';
 
 export function setContactFilter(filter) {
   state.contactFilter = filter;
-  document.querySelectorAll('#state.contactFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`#state.contactFilterBar .filter-btn[data-filter="${filter}"]`);
+  document.querySelectorAll('#contactFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`#contactFilterBar .filter-btn[data-filter="${filter}"]`);
   if (btn) btn.classList.add('active');
   state.contactPage = 1;
   renderContacts();

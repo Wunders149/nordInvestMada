@@ -183,7 +183,7 @@ export function renderEntity(entity) {
     pagEl.className = 'pagination';
     container.parentElement.appendChild(pagEl);
   }
-  renderPagination(paginationId, contentPage[entity], total, perPage, `content,'${entity}'`);
+  renderPagination(paginationId, contentPage[entity], total, perPage, entity);
 
   const exportBtn = document.getElementById(`${entity}Export`);
   if (exportBtn) exportBtn.style.display = 'inline-flex';
@@ -426,3 +426,9 @@ export function exportEntity(entity) {
   }));
   exportToCsv(`${entity}.csv`, [headers, ...rows]);
 }
+
+// ─── Content pagination functions ───
+window._pg_team = (p) => { contentPage['team'] = p; renderEntity('team'); };
+window._pg_services = (p) => { contentPage['services'] = p; renderEntity('services'); };
+window._pg_projects = (p) => { contentPage['projects'] = p; renderEntity('projects'); };
+window._pg_blog = (p) => { contentPage['blog'] = p; renderEntity('blog'); };

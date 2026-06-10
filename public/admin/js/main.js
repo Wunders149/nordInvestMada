@@ -1,4 +1,4 @@
-import { checkAuth, markDirty, markClean, contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state } from './modules/api.js';
+import { checkAuth, markDirty, markClean, contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state, contacts, quotes, subscribers } from './modules/api.js';
 import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox, closeLightbox, updateDarkBtn, confirmCallback } from './modules/ui.js';
 import { loadStats, renderCharts, renderDashboard } from './modules/dashboard.js';
 import {
@@ -110,7 +110,6 @@ Object.assign(window, {
 // ─── Pagination globals ───
 window._pg_contact = (p) => { state.contactPage = p; renderContacts(); };
 window._pg_quote = (p) => { state.quotePage = p; renderQuotes(); };
-window._pg_content = (entity, p) => { contentPage[entity] = p; renderEntity(entity); };
 
 // ─── Sidebar toggle (mobile) ───
 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -193,9 +192,24 @@ window.addEventListener('resize', () => {
   }, 200);
 });
 
+// Action buttons
+document.getElementById('markAllReadBtn')?.addEventListener('click', markAllRead);
+document.getElementById('exportContactsBtn')?.addEventListener('click', () => exportToCsv('contacts.csv', [
+  ['Date', 'Nom', 'Email', 'Téléphone', 'Projet', 'Budget', 'Service', 'Message', 'Statut', 'Notes'],
+  ...contacts.map(c => [c.date, c.name, c.email, c.phone, c.projectType, c.budget, c.serviceType, c.message, c.resolved ? 'Résolu' : c.read ? 'Lu' : 'Nouveau', c.notes || ''])
+]));
+document.getElementById('exportQuotesBtn')?.addEventListener('click', () => exportToCsv('devis.csv', [
+  ['Date', 'N° Devis', 'Nom', 'Email', 'Service', 'Localisation', 'Statut'],
+  ...quotes.map(q => [q.date, q.quoteNumber, q.name, q.email, q.serviceType, q.location, q.status || 'pending'])
+]));
+document.getElementById('exportSubsBtn')?.addEventListener('click', () => exportToCsv('abonnes.csv', [
+  ['Date', 'Email'],
+  ...subscribers.map(s => [s.date, s.email])
+]));
+
 // Search inputs
-document.getElementById('contactSearch')?.addEventListener('input', () => { contactPage = 1; renderContacts(); });
-document.getElementById('quoteSearch')?.addEventListener('input', () => { quotePage = 1; renderQuotes(); });
+document.getElementById('contactSearch')?.addEventListener('input', () => { state.contactPage = 1; renderContacts(); });
+document.getElementById('quoteSearch')?.addEventListener('input', () => { state.quotePage = 1; renderQuotes(); });
 document.getElementById('subSearch')?.addEventListener('input', renderSubscribers);
 
 // Keyboard shortcuts

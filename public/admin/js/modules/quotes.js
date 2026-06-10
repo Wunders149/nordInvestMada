@@ -5,8 +5,8 @@ import { loadStats } from './dashboard.js';
 
 export function setQuoteFilter(filter) {
   state.quoteFilter = filter;
-  document.querySelectorAll('#state.quoteFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`#state.quoteFilterBar .filter-btn[data-filter="${filter}"]`);
+  document.querySelectorAll('#quoteFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`#quoteFilterBar .filter-btn[data-filter="${filter}"]`);
   if (btn) btn.classList.add('active');
   state.quotePage = 1;
   renderQuotes();
