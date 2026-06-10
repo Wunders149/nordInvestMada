@@ -372,7 +372,7 @@ router.get('/settings', requireAuth, async (req, res) => {
   try {
     const settings = await getAllSettings();
     res.json({
-      googleAnalyticsId: settings.googleAnalyticsId || process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXXXXX',
+      googleAnalyticsId: settings.googleAnalyticsId || process.env.GOOGLE_ANALYTICS_ID || 'G-MQ14N6E1ZG',
       whatsappNumber: settings.whatsappNumber || '261328231280',
       siteUrl: settings.siteUrl || process.env.SITE_URL || 'https://nordinvest.mg',
       seoDescription: settings.seoDescription || "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, réhabilitation et vente immobilière.",
