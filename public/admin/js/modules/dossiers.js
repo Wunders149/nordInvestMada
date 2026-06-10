@@ -3,7 +3,7 @@ import { escapeHtml, humanSize } from './helpers.js';
 import { showToast, showConfirm } from './ui.js';
 
 let dossiers = [];
-let renameTarget = null;
+let renameTargetId = null;
 
 export async function loadDossiers() {
   try {
@@ -25,14 +25,14 @@ export function renderDossiers() {
     return;
   }
   el.innerHTML = dossiers.map(d => {
-    const thumbSrc = `/api/dossiers/${encodeURIComponent(d.name)}/thumbnail`;
-    return `<div class="admin-card dossier-card" data-file="${escapeHtml(d.name)}">
+    const thumbSrc = d.thumbnail_url || '';
+    return `<div class="admin-card dossier-card" data-id="${escapeHtml(d.id)}" data-name="${escapeHtml(d.name)}">
       <div class="dossier-thumb-wrap">
-        <img src="${thumbSrc}" alt="${escapeHtml(d.name)}" loading="lazy" class="dossier-thumb">
+        <img src="${thumbSrc}" alt="${escapeHtml(d.name)}" loading="lazy" class="dossier-thumb" onerror="this.style.display='none'">
       </div>
       <div class="dossier-info">
         <div class="dossier-name" title="${escapeHtml(d.name)}">${escapeHtml(d.name)}</div>
-        <div class="dossier-meta">${humanSize(d.size)} · ${new Date(d.mtime).toLocaleDateString('fr-FR')}</div>
+        <div class="dossier-meta">${humanSize(d.size)} · ${d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : ''}</div>
       </div>
       <div class="dossier-actions">
         <button class="btn-icon" title="Renommer" data-action="rename">✏️</button>
@@ -44,17 +44,16 @@ export function renderDossiers() {
   el.querySelectorAll('[data-action="rename"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const card = e.target.closest('.dossier-card');
-      openDossierRename(card.dataset.file);
+      openDossierRename(card.dataset.id, card.dataset.name);
     });
   });
   el.querySelectorAll('[data-action="delete"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const card = e.target.closest('.dossier-card');
-      confirmDeleteDossier(card.dataset.file);
+      confirmDeleteDossier(card.dataset.id, card.dataset.name);
     });
   });
 
-  // Upload handler
   const input = document.getElementById('dossierUploadInput');
   input.onchange = () => {
     if (input.files && input.files[0]) uploadDossier(input.files[0]);
@@ -82,23 +81,24 @@ async function uploadDossier(file) {
   }
 }
 
-function openDossierRename(name) {
-  renameTarget = name;
+function openDossierRename(id, name) {
+  renameTargetId = id;
   document.getElementById('dossierRenameInput').value = name.replace(/\.pdf$/i, '');
   document.getElementById('dossierRenameModal').style.display = 'flex';
 }
 
 export function closeDossierRename() {
-  renameTarget = null;
+  renameTargetId = null;
+  document.getElementById('dossierRenameInput').value = '';
   document.getElementById('dossierRenameModal').style.display = 'none';
 }
 
 export async function confirmDossierRename() {
-  if (!renameTarget) return;
+  if (!renameTargetId) return;
   const newName = document.getElementById('dossierRenameInput').value.trim();
   if (!newName) { showToast('Veuillez entrer un nom', 'error'); return; }
   try {
-    const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(renameTarget)}`, {
+    const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(renameTargetId)}`, {
       method: 'PATCH',
       headers: getHeaders(),
       body: JSON.stringify({ name: newName })
@@ -115,13 +115,13 @@ export async function confirmDossierRename() {
   }
 }
 
-function confirmDeleteDossier(name) {
+function confirmDeleteDossier(id, name) {
   showConfirm(
     'Supprimer le dossier',
     `Voulez-vous vraiment supprimer <strong>${escapeHtml(name)}</strong> ?`,
     async () => {
       try {
-        const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(name)}`, {
+        const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(id)}`, {
           method: 'DELETE',
           headers: getHeaders()
         });

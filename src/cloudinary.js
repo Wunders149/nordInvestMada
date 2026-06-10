@@ -96,4 +96,57 @@ export async function clearCloudinaryMapping() {
   mappingCache = null;
 }
 
+export async function uploadPdf(buffer, { folder, publicId }) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `${BASE_FOLDER}/${folder}`,
+        public_id: publicId,
+        resource_type: 'image',
+        quality: 'auto',
+        fetch_format: 'auto'
+      },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
+
+export function getPdfThumbnailUrl(publicId, width = 300) {
+  try {
+    return cloudinary.url(publicId, {
+      width,
+      page: 1,
+      crop: 'fit',
+      quality: 'auto',
+      fetch_format: 'auto',
+      secure: true
+    });
+  } catch {
+    return null;
+  }
+}
+
+export function getPdfUrl(publicId) {
+  try {
+    return cloudinary.url(publicId, { secure: true });
+  } catch {
+    return null;
+  }
+}
+
+export function getPdfDownloadUrl(publicId) {
+  try {
+    return cloudinary.url(publicId, {
+      flags: 'attachment',
+      secure: true
+    });
+  } catch {
+    return null;
+  }
+}
+
 export { cloudinary, BASE_FOLDER };

@@ -826,10 +826,11 @@ function escapeHtml(text) {
 }
 
 // ═══════════════════════════════════════════════════════
-// DOSSIERS — Vente de Terrains
+// DOSSIERS — Vente de Terrains (Cloudinary)
 // ═══════════════════════════════════════════════════════
 
-let currentPdfFile = '';
+let currentPdfId = '';
+let currentPdfUrl = '';
 
 function formatFileSize(bytes) {
   if (!bytes) return '';
@@ -838,14 +839,15 @@ function formatFileSize(bytes) {
   return (kb / 1024).toFixed(1) + ' Mo';
 }
 
-function openPdfViewer(file, name) {
-  currentPdfFile = file;
+function openPdfViewer(id, name, url) {
+  currentPdfId = id;
+  currentPdfUrl = url;
   const modal = document.getElementById('pdfModal');
   const viewer = document.getElementById('pdfViewer');
   const title = document.getElementById('pdfModalTitle');
   if (!modal || !viewer) return;
-  title.textContent = name || file;
-  viewer.src = `/api/dossiers/${encodeURIComponent(file)}`;
+  title.textContent = name || '';
+  viewer.src = url;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -860,10 +862,10 @@ function closePdfViewer(e) {
 }
 
 function downloadCurrentPdf() {
-  if (!currentPdfFile) return;
+  if (!currentPdfUrl) return;
   const a = document.createElement('a');
-  a.href = `/api/dossiers/${encodeURIComponent(currentPdfFile)}?download=1`;
-  a.download = currentPdfFile;
+  a.href = currentPdfUrl.replace('/upload/', '/upload/fl_attachment/');
+  a.download = '';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -889,11 +891,11 @@ async function loadDossiers() {
     function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
     function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     grid.innerHTML = dossiers.map(d => {
-      const thumbUrl = `/api/dossiers/${encodeURIComponent(d.file)}/thumbnail`;
+      const thumbUrl = d.thumbnail_url || '';
       return `
-      <div class="dossier-card" data-file="${escAttr(d.file)}" data-name="${escAttr(d.name)}">
+      <div class="dossier-card" data-id="${escAttr(d.id)}" data-name="${escAttr(d.name)}" data-url="${escAttr(d.cloudinary_url || '')}">
         <div class="dossier-thumb">
-          <img src="${thumbUrl}" alt="${escAttr(d.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <img src="${escAttr(thumbUrl)}" alt="${escAttr(d.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="dossier-thumb-fallback" style="display:none">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -910,7 +912,7 @@ async function loadDossiers() {
     }).join('');
     grid.querySelectorAll('.dossier-card').forEach(card => {
       card.addEventListener('click', () => {
-        openPdfViewer(card.dataset.file, card.dataset.name);
+        openPdfViewer(card.dataset.id, card.dataset.name, card.dataset.url);
       });
     });
   } catch (err) {

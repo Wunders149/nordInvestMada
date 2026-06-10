@@ -5,34 +5,14 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { requireAuth, loginLimiter, createSession, destroySession, loginUser, hashPassword, logActivity } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
+import { uploadPdf, deleteImage, getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
 import { validate, loginSchema } from './validation.js';
 import crypto from 'crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
-const dossierDir = path.join(projectRoot, 'public', 'Dossier');
 
-const dossierUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      if (!fs.existsSync(dossierDir)) fs.mkdirSync(dossierDir, { recursive: true });
-      cb(null, dossierDir);
-    },
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname) || '.pdf';
-      let name = path.basename(file.originalname, ext).trim();
-      if (!name) name = `dossier_${Date.now()}`;
-      cb(null, `${name}${ext}`);
-    }
-  }),
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Seuls les fichiers PDF sont acceptés'));
-    }
-  }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -447,22 +427,25 @@ router.post('/test-email', requireAuth, async (req, res) => {
   }
 });
 
-// ─── DOSSIERS MANAGEMENT (PDF files in public/Dossier/) ───
+// ─── DOSSIERS MANAGEMENT (PDF documents on Cloudinary) ───
 
 router.get('/dossiers', requireAuth, async (req, res) => {
   try {
-    if (!fs.existsSync(dossierDir)) {
-      fs.mkdirSync(dossierDir, { recursive: true });
-      return res.json([]);
-    }
-    const files = fs.readdirSync(dossierDir)
-      .filter(f => f.toLowerCase().endsWith('.pdf'))
-      .map(f => {
-        const stat = fs.statSync(path.join(dossierDir, f));
-        return { name: f, size: stat.size, mtime: stat.mtime.toISOString() };
-      })
-      .sort((a, b) => b.mtime.localeCompare(a.mtime));
-    res.json(files);
+    const { data, error } = await supabase
+      .from('dossiers')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const dossiers = (data || []).map(d => ({
+      id: d.id,
+      name: d.name,
+      size: d.size || 0,
+      cloudinary_public_id: d.cloudinary_public_id,
+      cloudinary_url: d.cloudinary_url,
+      thumbnail_url: d.cloudinary_public_id ? getPdfThumbnailUrl(d.cloudinary_public_id) : null,
+      created_at: d.created_at
+    }));
+    res.json(dossiers);
   } catch (err) {
     console.error('Dossiers list error:', err);
     res.status(500).json({ error: 'Failed to list dossiers' });
@@ -470,7 +453,17 @@ router.get('/dossiers', requireAuth, async (req, res) => {
 });
 
 router.post('/dossiers', requireAuth, (req, res) => {
-  dossierUpload.single('pdf')(req, res, (err) => {
+  const pdfUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'application/pdf') {
+        cb(null, true);
+      } else {
+        cb(new Error('Seuls les fichiers PDF sont acceptés'));
+      }
+    }
+  });
+  pdfUpload.single('pdf')(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({ error: `Upload error: ${err.message}` });
@@ -479,27 +472,65 @@ router.post('/dossiers', requireAuth, (req, res) => {
     }
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier sélectionné' });
 
-    logActivity('dossier_upload', `Dossier uploadé: ${req.file.filename}`, req.admin.username);
-    res.json({ success: true, name: req.file.filename, size: req.file.size, mtime: new Date(req.file.mtime || Date.now()).toISOString() });
+    const ext = '.pdf';
+    const baseName = path.basename(req.file.originalname, ext).trim() || `dossier_${Date.now()}`;
+    const publicId = `${baseName.toLowerCase().replace(/[^a-z0-9-_]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}-${Date.now()}`;
+    const fileName = `${baseName}${ext}`;
+
+    let cloudinaryResult;
+    try {
+      cloudinaryResult = await uploadPdf(req.file.buffer, {
+        folder: 'dossiers',
+        publicId
+      });
+    } catch (uploadErr) {
+      console.error('Cloudinary PDF upload failed:', uploadErr);
+      return res.status(500).json({ error: 'Échec de l\'upload vers Cloudinary' });
+    }
+
+    const id = `dossier_${Date.now()}`;
+    try {
+      await supabase.from('dossiers').insert({
+        id,
+        name: fileName,
+        cloudinary_public_id: cloudinaryResult.public_id,
+        cloudinary_url: cloudinaryResult.secure_url,
+        size: req.file.size
+      });
+    } catch (dbErr) {
+      console.error('Dossier DB insert failed:', dbErr);
+      return res.status(500).json({ error: 'Échec de l\'enregistrement en base' });
+    }
+
+    logActivity('dossier_upload', `Dossier uploadé: ${fileName}`, req.admin.username);
+    res.json({
+      success: true,
+      id,
+      name: fileName,
+      size: req.file.size,
+      cloudinary_url: cloudinaryResult.secure_url,
+      thumbnail_url: getPdfThumbnailUrl(cloudinaryResult.public_id)
+    });
   });
 });
 
-router.patch('/dossiers/:file', requireAuth, async (req, res) => {
+router.patch('/dossiers/:id', requireAuth, async (req, res) => {
   try {
-    const oldName = decodeURIComponent(req.params.file);
+    const { id } = req.params;
     const { name: newName } = req.body;
     if (!newName || !newName.trim()) return res.status(400).json({ error: 'Nouveau nom requis' });
     let safeName = newName.trim();
     if (!safeName.toLowerCase().endsWith('.pdf')) safeName += '.pdf';
 
-    const oldPath = path.join(dossierDir, oldName);
-    const newPath = path.join(dossierDir, safeName);
+    const { data: existing } = await supabase.from('dossiers').select('id').eq('id', id).single();
+    if (!existing) return res.status(404).json({ error: 'Dossier introuvable' });
 
-    if (!fs.existsSync(oldPath)) return res.status(404).json({ error: 'Fichier introuvable' });
-    if (fs.existsSync(newPath)) return res.status(409).json({ error: 'Un fichier avec ce nom existe déjà' });
+    await supabase.from('dossiers').update({
+      name: safeName,
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
 
-    fs.renameSync(oldPath, newPath);
-    logActivity('dossier_rename', `Dossier renommé: ${oldName} → ${safeName}`, req.admin.username);
+    logActivity('dossier_rename', `Dossier renommé en: ${safeName}`, req.admin.username);
     res.json({ success: true, name: safeName });
   } catch (err) {
     console.error('Dossier rename error:', err);
@@ -507,20 +538,27 @@ router.patch('/dossiers/:file', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/dossiers/:file', requireAuth, async (req, res) => {
+router.delete('/dossiers/:id', requireAuth, async (req, res) => {
   try {
-    const fileName = decodeURIComponent(req.params.file);
-    const filePath = path.join(dossierDir, fileName);
+    const { id } = req.params;
+    const { data: dossier, error: findError } = await supabase
+      .from('dossiers')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (findError || !dossier) return res.status(404).json({ error: 'Dossier introuvable' });
 
-    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Fichier introuvable' });
+    if (dossier.cloudinary_public_id) {
+      try {
+        await deleteImage(dossier.cloudinary_public_id);
+      } catch (cloudErr) {
+        console.error('Cloudinary delete error:', cloudErr);
+      }
+    }
 
-    fs.unlinkSync(filePath);
+    await supabase.from('dossiers').delete().eq('id', id);
 
-    // Clean up thumbnail if exists
-    const thumbPath = path.join(projectRoot, 'uploads', 'thumbnails', fileName.replace(/\.pdf$/i, '.jpg'));
-    if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
-
-    logActivity('dossier_delete', `Dossier supprimé: ${fileName}`, req.admin.username);
+    logActivity('dossier_delete', `Dossier supprimé: ${dossier.name}`, req.admin.username);
     res.json({ success: true });
   } catch (err) {
     console.error('Dossier delete error:', err);

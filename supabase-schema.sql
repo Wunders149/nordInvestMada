@@ -145,6 +145,18 @@ CREATE TABLE sessions (
 );
 CREATE INDEX idx_sessions_expires ON sessions(expires);
 
+-- 14. DOSSIERS (PDF documents hosted on Cloudinary)
+CREATE TABLE dossiers (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  cloudinary_public_id TEXT,
+  cloudinary_url TEXT,
+  size INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ
+);
+CREATE INDEX idx_dossiers_created ON dossiers(created_at DESC);
+
 -- 13. SITE CONFIG (replaces config.json mutable parts)
 CREATE TABLE site_config (
   id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),  -- singleton row
