@@ -50,7 +50,7 @@ Professional real estate and construction website built with Node.js/Express bac
 - Node.js 18+
 - npm
 - Supabase project (free tier)
-- Brevo account (free tier — 300 emails/day for email sending)
+- Gmail SMTP (or any SMTP provider) for email sending
 
 ### Step 1: Install Dependencies
 ```bash
@@ -58,20 +58,26 @@ npm install
 ```
 
 ### Step 2: Configure Environment Variables
-Create a `.env` file:
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your credentials:
 
 ```env
 NODE_ENV=development
 PORT=3000
 
+# Email Configuration (Gmail SMTP)
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+ADMIN_EMAIL=admin@nordinvest.mg
+
 # Supabase
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
-
-# Brevo SMTP
-SMTP_USER=your-brevo-login@email.com
-SMTP_PASS=your-brevo-smtp-key
-ADMIN_EMAIL=admin@nordinvest.mg
 
 # Google Analytics
 GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
@@ -82,14 +88,22 @@ SITE_URL=https://nordinvest.mg
 # Admin fallback (used only if admin_users table is empty)
 ADMIN_USER=admin
 ADMIN_PASS=nordinvest2026
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 ```
 
 ### Step 3: Database Setup
-Run the schema in `supabase-schema.sql` against your Supabase project's SQL editor. This creates all 13 tables.
+Run the schema in `supabase-schema.sql` against your Supabase project's SQL editor. This creates all 14 tables.
+
+Optionally, if you need PDF/dossier support, also run the SQL from `src/create-dossiers-table.js`.
 
 ### Step 4: Migrate existing data
 ```bash
-node src/migrate.js
+node src/migrate.js          # Migrate JSON data to Supabase
+node src/migrate-dossiers.js # Migrate PDFs to Cloudinary (if applicable)
 ```
 
 ### Step 5: Run the Server
@@ -114,6 +128,9 @@ npm start     # production
 | GET | `/api/projects` | — | Projects (visible only) |
 | GET | `/api/blog` | — | Blog posts (published only) |
 | GET | `/api/pricing` | — | Pricing grid, rates, locations |
+| GET | `/api/dossiers` | — | List PDF documents with Cloudinary URLs/thumbnails |
+| GET | `/api/dossiers/:id/view` | — | View or download a PDF document |
+| GET | `/api/dossiers/:id/thumbnail` | — | PDF page thumbnail |
 | GET | `/api/health` | — | Health check |
 
 ### Admin (all require `Authorization: Bearer <token>`)
@@ -135,6 +152,8 @@ npm start     # production
 | GET/PUT | `/api/admin/settings` | Site settings |
 | GET | `/api/admin/activity` | Activity log |
 | POST | `/api/admin/test-email` | Send test email |
+| GET/POST | `/api/admin/dossiers` | List / Upload PDF documents |
+| PATCH/DELETE | `/api/admin/dossiers/:id` | Rename / Delete PDF documents |
 
 ### Images
 
@@ -157,8 +176,8 @@ npm start     # production
 | `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
 | `NODE_ENV` | No | `development` or `production` |
 | `PORT` | No | Server port (default 3000) |
-| `SMTP_USER` | Yes | Brevo login email (SMTP username) |
-| `SMTP_PASS` | Yes | Brevo SMTP key |
+| `SMTP_USER` | Yes | Gmail address (SMTP username) |
+| `SMTP_PASS` | Yes | Gmail app password (or SMTP key) |
 | `ADMIN_EMAIL` | No | Where to receive contact alerts |
 | `GOOGLE_ANALYTICS_ID` | No | GA4 measurement ID |
 | `SITE_URL` | No | Canonical site URL |
@@ -180,8 +199,10 @@ orinvestmada/
 │   ├── cloudinary.js       # Cloudinary config + upload/delete/list helpers
 │   ├── supabase.js         # Supabase client + generic CRUD helpers
 │   ├── validation.js       # Zod schemas + validate() middleware
-│   ├── migrate.js          # One-time JSON → Supabase migration script
-│   └── migrate-cloudinary.js  # One-time local → Cloudinary migration script
+│   ├── migrate.js              # One-time JSON → Supabase migration script
+│   ├── migrate-cloudinary.js   # One-time local → Cloudinary migration script
+│   ├── migrate-dossiers.js     # One-time PDF → Cloudinary migration script
+│   ├── create-dossiers-table.js  # SQL helper to create the dossiers table
 ├── public/
 │   ├── index.html          # Main website (SPA)
 │   ├── admin/
@@ -212,7 +233,7 @@ orinvestmada/
 ├── data/                   # JSON file fallbacks
 ├── uploads/                # Runtime uploads
 ├── docs/
-├── supabase-schema.sql     # Full database schema (13 tables)
+├── supabase-schema.sql     # Full database schema (14 tables)
 ├── config.json             # Static app configuration
 ├── package.json
 └── README.md
@@ -220,7 +241,7 @@ orinvestmada/
 
 ## Database Schema
 
-13 tables in Supabase:
+14 tables in Supabase:
 
 | Table | Purpose |
 |-------|---------|
@@ -237,8 +258,25 @@ orinvestmada/
 | `image_slots` | Labeled image placeholders |
 | `settings` | Key-value store (GA, WhatsApp, SEO) |
 | `site_config` | Singleton — pricing grid, contact info, rates |
+| `dossiers` | PDF documents hosted on Cloudinary |
 
 ## Deployment
+
+### Render
+1. Push to GitHub
+2. Create Web Service on [dashboard.render.com](https://dashboard.render.com)
+3. Set build command: `npm install`
+4. Set start command: `node src/server.js`
+5. Add environment variables (see table above)
+6. Deploy
+
+### Self-hosted
+```bash
+npm install -g pm2
+pm2 start src/server.js --name "nord-invest"
+pm2 startup
+pm2 save
+```
 
 ## Cloudinary Migration
 
@@ -293,22 +331,6 @@ The `GET /api/images/slots` endpoint returns each slot with a `currentUrl` field
 2. `uploaded_file` — Local path to user-uploaded image
 3. `original_file` — Local path to fallback SVG
 4. `placeholder.svg` — Generic placeholder image
-
-### Render
-1. Push to GitHub
-2. Create Web Service on [dashboard.render.com](https://dashboard.render.com)
-3. Set build command: `npm install`
-4. Set start command: `node src/server.js`
-5. Add environment variables (see table above)
-6. Deploy
-
-### Self-hosted
-```bash
-npm install -g pm2
-pm2 start src/server.js --name "nord-invest"
-pm2 startup
-pm2 save
-```
 
 ## License
 
