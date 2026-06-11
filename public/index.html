@@ -694,13 +694,21 @@
 
 <!-- BLOG POST MODAL -->
 <div id="blogModal" class="blog-modal" onclick="closeBlogPost(event)">
-  <div class="blog-modal-content" onclick="event.stopPropagation()">
-    <div class="blog-modal-header">
-      <div class="blog-modal-title" id="blogModalTitle"></div>
-      <div class="blog-modal-date" id="blogModalDate"></div>
+    <div class="blog-modal-content" onclick="event.stopPropagation()" id="blogModalContent">
+      <div id="blogProgress" class="blog-progress"></div>
       <button class="blog-modal-close" onclick="closeBlogPost()">&times;</button>
+      <div class="blog-modal-header">
+      <div class="blog-modal-title" id="blogModalTitle"></div>
+      <div class="blog-modal-meta">
+        <div class="blog-modal-date" id="blogModalDate"></div>
+        <div class="blog-modal-author" id="blogModalAuthor"></div>
+      </div>
     </div>
     <div class="blog-modal-body" id="blogModalBody"></div>
+    <div class="blog-modal-footer">
+      <div id="blogShare" class="blog-share"></div>
+      <div id="blogRelated" class="blog-related"></div>
+    </div>
   </div>
 </div>
 

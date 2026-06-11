@@ -186,7 +186,9 @@ function showLoader(targetId) {
   setTimeout(() => {
     const target = document.getElementById(targetId);
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+      const navHeight = document.querySelector('nav')?.offsetHeight || 70;
+      const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
     setTimeout(() => {
       loaderOverlay.classList.remove('active');
@@ -834,6 +836,19 @@ async function loadProjects() {
   } catch (err) { console.warn('Projects load error:', err); showSectionError('projectsGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
+const BLOG_CATEGORIES = {
+  'blog-construction': { label: 'Construction', icon: '🏗️', color: 'var(--rust)' },
+  'blog-forage': { label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)' },
+  'blog-immobilier': { label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)' }
+};
+
+function readingTime(html) {
+  if (!html) return 1;
+  const text = html.replace(/<[^>]*>/g, '');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
 async function loadBlog() {
   try {
     const res = await fetch(`${API_BASE}/api/blog`);
@@ -841,17 +856,32 @@ async function loadBlog() {
     const grid = document.getElementById('blogGrid');
     if (!grid) return;
     const blogSvgs = { 'blog-construction': 'construction.svg', 'blog-forage': 'forage.svg', 'blog-immobilier': 'immobilier.svg' };
+    const slotsRes = await fetch('/api/images/slots').catch(() => null);
+    const slots = slotsRes && slotsRes.ok ? await slotsRes.json() : [];
+    const slotMap = {};
+    slots.forEach(s => { slotMap[s.id] = s; });
+    window._allPosts = posts;
+    window._slotMap = slotMap;
     grid.innerHTML = posts.map(p => {
       const date = new Date(p.date);
       const dateLocale = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
       const dateStr = date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
-      const content = escapeHtml(p.content || '');
+      const slot = slotMap[p.image_slot];
+      const imgUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${blogSvg}`;
+      const cat = BLOG_CATEGORIES[p.image_slot] || { label: '', icon: '' };
+      const rt = readingTime(p.content);
       return `
-      <article class="blog-card" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${content}">
-        <img src="/images/blog/${blogSvg}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
+      <article class="blog-card" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${p.image_slot || ''}">
+        <div class="blog-img-wrap">
+          <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
+          ${cat.label ? `<span class="blog-badge" style="--badge-color: ${cat.color}">${cat.icon} ${cat.label}</span>` : ''}
+        </div>
         <div class="blog-body">
-          <div class="blog-date">${dateStr}</div>
+          <div class="blog-meta">
+            <span class="blog-date">${dateStr}</span>
+            <span class="blog-readtime">${rt} min</span>
+          </div>
           <div class="blog-title">${escapeHtml(p.title)}</div>
           <div class="blog-excerpt">${escapeHtml(p.excerpt)}</div>
           <a href="#" class="blog-link">${getNestedTranslation('blog.readmore')}</a>
@@ -861,7 +891,10 @@ async function loadBlog() {
     grid.querySelectorAll('.blog-card').forEach(card => {
       card.addEventListener('click', (e) => {
         if (e.target.closest('.blog-link')) e.preventDefault();
-        openBlogPost(card.dataset.title, card.dataset.date, card.dataset.content);
+        openBlogPost(
+          card.dataset.title, card.dataset.date, card.dataset.content,
+          card.dataset.img, card.dataset.slug, card.dataset.imageSlot, card.dataset.id
+        );
       });
     });
     loadImageSlots();
@@ -869,17 +902,95 @@ async function loadBlog() {
   } catch (err) { console.warn('Blog load error:', err); showSectionError('blogGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
-function openBlogPost(title, date, content) {
+function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
   const modal = document.getElementById('blogModal');
+  const contentEl = document.getElementById('blogModalContent');
   const titleEl = document.getElementById('blogModalTitle');
   const dateEl = document.getElementById('blogModalDate');
   const bodyEl = document.getElementById('blogModalBody');
+  const authorEl = document.getElementById('blogModalAuthor');
+  const shareBtns = document.getElementById('blogShare');
+  const relatedEl = document.getElementById('blogRelated');
+  const progressEl = document.getElementById('blogProgress');
   if (!modal || !titleEl || !bodyEl) return;
   titleEl.textContent = title;
   dateEl.textContent = date;
-  bodyEl.innerHTML = escapeHtml(content).replace(/\n/g, '<br>');
+  if (authorEl) authorEl.textContent = `Publié par Nord Invest Madagascar`;
+  if (contentEl) {
+    if (imgUrl) {
+      contentEl.style.backgroundImage = `url('${imgUrl}')`;
+    } else {
+      contentEl.style.backgroundImage = 'none';
+    }
+  }
+  bodyEl.innerHTML = sanitizeHtml(content);
+  const pageUrl = slug ? `${window.location.origin}/blog/${encodeURIComponent(slug)}` : window.location.href;
+  const shareText = `${title} — Nord Invest Madagascar`;
+  if (shareBtns) {
+    shareBtns.innerHTML = `
+      <span class="blog-share-label">${getNestedTranslation('blog.share') || 'Partager'}</span>
+      <a href="https://wa.me/?text=${encodeURIComponent(shareText + ' ' + pageUrl)}" target="_blank" rel="noopener" class="blog-share-btn share-wa" title="WhatsApp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}" target="_blank" rel="noopener" class="blog-share-btn share-fb" title="Facebook">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+      <button class="blog-share-btn share-copy" onclick="copyShareLink('${encodeURIComponent(pageUrl)}')" title="Copier le lien">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+    `;
+  }
+  if (relatedEl && window._allPosts) {
+    const others = window._allPosts.filter(p => p.id !== postId);
+    if (others.length > 0) {
+      const slotMap = window._slotMap || {};
+      const blogSvgs = { 'blog-construction': 'construction.svg', 'blog-forage': 'forage.svg', 'blog-immobilier': 'immobilier.svg' };
+      relatedEl.innerHTML = `
+        <div class="blog-related-title">${getNestedTranslation('blog.related') || 'Articles similaires'}</div>
+        <div class="blog-related-grid">${others.slice(0, 2).map(p => {
+          const d = new Date(p.date);
+          const dl = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
+          const ds = d.toLocaleDateString(dl, { day: '2-digit', month: 'long', year: 'numeric' });
+          const slot = slotMap[p.image_slot];
+          const svg = blogSvgs[p.image_slot] || 'construction.svg';
+          const relatedImg = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${svg}`;
+          return `<div class="blog-related-card" onclick="openBlogPost('${escapeHtml(p.title)}', '${ds}', '${escapeHtml(p.content || '')}', '${escapeHtml(relatedImg)}', '${escapeHtml(p.slug || '')}', '${p.image_slot || ''}', '${p.id}')">
+            <div class="blog-related-img" style="background-image: url('${escapeHtml(relatedImg)}')"></div>
+            <div class="blog-related-body">
+              <div class="blog-related-date">${ds}</div>
+              <div class="blog-related-title-text">${escapeHtml(p.title)}</div>
+            </div>
+          </div>`;
+        }).join('')}</div>`;
+      relatedEl.style.display = '';
+    } else {
+      relatedEl.style.display = 'none';
+    }
+  }
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  document.querySelector('nav')?.classList.add('hidden');
+  if (progressEl) {
+    progressEl.style.width = '0%';
+    bodyEl.onscroll = () => {
+      const pct = bodyEl.scrollTop / (bodyEl.scrollHeight - bodyEl.clientHeight) * 100;
+      progressEl.style.width = Math.min(pct, 100) + '%';
+    };
+  }
+}
+
+function copyShareLink(encodedUrl) {
+  const url = decodeURIComponent(encodedUrl);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.querySelector('.share-copy');
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => btn.innerHTML = orig, 2000);
+      }
+    });
+  }
 }
 
 function closeBlogPost(e) {
@@ -887,6 +998,7 @@ function closeBlogPost(e) {
   const modal = document.getElementById('blogModal');
   if (modal) modal.classList.remove('active');
   document.body.style.overflow = '';
+  document.querySelector('nav')?.classList.remove('hidden');
 }
 
 document.addEventListener('keydown', (e) => {
@@ -949,22 +1061,32 @@ async function loadConfigData() {
     const cfg = await res.json();
 
     // Hero stats
-    if (cfg.experience_years) document.getElementById('heroExpYears').textContent = cfg.experience_years;
-    if (cfg.team_stats?.total_staff) document.getElementById('heroStaff').textContent = cfg.team_stats.total_staff;
+    const heroExp = document.getElementById('heroExpYears');
+    if (cfg.experience_years && heroExp) heroExp.textContent = cfg.experience_years;
+    const heroStaff = document.getElementById('heroStaff');
+    if (cfg.team_stats?.total_staff && heroStaff) heroStaff.textContent = cfg.team_stats.total_staff;
 
     // Vision & Mission
-    if (cfg.vision) document.getElementById('visionText').textContent = `"${cfg.vision}"`;
-    if (cfg.mission) document.getElementById('missionText').textContent = `"${cfg.mission}"`;
+    const visionEl = document.getElementById('visionText');
+    if (cfg.vision && visionEl) visionEl.textContent = `"${cfg.vision}"`;
+    const missionEl = document.getElementById('missionText');
+    if (cfg.mission && missionEl) missionEl.textContent = `"${cfg.mission}"`;
 
     // Contact info
-    if (cfg.contact?.phone) document.getElementById('contactPhone').textContent = cfg.contact.phone;
-    if (cfg.contact?.email) document.getElementById('contactEmail').textContent = cfg.contact.email;
-    if (cfg.contact?.address) document.getElementById('contactAddress').innerHTML = cfg.contact.address.replace(/\n/g, '<br>');
+    const phoneEl = document.getElementById('contactPhone');
+    if (cfg.contact?.phone && phoneEl) phoneEl.textContent = cfg.contact.phone;
+    const emailEl = document.getElementById('contactEmail');
+    if (cfg.contact?.email && emailEl) emailEl.textContent = cfg.contact.email;
+    const addrEl = document.getElementById('contactAddress');
+    if (cfg.contact?.address && addrEl) addrEl.innerHTML = cfg.contact.address.replace(/\n/g, '<br>');
 
     // Numbers section
-    if (cfg.experience_years) document.getElementById('numExpYears').textContent = cfg.experience_years;
-    if (cfg.team_stats?.total_staff) document.getElementById('numStaff').textContent = cfg.team_stats.total_staff;
-    if (cfg.team_stats?.civil_engineers) document.getElementById('numEngineers').textContent = cfg.team_stats.civil_engineers;
+    const numExp = document.getElementById('numExpYears');
+    if (cfg.experience_years && numExp) numExp.textContent = cfg.experience_years;
+    const numStaff = document.getElementById('numStaff');
+    if (cfg.team_stats?.total_staff && numStaff) numStaff.textContent = cfg.team_stats.total_staff;
+    const numEng = document.getElementById('numEngineers');
+    if (cfg.team_stats?.civil_engineers && numEng) numEng.textContent = cfg.team_stats.civil_engineers;
 
     // Social media links
     const socialContainer = document.getElementById('footerSocial');
@@ -987,6 +1109,21 @@ function escapeHtml(text) {
   if (!text) return '';
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function sanitizeHtml(html) {
+  if (!html) return '';
+  const el = document.createElement('div');
+  el.innerHTML = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[\s\S]*?<\/embed>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/ on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/ on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/ on\w+\s*=\s*\S+/gi, '');
+  return el.innerHTML;
 }
 
 // ═══════════════════════════════════════════════════════
