@@ -1147,13 +1147,20 @@ function initProjectMap() {
     attribution: '&copy; OpenStreetMap'
   }).addTo(projectMap);
 
-  fetch(`${API_BASE}/api/projects`).then(r => r.json()).then(projects => {
+  Promise.all([
+    fetch(`${API_BASE}/api/projects`).then(r => r.json()),
+    fetch('/api/images/slots').then(r => r.json()).catch(() => [])
+  ]).then(([projects, slots]) => {
+    const slotMap = {};
+    slots.forEach(s => { slotMap[s.id] = s; });
     projects.forEach(p => {
       const coords = getCityCoords(p.location);
       if (!coords) return;
-      const img = p.images && p.images[0] ? `/images/projects/${p.images[0]}` : null;
+      const slotId = p.image_slot || `project-${p.id}`;
+      const slot = slotMap[slotId];
+      const imgUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : null;
       const popupHtml = `<div style="min-width:160px">
-        ${img ? `<img src="${img}" alt="${escapeHtml(p.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:3px;margin-bottom:6px;">` : ''}
+        ${imgUrl ? `<img src="${imgUrl}" alt="${escapeHtml(p.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:3px;margin-bottom:6px;">` : ''}
         <strong>${escapeHtml(p.title)}</strong><br>
         <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
       </div>`;
