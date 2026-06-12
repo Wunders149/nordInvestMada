@@ -137,10 +137,6 @@ router.post('/upload', requireAuth, (req, res) => {
     const section = req.body.section || 'gallery';
     const slotId = req.body.slotId || null;
 
-    if (!req.body.newSlotLabel && !slotId) {
-      return res.status(400).json({ error: 'Spécifiez un slot (slotId) ou un nouveau label (newSlotLabel)' });
-    }
-
     const ext = path.extname(req.file.originalname);
     const sanitized = sanitizeName(path.basename(req.file.originalname, ext));
     const ts = Date.now();
@@ -161,6 +157,20 @@ router.post('/upload', requireAuth, (req, res) => {
 
     const cloudinaryPublicId = cloudinaryResult.public_id;
     const cloudinaryUrl = cloudinaryResult.secure_url;
+
+    if (!req.body.newSlotLabel && !slotId) {
+      return res.json({
+        success: true,
+        url: cloudinaryUrl,
+        cloudinaryUrl,
+        file: {
+          name: filename,
+          section,
+          size: req.file.size,
+          type: ext.slice(1)
+        }
+      });
+    }
 
     if (req.body.newSlotLabel) {
       const slug = req.body.newSlotLabel

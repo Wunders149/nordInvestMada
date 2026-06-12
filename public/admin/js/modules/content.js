@@ -275,6 +275,16 @@ export async function openCrudForm(entity, editId) {
     } else if (field.type === 'date') {
       const dateVal = val ? val.substring(0, 10) : '';
       html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
+    } else if (field.key === 'image' && entity === 'blog') {
+      const imgSrc = val && (val.startsWith('http') || val.startsWith('/')) ? val : val ? `/images/blog/${val}` : '';
+      html += `<input type="hidden" id="crud_${field.key}" value="${escapeHtml(String(val))}">`;
+      html += `<div class="blog-img-upload">`;
+      html += `<div class="blog-img-preview" id="crud_image_preview">${imgSrc ? `<img src="${imgSrc}" alt="">` : `<span class="blog-img-placeholder">🖼</span>`}</div>`;
+      html += `<div class="blog-img-actions">`;
+      html += `<input type="file" id="crud_image_file" accept="image/*">`;
+      html += `<button type="button" class="btn-secondary" onclick="uploadBlogImage()">Upload</button>`;
+      html += `<span id="crud_image_status"></span>`;
+      html += `</div></div>`;
     } else {
       html += `<input type="${field.type}" id="crud_${field.key}" class="search-input" value="${escapeHtml(String(val))}">`;
     }
@@ -435,6 +445,40 @@ export function exportEntity(entity) {
     return val !== undefined ? String(val) : '';
   }));
   exportToCsv(`${entity}.csv`, [headers, ...rows]);
+}
+
+// ─── BLOG IMAGE UPLOAD ───
+export async function uploadBlogImage() {
+  const fileInput = document.getElementById('crud_image_file');
+  const status = document.getElementById('crud_image_status');
+  const hiddenInput = document.getElementById('crud_image');
+  const preview = document.getElementById('crud_image_preview');
+  if (!fileInput || !fileInput.files[0]) { if (status) { status.textContent = 'Sélectionnez un fichier'; status.className = 'upload-status error'; } return; }
+  const file = fileInput.files[0];
+  if (file.size > 10 * 1024 * 1024) { if (status) { status.textContent = 'Max 10MB'; status.className = 'upload-status error'; } return; }
+  if (status) { status.textContent = 'Upload…'; status.className = 'upload-status loading'; }
+
+  const fd = new FormData();
+  fd.append('section', 'blog');
+  fd.append('image', file);
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: fd
+    });
+    if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+
+    if (hiddenInput) hiddenInput.value = data.url;
+    if (preview) preview.innerHTML = `<img src="${data.url}" alt="">`;
+    if (status) { status.textContent = '✓'; status.className = 'upload-status success'; }
+    fileInput.value = '';
+  } catch (err) {
+    if (status) { status.textContent = '✗ ' + err.message; status.className = 'upload-status error'; }
+  }
 }
 
 // ─── Content pagination functions ───

@@ -17,7 +17,7 @@ import {
 } from './modules/images.js';
 import {
   loadEntity, renderEntity, openCrudForm, closeCrudForm, saveCrudItem, confirmDeleteItem,
-  previewSlotImage, uploadSlotImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
+  previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
   exportEntity
 } from './modules/content.js';
 import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pricing.js';
@@ -100,7 +100,7 @@ Object.assign(window, {
   loadSlots, loadImages, renderImages, assignSlot, confirmDeleteImage,
   openImageEditor, closeImageEditor, saveImageEdit,
   loadEntity, renderEntity, openCrudForm, closeCrudForm, saveCrudItem, confirmDeleteItem,
-  previewSlotImage, uploadSlotImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
+  previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
   exportEntity,
   loadPricingEditor, addPricingFeature, savePricing,
   loadSettings, saveSettings, testEmail,

@@ -2568,6 +2568,55 @@ input:focus, select:focus, textarea:focus,
 /* ══════════════════════════════════════════════
    PRINT STYLES
    ══════════════════════════════════════════════ */
+/* ─── Blog Image Upload ─── */
+.blog-img-upload {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.blog-img-preview {
+  width: 160px;
+  height: 100px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.blog-img-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.blog-img-placeholder {
+  font-size: 2rem;
+  opacity: 0.3;
+}
+.blog-img-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 160px;
+}
+.blog-img-actions input[type="file"] {
+  font-size: 0.75rem;
+}
+.blog-img-actions .btn-secondary {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.75rem;
+  align-self: flex-start;
+}
+.upload-status {
+  font-size: 0.75rem;
+}
+.upload-status.loading { color: var(--gray-500); }
+.upload-status.success { color: var(--success); }
+.upload-status.error { color: var(--danger); }
+
 /* ─── Category Manager ─── */
 .category-row {
   display: flex;
