@@ -426,6 +426,7 @@
             <input type="text" id="teamSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('team')">
           </div>
           <div class="tab-toolbar-actions">
+            <button class="btn-secondary" onclick="openPositionManager()">👔 Postes</button>
             <button class="btn-secondary" id="teamExport" onclick="exportEntity('team')" style="display:none">📥 Export CSV</button>
             <button class="btn-secondary" onclick="openTeamForm()">+ Ajouter</button>
           </div>
@@ -705,6 +706,29 @@
       <div class="detail-footer">
         <button class="btn-primary" onclick="saveCategoryManager()">💾 Enregistrer</button>
         <button class="btn-secondary" onclick="closeCategoryManager()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── POSITION MANAGER MODAL ─── -->
+  <div class="modal-overlay detail-modal" id="positionManagerModal">
+    <div class="modal-box detail-box" style="max-width:600px">
+      <div class="detail-header">
+        <h3>Gérer les postes de l'équipe</h3>
+        <button class="modal-close" onclick="closePositionManager()">✕</button>
+      </div>
+      <div class="detail-body">
+        <p style="color:var(--gray-500);font-size:0.8125rem;margin-bottom:1rem">
+          Les postes définissent les titres disponibles pour les membres de l'équipe.
+          Chaque membre a un poste (ex: Directeur Général, Ingénieur…).
+          L'ID est stocké dans la base de données, le nom affiché est ce que voient les visiteurs.
+        </p>
+        <div id="positionManagerList"></div>
+        <button class="btn-secondary" onclick="addPositionRow()" style="margin-top:0.75rem;font-size:0.8125rem">+ Ajouter un poste</button>
+      </div>
+      <div class="detail-footer">
+        <button class="btn-primary" onclick="savePositionManager()">💾 Enregistrer</button>
+        <button class="btn-secondary" onclick="closePositionManager()">Annuler</button>
       </div>
     </div>
   </div>

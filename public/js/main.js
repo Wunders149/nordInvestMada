@@ -780,14 +780,16 @@ async function loadTeam() {
     const team = await res.json();
     const grid = document.getElementById('teamGrid');
     if (!grid) return;
-    grid.innerHTML = team.map(m => `
+    grid.innerHTML = team.map(m => {
+      const hasOwnImg = m.image && (m.image.startsWith('http') || m.image.startsWith('/'));
+      return `
       <div class="team-card">
-        <img src="/images/placeholder.svg" alt="${escapeHtml(m.name)}" class="team-avatar img-reveal" loading="lazy" data-image-slot="${m.image_slot || ''}">
+        <img src="${hasOwnImg ? m.image : '/images/placeholder.svg'}" alt="${escapeHtml(m.name)}" class="team-avatar img-reveal" loading="lazy"${!hasOwnImg ? ` data-image-slot="${m.image_slot || ''}"` : ''}>
         <div class="team-name">${escapeHtml(m.name)}</div>
         <div class="team-role">${escapeHtml(m.role)}</div>
         <div class="team-desc">${escapeHtml(m.bio)}</div>
       </div>
-    `).join('');
+    `;}).join('');
     loadImageSlots();
     initImageReveal();
   } catch (err) { console.warn('Team load error:', err); showSectionError('teamGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
@@ -888,13 +890,15 @@ async function loadBlog() {
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
       const slot = slotMap[p.image_slot];
       const postImg = p.image && !p.image.startsWith('http') && !p.image.startsWith('/') ? `/images/blog/${p.image}` : p.image;
+      const hasOwnImg = !!postImg;
       const imgUrl = postImg || ((slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${blogSvg}`);
       const cat = BLOG_CATEGORIES[p.image_slot] || { label: '', icon: '' };
       const rt = readingTime(p.content);
+      const slotAttr = hasOwnImg ? '' : (p.image_slot || '');
       return `
-      <article class="blog-card" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${p.image_slot || ''}">
+      <article class="blog-card" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}">
         <div class="blog-img-wrap">
-          <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
+          <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy"${slotAttr ? ` data-image-slot="${slotAttr}"` : ''}>
           ${cat.label ? `<span class="blog-badge" style="--badge-color: ${cat.color}">${cat.icon} ${cat.label}</span>` : ''}
         </div>
         <div class="blog-body">

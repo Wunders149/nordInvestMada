@@ -25,6 +25,7 @@ import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
 import { loadDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
 import { loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager } from './modules/blogCategories.js';
+import { loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager } from './modules/teamPositions.js';
 
 // ─── Tab switching ───
 function _switchTab(tabId) {
@@ -59,7 +60,7 @@ function _switchTab(tabId) {
       case 'subscribers': loadSubscribers(); break;
       case 'images': loadSlots(); loadImages(); break;
       case 'dossiers': loadDossiers(); break;
-      case 'team': loadEntity('team'); break;
+      case 'team': (async () => { await loadTeamPositions(); loadEntity('team'); })(); break;
       case 'services': loadEntity('services'); break;
       case 'projects': loadEntity('projects'); break;
       case 'blog': (async () => { await loadBlogCategories(); loadEntity('blog'); })(); break;
@@ -106,7 +107,8 @@ Object.assign(window, {
   loadSettings, saveSettings, testEmail,
   loadActivityLog,
   loadDossiers, closeDossierRename, confirmDossierRename,
-  loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager
+  loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager,
+  loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager
 });
 
 // ─── Pagination globals ───

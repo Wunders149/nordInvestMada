@@ -2,6 +2,7 @@ import { API_BASE, getHeaders, contentPage, slots, token, clearToken } from './a
 import { escapeHtml } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, renderPagination, exportToCsv } from './ui.js';
 import { blogCategories } from './blogCategories.js';
+import { teamPositions } from './teamPositions.js';
 
 export let teamData = [];
 export let servicesData = [];
@@ -14,9 +15,10 @@ const ENTITY_CONFIG = {
     searchFields: ['name', 'role'],
     fields: [
       { key: 'name', label: 'Nom', type: 'text', required: true },
-      { key: 'role', label: 'Rôle', type: 'text', required: true },
+      { key: 'role', label: 'Rôle/Poste', type: 'select', options: 'dynamic_team_positions', required: true },
       { key: 'bio', label: 'Biographie', type: 'textarea' },
       { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'team' },
+      { key: 'image', label: 'URL de l\'image (optionnelle)', type: 'text' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
@@ -206,6 +208,10 @@ export async function openCrudForm(entity, editId) {
       console.error('Failed to load slots:', err);
     }
   }
+  if (entity === 'team' && teamPositions.length === 0) {
+    const { loadTeamPositions } = await import('./teamPositions.js');
+    await loadTeamPositions();
+  }
   if (entity === 'blog' && blogCategories.length === 0) {
     const { loadBlogCategories } = await import('./blogCategories.js');
     await loadBlogCategories();
@@ -239,11 +245,19 @@ export async function openCrudForm(entity, editId) {
         <span style="font-size:0.8125rem;color:var(--gray-600)">Afficher sur le site</span>
       </label>`;
     } else if (field.type === 'select') {
-      const opts = field.options === 'dynamic_blog_categories' ? blogCategories.map(c => ({ value: c.id, label: `${c.icon || ''} ${c.label}`.trim() })) : (field.options || []);
+      const opts = field.options === 'dynamic_blog_categories'
+        ? blogCategories.map(c => ({ value: c.id, label: `${c.icon || ''} ${c.label}`.trim() }))
+        : field.options === 'dynamic_team_positions'
+        ? teamPositions.map(p => ({ value: p.id, label: p.label }))
+        : (field.options || []);
+      const hasMatch = val ? opts.some(o => o.value === val) : true;
       html += `<select id="crud_${field.key}" class="status-select" style="width:100%">`;
       html += `<option value="">— Aucune —</option>`;
       for (const opt of opts) {
         html += `<option value="${opt.value}" ${val === opt.value ? 'selected' : ''}>${opt.label}</option>`;
+      }
+      if (val && !hasMatch) {
+        html += `<option value="${escapeHtml(String(val))}" selected>${escapeHtml(String(val))} (ancien)</option>`;
       }
       html += `</select>`;
     } else if (field.type === 'slot-select') {
@@ -275,7 +289,7 @@ export async function openCrudForm(entity, editId) {
     } else if (field.type === 'date') {
       const dateVal = val ? val.substring(0, 10) : '';
       html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
-    } else if (field.key === 'image' && entity === 'blog') {
+    } else if (field.key === 'image' && (entity === 'blog' || entity === 'team')) {
       const imgSrc = val && (val.startsWith('http') || val.startsWith('/')) ? val : val ? `/images/blog/${val}` : '';
       html += `<input type="hidden" id="crud_${field.key}" value="${escapeHtml(String(val))}">`;
       html += `<div class="blog-img-upload">`;
@@ -316,15 +330,21 @@ export async function uploadSlotImage(fieldKey, section) {
   if (file.size > 10 * 1024 * 1024) { status.textContent = 'Max 10MB'; return; }
 
   const select = document.getElementById(`crud_${fieldKey}`);
-  const slotId = select.value;
-  if (!slotId) { status.textContent = 'Choisissez un slot d\'abord'; return; }
-
-  status.textContent = 'Upload…';
+  let slotId = select.value;
   const fd = new FormData();
   fd.append('section', section);
-  fd.append('slotId', slotId);
   fd.append('image', file);
 
+  if (!slotId) {
+    const nameInput = document.getElementById('crud_name');
+    const name = nameInput?.value?.trim() || file.name.replace(/\.[^.]+$/, '');
+    fd.append('newSlotLabel', `${name} - ${section}`);
+    status.textContent = 'Création du slot…';
+  } else {
+    fd.append('slotId', slotId);
+  }
+
+  status.textContent = 'Upload…';
   try {
     const res = await fetch('/api/upload', {
       method: 'POST',
@@ -334,16 +354,29 @@ export async function uploadSlotImage(fieldKey, section) {
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
+
     status.textContent = '✓ Uploadé';
     status.style.color = 'var(--success)';
+
     const sr = await fetch('/api/images/slots');
     const newSlots = await sr.json();
+    const previousIds = slots.map(s => s.id);
     slots.length = 0;
     slots.push(...newSlots);
-    const updatedSlot = slots.find(s => s.id === slotId);
-    if (updatedSlot) {
-      const opt = select.querySelector(`option[value="${slotId}"]`);
-      if (opt) { opt.dataset.url = updatedSlot.currentUrl || ''; opt.textContent = updatedSlot.label + ' 📷'; }
+
+    if (!slotId) {
+      const created = newSlots.find(s => !previousIds.includes(s.id));
+      if (created) slotId = created.id;
+    }
+
+    if (slotId) {
+      select.innerHTML = `<option value="">— Aucune —</option>`;
+      for (const s of slots) {
+        if (s.section !== section) continue;
+        const hasImg = s.uploadedFile ? ' 📷' : '';
+        const sel = s.id === slotId ? 'selected' : '';
+        select.innerHTML += `<option value="${s.id}" data-url="${escapeHtml(s.currentUrl || '')}" ${sel}>${escapeHtml(s.label)}${hasImg}</option>`;
+      }
       previewSlotImage(select);
     }
     fileInput.value = '';
@@ -447,7 +480,7 @@ export function exportEntity(entity) {
   exportToCsv(`${entity}.csv`, [headers, ...rows]);
 }
 
-// ─── BLOG IMAGE UPLOAD ───
+// ─── ENTITY IMAGE UPLOAD (blog, team, etc.) ───
 export async function uploadBlogImage() {
   const fileInput = document.getElementById('crud_image_file');
   const status = document.getElementById('crud_image_status');
@@ -458,8 +491,9 @@ export async function uploadBlogImage() {
   if (file.size > 10 * 1024 * 1024) { if (status) { status.textContent = 'Max 10MB'; status.className = 'upload-status error'; } return; }
   if (status) { status.textContent = 'Upload…'; status.className = 'upload-status loading'; }
 
+  const section = currentEntity === 'blog' ? 'blog' : (currentEntity === 'team' ? 'team' : 'blog');
   const fd = new FormData();
-  fd.append('section', 'blog');
+  fd.append('section', section);
   fd.append('image', file);
 
   try {

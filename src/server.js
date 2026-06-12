@@ -501,6 +501,28 @@ app.get('/api/blog-categories', async (req, res) => {
   }
 });
 
+app.get('/api/team-positions', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'team_positions')
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    const positions = data?.value || [
+      { id: 'Directeur Général', label: 'Directeur Général' },
+      { id: 'Ingénieur', label: 'Ingénieur' },
+      { id: 'Chef de chantier', label: 'Chef de chantier' },
+      { id: 'Technicien', label: 'Technicien' },
+      { id: 'Comptable', label: 'Comptable' }
+    ];
+    res.json(positions);
+  } catch (err) {
+    console.error('Team positions error:', err);
+    res.status(500).json({ error: 'Failed to load team positions' });
+  }
+});
+
 app.get('/api/events', (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',

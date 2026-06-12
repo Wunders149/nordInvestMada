@@ -387,6 +387,50 @@ router.put('/blog-categories', requireAuth, async (req, res) => {
   }
 });
 
+// ─── TEAM POSITIONS MANAGEMENT ───
+const DEFAULT_TEAM_POSITIONS = [
+  { id: 'Directeur Général', label: 'Directeur Général' },
+  { id: 'Ingénieur', label: 'Ingénieur' },
+  { id: 'Chef de chantier', label: 'Chef de chantier' },
+  { id: 'Technicien', label: 'Technicien' },
+  { id: 'Comptable', label: 'Comptable' }
+];
+
+router.get('/team-positions', requireAuth, async (req, res) => {
+  try {
+    let positions = await getSetting('team_positions');
+    if (!positions || !Array.isArray(positions) || positions.length === 0) {
+      positions = DEFAULT_TEAM_POSITIONS;
+      await setSetting('team_positions', positions);
+    }
+    res.json(positions);
+  } catch (err) {
+    console.error('Team positions get error:', err);
+    res.status(500).json({ error: 'Failed to load team positions' });
+  }
+});
+
+router.put('/team-positions', requireAuth, async (req, res) => {
+  try {
+    const positions = req.body;
+    if (!Array.isArray(positions)) {
+      return res.status(400).json({ error: 'Positions must be an array' });
+    }
+    for (const pos of positions) {
+      if (!pos.id || !pos.label) {
+        return res.status(400).json({ error: 'Each position must have an id and label' });
+      }
+    }
+    await setSetting('team_positions', positions);
+    logActivity('team_positions_update', 'Postes de l\'équipe mis à jour', req.admin.username);
+    broadcast('team-positions');
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Team positions save error:', err);
+    res.status(500).json({ error: 'Failed to save team positions' });
+  }
+});
+
 // ─── PRICING MANAGEMENT ───
 router.get('/pricing', requireAuth, async (req, res) => {
   try {
