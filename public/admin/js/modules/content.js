@@ -57,7 +57,12 @@ const ENTITY_CONFIG = {
       { key: 'date', label: 'Date', type: 'date' },
       { key: 'excerpt', label: 'Extrait', type: 'textarea' },
       { key: 'content', label: 'Contenu (HTML)', type: 'textarea' },
-      { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'blog' },
+      { key: 'imageSlot', label: 'Catégorie', type: 'select', options: [
+        { value: 'blog-construction', label: 'Construction 🏗️' },
+        { value: 'blog-forage', label: 'Forage 💧' },
+        { value: 'blog-immobilier', label: 'Immobilier 🏡' }
+      ]},
+      { key: 'image', label: 'URL de l\'image (optionnelle)', type: 'text' },
       { key: 'published', label: 'Publié', type: 'checkbox', default: true }
     ]
   }
@@ -132,7 +137,9 @@ export function renderEntity(entity) {
 
     let thumbUrl = '';
     let thumbIcon = '';
-    if (item.imageSlot) {
+    if (item.image) {
+      thumbUrl = item.image;
+    } else if (item.imageSlot) {
       const slot = slots.find(s => s.id === item.imageSlot);
       if (slot && slot.currentUrl) thumbUrl = slot.currentUrl;
     }

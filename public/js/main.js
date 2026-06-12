@@ -868,7 +868,7 @@ async function loadBlog() {
       const dateStr = date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
       const slot = slotMap[p.image_slot];
-      const imgUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${blogSvg}`;
+      const imgUrl = p.image || ((slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${blogSvg}`);
       const cat = BLOG_CATEGORIES[p.image_slot] || { label: '', icon: '' };
       const rt = readingTime(p.content);
       return `
@@ -953,7 +953,7 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
           const ds = d.toLocaleDateString(dl, { day: '2-digit', month: 'long', year: 'numeric' });
           const slot = slotMap[p.image_slot];
           const svg = blogSvgs[p.image_slot] || 'construction.svg';
-          const relatedImg = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${svg}`;
+          const relatedImg = p.image || ((slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${svg}`);
           return `<div class="blog-related-card" onclick="openBlogPost('${escapeHtml(p.title)}', '${ds}', '${escapeHtml(p.content || '')}', '${escapeHtml(relatedImg)}', '${escapeHtml(p.slug || '')}', '${p.image_slot || ''}', '${p.id}')">
             <div class="blog-related-img" style="background-image: url('${escapeHtml(relatedImg)}')"></div>
             <div class="blog-related-body">
