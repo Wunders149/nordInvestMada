@@ -1342,7 +1342,7 @@ function initMaps() {
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   loadTranslations(currentLang);
-  await loadBlogCategories();
+  loadBlogCategories();
   loadImageSlots();
   loadTeam();
   loadServices();
