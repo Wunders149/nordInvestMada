@@ -490,9 +490,9 @@ app.get('/api/blog-categories', async (req, res) => {
       .single();
     if (error && error.code !== 'PGRST116') throw error;
     const categories = data?.value || [
-      { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg' },
-      { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg' },
-      { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg' }
+      { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg', image: '' },
+      { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg', image: '' },
+      { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg', image: '' }
     ];
     res.json(categories);
   } catch (err) {

@@ -819,16 +819,18 @@ async function loadProjects() {
     const projects = await res.json();
     const grid = document.getElementById('projectsGrid');
     if (!grid) return;
-    grid.innerHTML = projects.map(p => `
+    grid.innerHTML = projects.map(p => {
+      const hasOwnImg = p.image && (p.image.startsWith('http') || p.image.startsWith('/'));
+      return `
       <div class="project-card">
-        <img src="/images/placeholder.svg" alt="${escapeHtml(p.title)}" class="project-img img-reveal" loading="lazy" data-image-slot="${p.image_slot || ''}">
+        <img src="${hasOwnImg ? p.image : '/images/placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img img-reveal" loading="lazy"${!hasOwnImg ? ` data-image-slot="${p.image_slot || ''}"` : ''}>
         <div class="project-overlay">
           <div class="project-cat">${escapeHtml(p.category || '')}</div>
           <div class="project-name">${escapeHtml(p.title)}</div>
           <div class="project-loc">📍 ${escapeHtml(p.location || '')}</div>
         </div>
       </div>
-    `).join('');
+    `;}).join('');
     // Re-attach gallery click listeners
     document.querySelectorAll('.project-card').forEach((card, index) => {
       card.addEventListener('click', () => openGallery(index));
@@ -848,7 +850,7 @@ async function loadBlogCategories() {
     const map = {};
     const svgMap = {};
     cats.forEach(c => {
-      map[c.id] = { label: c.label, icon: c.icon, color: c.color };
+      map[c.id] = { label: c.label, icon: c.icon, color: c.color, image: c.image || '' };
       if (c.svg) svgMap[c.id] = c.svg;
     });
     BLOG_CATEGORIES = map;
@@ -856,9 +858,9 @@ async function loadBlogCategories() {
   } catch (err) {
     console.warn('Failed to load blog categories:', err);
     BLOG_CATEGORIES = {
-      'blog-construction': { label: 'Construction', icon: '🏗️', color: 'var(--rust)' },
-      'blog-forage': { label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)' },
-      'blog-immobilier': { label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)' }
+      'blog-construction': { label: 'Construction', icon: '🏗️', color: 'var(--rust)', image: '' },
+      'blog-forage': { label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', image: '' },
+      'blog-immobilier': { label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', image: '' }
     };
     blogSvgs = { 'blog-construction': 'construction.svg', 'blog-forage': 'forage.svg', 'blog-immobilier': 'immobilier.svg' };
   }
@@ -877,22 +879,17 @@ async function loadBlog() {
     const posts = await res.json();
     const grid = document.getElementById('blogGrid');
     if (!grid) return;
-    const slotsRes = await fetch('/api/images/slots').catch(() => null);
-    const slots = slotsRes && slotsRes.ok ? await slotsRes.json() : [];
-    const slotMap = {};
-    slots.forEach(s => { slotMap[s.id] = s; });
     window._allPosts = posts;
-    window._slotMap = slotMap;
     grid.innerHTML = posts.map(p => {
       const date = new Date(p.date);
       const dateLocale = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
       const dateStr = date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
       const blogSvg = blogSvgs[p.image_slot] || 'construction.svg';
-      const slot = slotMap[p.image_slot];
+      const cat = BLOG_CATEGORIES[p.image_slot] || {};
+      const catImg = cat.image || '';
       const postImg = p.image && !p.image.startsWith('http') && !p.image.startsWith('/') ? `/images/blog/${p.image}` : p.image;
       const hasOwnImg = !!postImg;
-      const imgUrl = postImg || ((slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${blogSvg}`);
-      const cat = BLOG_CATEGORIES[p.image_slot] || { label: '', icon: '' };
+      const imgUrl = postImg || catImg || `/images/blog/${blogSvg}`;
       const rt = readingTime(p.content);
       const slotAttr = hasOwnImg ? '' : (p.image_slot || '');
       return `
@@ -974,10 +971,10 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
           const d = new Date(p.date);
           const dl = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
           const ds = d.toLocaleDateString(dl, { day: '2-digit', month: 'long', year: 'numeric' });
-          const slot = slotMap[p.image_slot];
+          const cat2 = BLOG_CATEGORIES[p.image_slot] || {};
           const svg = blogSvgs[p.image_slot] || 'construction.svg';
           const pImg = p.image && !p.image.startsWith('http') && !p.image.startsWith('/') ? `/images/blog/${p.image}` : p.image;
-          const relatedImg = pImg || ((slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : `/images/blog/${svg}`);
+          const relatedImg = pImg || cat2.image || `/images/blog/${svg}`;
           return `<div class="blog-related-card" onclick="openBlogPost('${escapeHtml(p.title)}', '${ds}', '${escapeHtml(p.content || '')}', '${escapeHtml(relatedImg)}', '${escapeHtml(p.slug || '')}', '${p.image_slot || ''}', '${p.id}')">
             <div class="blog-related-img" style="background-image: url('${escapeHtml(relatedImg)}')"></div>
             <div class="blog-related-body">

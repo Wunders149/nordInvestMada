@@ -17,8 +17,7 @@ const ENTITY_CONFIG = {
       { key: 'name', label: 'Nom', type: 'text', required: true },
       { key: 'role', label: 'Rôle/Poste', type: 'select', options: 'dynamic_team_positions', required: true },
       { key: 'bio', label: 'Biographie', type: 'textarea' },
-      { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'team' },
-      { key: 'image', label: 'URL de l\'image (optionnelle)', type: 'text' },
+      { key: 'image', label: 'Image', type: 'text' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
@@ -46,7 +45,7 @@ const ENTITY_CONFIG = {
         { value: 'rehabilitation', label: 'Réhabilitation' },
         { value: 'forage', label: 'Forage' }
       ]},
-      { key: 'imageSlot', label: 'Image', type: 'slot-select', section: 'projects' },
+      { key: 'image', label: 'Image', type: 'text' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
@@ -289,7 +288,7 @@ export async function openCrudForm(entity, editId) {
     } else if (field.type === 'date') {
       const dateVal = val ? val.substring(0, 10) : '';
       html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
-    } else if (field.key === 'image' && (entity === 'blog' || entity === 'team')) {
+    } else if (field.key === 'image' && (entity === 'blog' || entity === 'team' || entity === 'projects')) {
       const imgSrc = val && (val.startsWith('http') || val.startsWith('/')) ? val : val ? `/images/blog/${val}` : '';
       html += `<input type="hidden" id="crud_${field.key}" value="${escapeHtml(String(val))}">`;
       html += `<div class="blog-img-upload">`;
@@ -491,7 +490,7 @@ export async function uploadBlogImage() {
   if (file.size > 10 * 1024 * 1024) { if (status) { status.textContent = 'Max 10MB'; status.className = 'upload-status error'; } return; }
   if (status) { status.textContent = 'Upload…'; status.className = 'upload-status loading'; }
 
-  const section = currentEntity === 'blog' ? 'blog' : (currentEntity === 'team' ? 'team' : 'blog');
+  const section = currentEntity === 'blog' ? 'blog' : (currentEntity === 'team' ? 'team' : (currentEntity === 'projects' ? 'projects' : 'blog'));
   const fd = new FormData();
   fd.append('section', section);
   fd.append('image', file);

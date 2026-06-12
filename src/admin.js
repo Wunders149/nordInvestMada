@@ -353,9 +353,9 @@ router.get('/blog-categories', requireAuth, async (req, res) => {
     let categories = await getSetting('blog_categories');
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       categories = [
-        { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg' },
-        { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg' },
-        { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg' }
+        { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg', image: '' },
+        { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg', image: '' },
+        { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg', image: '' }
       ];
       await setSetting('blog_categories', categories);
     }

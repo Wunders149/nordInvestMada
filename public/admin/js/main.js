@@ -24,7 +24,7 @@ import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pri
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
 import { loadDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
-import { loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager } from './modules/blogCategories.js';
+import { loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager, catUploadClick, catRemoveImage } from './modules/blogCategories.js';
 import { loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager } from './modules/teamPositions.js';
 
 // ─── Tab switching ───
@@ -107,7 +107,7 @@ Object.assign(window, {
   loadSettings, saveSettings, testEmail,
   loadActivityLog,
   loadDossiers, closeDossierRename, confirmDossierRename,
-  loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager,
+  loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager, catUploadClick, catRemoveImage,
   loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager
 });
 
