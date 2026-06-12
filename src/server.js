@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import { adminRouter } from './admin.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig } from './supabase.js';
+import { addClient, broadcast, heartbeat as sseHeartbeat } from './events.js';
 import { getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
 import { validate, contactSchema, newsletterSchema, quoteSchema, pricingSchema } from './validation.js';
 
@@ -479,6 +480,7 @@ app.get('/api/dossiers/:id/thumbnail', async (req, res) => {
   }
 });
 
+
 app.get('/api/blog-categories', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -497,6 +499,17 @@ app.get('/api/blog-categories', async (req, res) => {
     console.error('Blog categories error:', err);
     res.status(500).json({ error: 'Failed to load blog categories' });
   }
+});
+
+app.get('/api/events', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+  res.write(': connected\n\n');
+  addClient(res);
 });
 
 app.get('/api/health', (req, res) => {
@@ -540,4 +553,6 @@ app.listen(PORT, () => {
   console.log(`✓ Uploads directory: ${uploadsDir}`);
   console.log(`✓ API endpoints available at: /api/*`);
 
+  // SSE heartbeat every 25s to keep connections alive
+  setInterval(() => sseHeartbeat(), 25000);
 });

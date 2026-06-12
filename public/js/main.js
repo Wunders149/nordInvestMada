@@ -1353,3 +1353,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   initImageReveal();
   initMaps();
 });
+
+// ═══════════════════════════════════════════════════════
+// SSE — Live refresh when admin updates content
+// ═══════════════════════════════════════════════════════
+
+const EVENT_MAP = {
+  'team': loadTeam,
+  'services': loadServices,
+  'projects': loadProjects,
+  'blog': loadBlog,
+  'blog-categories': loadBlogCategories,
+  'pricing': loadPricingData,
+  'config': loadConfigData,
+  'dossiers': loadDossiers,
+  'images': loadImageSlots
+};
+
+let sseReconnectTimer = null;
+
+function initSSE() {
+  if (sseReconnectTimer) {
+    clearTimeout(sseReconnectTimer);
+    sseReconnectTimer = null;
+  }
+
+  if (typeof EventSource === 'undefined') return;
+
+  const es = new EventSource(`${API_BASE}/api/events`);
+
+  es.addEventListener('open', () => {
+    console.info('[SSE] connected');
+  });
+
+  for (const [eventName, handler] of Object.entries(EVENT_MAP)) {
+    es.addEventListener(eventName, () => { handler(); });
+  }
+
+  es.addEventListener('error', () => {
+    if (es.readyState === EventSource.CLOSED) {
+      console.warn('[SSE] disconnected, retry in 5s');
+      es.close();
+      sseReconnectTimer = setTimeout(initSSE, 5000);
+    }
+  });
+}
+
+initSSE();

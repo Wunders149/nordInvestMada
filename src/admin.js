@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { requireAuth, loginLimiter, createSession, destroySession, loginUser, hashPassword, logActivity } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
 import { uploadPdf, deleteImage, getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
+import { broadcast } from './events.js';
 import { validate, loginSchema } from './validation.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
@@ -290,6 +291,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
       const result = await create(tableName, newItem);
       logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${result.name || result.title || result.id}`, req.admin.username);
       if (callbacks.onCreate) callbacks.onCreate(result, req);
+      broadcast(entityName, { action: 'create', id: result.id });
       res.json({ success: true, item: camelizeKeys(result) });
     } catch (err) {
       console.error(`${entityName} create error:`, err);
@@ -305,6 +307,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
       });
       logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${item.name || item.title || req.params.id}`, req.admin.username);
       if (callbacks.onUpdate) callbacks.onUpdate(item, req);
+      broadcast(entityName, { action: 'update', id: req.params.id });
       res.json({ success: true, item: camelizeKeys(item) });
     } catch (err) {
       console.error(`${entityName} update error:`, err);
@@ -319,6 +322,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
       if (!item) return res.status(404).json({ error: 'Not found' });
       await remove(tableName, req.params.id);
       logActivity(`${entityName}_delete`, `${entityName.slice(0, -1)} supprimé: ${item.name || item.title || req.params.id}`, req.admin.username);
+      broadcast(entityName, { action: 'delete', id: req.params.id });
       res.json({ success: true });
     } catch (err) {
       console.error(`${entityName} delete error:`, err);
@@ -375,6 +379,7 @@ router.put('/blog-categories', requireAuth, async (req, res) => {
     }
     await setSetting('blog_categories', categories);
     logActivity('blog_categories_update', 'Catégories du blog mises à jour', req.admin.username);
+    broadcast('blog-categories');
     res.json({ success: true });
   } catch (err) {
     console.error('Blog categories save error:', err);
@@ -427,6 +432,7 @@ router.put('/pricing', requireAuth, async (req, res) => {
     const cfg = await getSiteConfig();
     await upsertSiteConfig({ ...cfg, pricing: incoming });
     logActivity('pricing_update', 'Grille tarifaire mise à jour', req.admin.username);
+    broadcast('pricing');
     res.json({ success: true });
   } catch (err) {
     console.error('Pricing update error:', err);
@@ -467,6 +473,7 @@ router.put('/contact-info', requireAuth, async (req, res) => {
     if (req.body.team) updates.team_stats = req.body.team;
     await upsertSiteConfig({ ...cfg, ...updates });
     logActivity('contact_info_update', 'Informations de contact mises à jour', req.admin.username);
+    broadcast('config');
     res.json({ success: true });
   } catch (err) {
     console.error('Contact info update error:', err);
@@ -497,6 +504,7 @@ router.put('/settings', requireAuth, async (req, res) => {
       await setSetting(key, value);
     }
     logActivity('settings_update', 'Paramètres du site mis à jour', req.admin.username);
+    broadcast('config');
     res.json({ success: true });
   } catch (err) {
     console.error('Settings update error:', err);
@@ -610,6 +618,7 @@ router.post('/dossiers', requireAuth, (req, res) => {
     }
 
     logActivity('dossier_upload', `Dossier uploadé: ${fileName}`, req.admin.username);
+    broadcast('dossiers');
     res.json({
       success: true,
       id,
@@ -638,6 +647,7 @@ router.patch('/dossiers/:id', requireAuth, async (req, res) => {
     }).eq('id', id);
 
     logActivity('dossier_rename', `Dossier renommé en: ${safeName}`, req.admin.username);
+    broadcast('dossiers');
     res.json({ success: true, name: safeName });
   } catch (err) {
     console.error('Dossier rename error:', err);
@@ -666,6 +676,7 @@ router.delete('/dossiers/:id', requireAuth, async (req, res) => {
     await supabase.from('dossiers').delete().eq('id', id);
 
     logActivity('dossier_delete', `Dossier supprimé: ${dossier.name}`, req.admin.username);
+    broadcast('dossiers');
     res.json({ success: true });
   } catch (err) {
     console.error('Dossier delete error:', err);

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { requireAuth, logActivity } from './auth.js';
 import { supabase } from './supabase.js';
 import { uploadImage, deleteImage, getCloudinaryUrl, getCloudinaryMapping, setCloudinaryMapping, clearCloudinaryMapping } from './cloudinary.js';
+import { broadcast } from './events.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -214,6 +215,7 @@ router.post('/upload', requireAuth, (req, res) => {
     }
 
     logActivity('image_upload', `Image uploadée: ${filename} (${section})`, req.admin?.username || 'admin');
+    broadcast('images');
 
     res.json({
       success: true,
@@ -507,6 +509,7 @@ router.put('/images/slots/:slotId', requireAuth, async (req, res) => {
     const updated = await getImageSlotById(slotId);
     const updatedMapping = await getCloudinaryMapping();
     logActivity('slot_assign', `Slot ${slotId} assigné à ${filename || 'aucun'}`, req.admin?.username || 'admin');
+    broadcast('images');
 
     res.json({
       success: true,
@@ -541,6 +544,7 @@ router.post('/images/slots', requireAuth, async (req, res) => {
     });
 
     logActivity('slot_create', `Slot créé: ${label} (${section})`, req.admin?.username || 'admin');
+    broadcast('images');
 
     res.status(201).json({
       success: true,
