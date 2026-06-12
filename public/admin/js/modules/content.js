@@ -1,6 +1,7 @@
 import { API_BASE, getHeaders, contentPage, slots, token, clearToken } from './api.js';
 import { escapeHtml } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, renderPagination, exportToCsv } from './ui.js';
+import { blogCategories } from './blogCategories.js';
 
 export let teamData = [];
 export let servicesData = [];
@@ -57,11 +58,7 @@ const ENTITY_CONFIG = {
       { key: 'date', label: 'Date', type: 'date' },
       { key: 'excerpt', label: 'Extrait', type: 'textarea' },
       { key: 'content', label: 'Contenu (HTML)', type: 'textarea' },
-      { key: 'imageSlot', label: 'Catégorie', type: 'select', options: [
-        { value: 'blog-construction', label: 'Construction 🏗️' },
-        { value: 'blog-forage', label: 'Forage 💧' },
-        { value: 'blog-immobilier', label: 'Immobilier 🏡' }
-      ]},
+      { key: 'imageSlot', label: 'Catégorie', type: 'select', options: 'dynamic_blog_categories' },
       { key: 'image', label: 'URL de l\'image (optionnelle)', type: 'text' },
       { key: 'published', label: 'Publié', type: 'checkbox', default: true }
     ]
@@ -138,7 +135,7 @@ export function renderEntity(entity) {
     let thumbUrl = '';
     let thumbIcon = '';
     if (item.image) {
-      thumbUrl = item.image;
+      thumbUrl = item.image.startsWith('http') || item.image.startsWith('/') ? item.image : `/images/blog/${item.image}`;
     } else if (item.imageSlot) {
       const slot = slots.find(s => s.id === item.imageSlot);
       if (slot && slot.currentUrl) thumbUrl = slot.currentUrl;
@@ -209,6 +206,10 @@ export async function openCrudForm(entity, editId) {
       console.error('Failed to load slots:', err);
     }
   }
+  if (entity === 'blog' && blogCategories.length === 0) {
+    const { loadBlogCategories } = await import('./blogCategories.js');
+    await loadBlogCategories();
+  }
   currentEntity = entity;
   currentEditId = editId || null;
 
@@ -238,8 +239,10 @@ export async function openCrudForm(entity, editId) {
         <span style="font-size:0.8125rem;color:var(--gray-600)">Afficher sur le site</span>
       </label>`;
     } else if (field.type === 'select') {
+      const opts = field.options === 'dynamic_blog_categories' ? blogCategories.map(c => ({ value: c.id, label: `${c.icon || ''} ${c.label}`.trim() })) : (field.options || []);
       html += `<select id="crud_${field.key}" class="status-select" style="width:100%">`;
-      for (const opt of (field.options || [])) {
+      html += `<option value="">— Aucune —</option>`;
+      for (const opt of opts) {
         html += `<option value="${opt.value}" ${val === opt.value ? 'selected' : ''}>${opt.label}</option>`;
       }
       html += `</select>`;

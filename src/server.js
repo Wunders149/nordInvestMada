@@ -479,6 +479,26 @@ app.get('/api/dossiers/:id/thumbnail', async (req, res) => {
   }
 });
 
+app.get('/api/blog-categories', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'blog_categories')
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    const categories = data?.value || [
+      { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg' },
+      { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg' },
+      { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg' }
+    ];
+    res.json(categories);
+  } catch (err) {
+    console.error('Blog categories error:', err);
+    res.status(500).json({ error: 'Failed to load blog categories' });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'Server is running',

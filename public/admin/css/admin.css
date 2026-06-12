@@ -2568,6 +2568,28 @@ input:focus, select:focus, textarea:focus,
 /* ══════════════════════════════════════════════
    PRINT STYLES
    ══════════════════════════════════════════════ */
+/* ─── Category Manager ─── */
+.category-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.category-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.category-fields .search-input {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+}
+
 @media print {
   .sidebar, .sidebar-toggle, .sidebar-overlay, .top-header, .top-header-actions,
   .toast-container, .modal-overlay, .lightbox, .btn-icon, .btn-secondary,

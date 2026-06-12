@@ -472,6 +472,7 @@
           </div>
           <div class="tab-toolbar-actions">
             <button class="btn-secondary" id="blogExport" onclick="exportEntity('blog')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" onclick="openCategoryManager()">🏷 Catégories</button>
             <button class="btn-secondary" onclick="openBlogForm()">+ Ajouter</button>
           </div>
         </div>
@@ -682,6 +683,28 @@
       <div class="detail-footer">
         <button class="btn-primary" id="imageEditSave">💾 Enregistrer</button>
         <button class="btn-secondary" id="imageEditCloseBtn">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CATEGORY MANAGER MODAL ─── -->
+  <div class="modal-overlay detail-modal" id="categoryManagerModal">
+    <div class="modal-box detail-box" style="max-width:700px">
+      <div class="detail-header">
+        <h3>Gérer les catégories du blog</h3>
+        <button class="modal-close" onclick="closeCategoryManager()">✕</button>
+      </div>
+      <div class="detail-body">
+        <p style="color:var(--gray-500);font-size:0.8125rem;margin-bottom:1rem">
+          Les catégories permettent de classer vos articles. Chaque article peut avoir une catégorie.
+          L'ID est stocké dans la base de données (ex: <code>blog-construction</code>).
+        </p>
+        <div id="categoryManagerList"></div>
+        <button class="btn-secondary" onclick="addCategoryRow()" style="margin-top:0.75rem;font-size:0.8125rem">+ Ajouter une catégorie</button>
+      </div>
+      <div class="detail-footer">
+        <button class="btn-primary" onclick="saveCategoryManager()">💾 Enregistrer</button>
+        <button class="btn-secondary" onclick="closeCategoryManager()">Annuler</button>
       </div>
     </div>
   </div>

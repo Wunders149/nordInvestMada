@@ -8,6 +8,7 @@ import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteC
 import { uploadPdf, deleteImage, getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
 import { validate, loginSchema } from './validation.js';
 import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -213,8 +214,62 @@ router.get('/activity', requireAuth, async (req, res) => {
   }
 });
 
+// ─── EMAIL NOTIFICATION FOR BLOG PUBLISH ───
+function createBlogTransporter() {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+}
+
+async function notifySubscribersOnPublish(post) {
+  try {
+    const { data: subs } = await supabase.from('subscribers').select('email');
+    if (!subs || subs.length === 0) return;
+    const emails = subs.map(s => s.email);
+
+    const siteUrl = process.env.SITE_URL || 'https://orinvestmada.onrender.com';
+    const postUrl = post.slug ? `${siteUrl}/blog/${encodeURIComponent(post.slug)}` : siteUrl;
+    const excerpt = post.excerpt || '';
+    const title = post.title || 'Nouvel article';
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+        <div style="background:#8B3A2A;color:#fff;padding:24px;text-align:center;border-radius:8px 8px 0 0">
+          <h1 style="margin:0;font-size:20px">Nord Invest Madagascar</h1>
+        </div>
+        <div style="background:#fff;padding:32px;border:1px solid #e0d6d2;border-top:0;border-radius:0 0 8px 8px">
+          <h2 style="color:#2d1810;margin-top:0">${escapeHtml(title)}</h2>
+          <p style="color:#555;line-height:1.6;font-size:15px">${escapeHtml(excerpt)}</p>
+          <a href="${postUrl}" style="display:inline-block;background:#8B3A2A;color:#fff;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:bold;margin:16px 0">Lire l'article</a>
+          <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+          <p style="color:#999;font-size:12px">Vous recevez cet email car vous êtes abonné à la newsletter de Nord Invest Madagascar.</p>
+          <p style="color:#999;font-size:12px">${siteUrl}</p>
+        </div>
+      </div>
+    `;
+
+    const transporter = createBlogTransporter();
+    await transporter.sendMail({
+      from: `"Nord Invest Madagascar" <${process.env.SMTP_USER}>`,
+      bcc: emails.join(','),
+      subject: `Nouvel article : ${title}`,
+      html
+    });
+
+    console.log(`Blog notification sent to ${emails.length} subscribers for: ${title}`);
+  } catch (err) {
+    console.error('Failed to send blog notification emails:', err.message);
+  }
+}
+
 // ─── GENERIC CRUD HELPER ───
-function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']]) {
+function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], callbacks = {}) {
   router.get(`/${entityName}`, requireAuth, async (req, res) => {
     try {
       const items = await list(tableName, { order: orderOption });
@@ -234,6 +289,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']]) {
       };
       const result = await create(tableName, newItem);
       logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${result.name || result.title || result.id}`, req.admin.username);
+      if (callbacks.onCreate) callbacks.onCreate(result, req);
       res.json({ success: true, item: camelizeKeys(result) });
     } catch (err) {
       console.error(`${entityName} create error:`, err);
@@ -248,6 +304,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']]) {
         updated_at: new Date().toISOString()
       });
       logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${item.name || item.title || req.params.id}`, req.admin.username);
+      if (callbacks.onUpdate) callbacks.onUpdate(item, req);
       res.json({ success: true, item: camelizeKeys(item) });
     } catch (err) {
       console.error(`${entityName} update error:`, err);
@@ -273,7 +330,57 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']]) {
 crudRoutes('team', 'team_members');
 crudRoutes('services', 'services');
 crudRoutes('projects', 'projects');
-crudRoutes('blog', 'blog_posts', [['date', 'desc']]);
+crudRoutes('blog', 'blog_posts', [['date', 'desc']], {
+  onCreate: async (item) => {
+    if (item.published) {
+      notifySubscribersOnPublish(item);
+    }
+  },
+  onUpdate: async (item) => {
+    if (item.published) {
+      notifySubscribersOnPublish(item);
+    }
+  }
+});
+
+// ─── BLOG CATEGORIES MANAGEMENT ───
+router.get('/blog-categories', requireAuth, async (req, res) => {
+  try {
+    let categories = await getSetting('blog_categories');
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      categories = [
+        { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg' },
+        { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg' },
+        { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg' }
+      ];
+      await setSetting('blog_categories', categories);
+    }
+    res.json(categories);
+  } catch (err) {
+    console.error('Blog categories get error:', err);
+    res.status(500).json({ error: 'Failed to load blog categories' });
+  }
+});
+
+router.put('/blog-categories', requireAuth, async (req, res) => {
+  try {
+    const categories = req.body;
+    if (!Array.isArray(categories)) {
+      return res.status(400).json({ error: 'Categories must be an array' });
+    }
+    for (const cat of categories) {
+      if (!cat.id || !cat.label) {
+        return res.status(400).json({ error: 'Each category must have an id and label' });
+      }
+    }
+    await setSetting('blog_categories', categories);
+    logActivity('blog_categories_update', 'Catégories du blog mises à jour', req.admin.username);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Blog categories save error:', err);
+    res.status(500).json({ error: 'Failed to save blog categories' });
+  }
+});
 
 // ─── PRICING MANAGEMENT ───
 router.get('/pricing', requireAuth, async (req, res) => {
