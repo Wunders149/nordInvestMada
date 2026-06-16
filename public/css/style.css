@@ -201,18 +201,18 @@ nav.scrolled::after {
 /* Logo */
 .nav-logo {
   font-family: 'Playfair Display', serif;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   color: var(--white);
   letter-spacing: 0.05em;
   text-decoration: none;
   z-index: 101;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
   transition: transform 0.3s ease;
 }
 .nav-logo:hover { transform: scale(1.03); }
 .nav-logo span { color: var(--rust-light); }
 .nav-logo-img {
-  width: 36px; height: 36px;
+  width: 48px; height: 48px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--rust);
@@ -368,11 +368,15 @@ nav.scrolled::after {
   border-left: 1px solid var(--border-light);
   border-top: 1px solid var(--border-light);
 }
-.nav-dropdown:hover .nav-submenu {
+.nav-dropdown:hover .nav-submenu,
+.nav-dropdown.active .nav-submenu {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateX(-50%) translateY(6px);
+}
+.nav-dropdown.active > a::after {
+  transform: rotate(180deg);
 }
 .nav-submenu li {
   opacity: 1;
@@ -537,7 +541,7 @@ nav.scrolled::after {
     min-width: auto;
   }
   .nav-submenu::before { display: none; }
-  .nav-dropdown.active .nav-submenu { display: block; }
+  .nav-dropdown.active .nav-submenu { display: block; transform: none; }
   .nav-submenu a { text-align: left; font-size: 0.8rem; padding: 10px 0 10px 24px; color: rgba(255,255,255,0.5) !important; transition: color 0.2s; }
   .nav-submenu a.active { border-left: 3px solid var(--rust-light); padding-left: 21px; color: var(--rust-light) !important; }
   .nav-submenu a:hover { background: transparent; color: var(--rust-light) !important; }
@@ -556,8 +560,8 @@ nav.scrolled::after {
   .nav-submenu a.active { padding-left: 17px; }
   .nav-lang-selector { gap: 2px; }
   .lang-btn { font-size: 0.7rem; padding: 6px 10px; }
-  .nav-logo { font-size: 1rem; }
-  .nav-logo-img { width: 30px; height: 30px; }
+  .nav-logo { font-size: 1.3rem; }
+  .nav-logo-img { width: 40px; height: 40px; }
 }
 
 /* ─── HERO ─── */

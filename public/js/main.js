@@ -160,9 +160,9 @@ if (hamburger) {
   });
   navLinks.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', (e) => {
-      const isMobile = mobileMQ.matches;
       const parent = a.closest('.nav-dropdown');
-      if (isMobile && parent && a === parent.querySelector(':scope > a')) {
+      if (parent && a === parent.querySelector(':scope > a')) {
+        // Dropdown parent link clicked - toggle submenu
         e.preventDefault();
         closeOtherDropdowns(parent);
         parent.classList.toggle('active');
@@ -173,17 +173,32 @@ if (hamburger) {
       }
     });
   });
-  // Close on outside click
+  // Remove active on mouseleave (desktop hover cleanup)
+  document.querySelectorAll('.nav-dropdown').forEach(dd => {
+    dd.addEventListener('mouseleave', () => {
+      dd.classList.remove('active');
+    });
+  });
+  // Close on outside click — handles both mobile menu & desktop dropdowns
   document.addEventListener('click', (e) => {
-    if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+    const isMobileMenu = navLinks.classList.contains('active');
+    // Close mobile menu if click is outside
+    if (isMobileMenu && !navLinks.contains(e.target) && !hamburger.contains(e.target)) {
       closeMobileMenu();
     }
+    // Close dropdowns if click is outside the dropdown
+    const clickedDD = e.target.closest('.nav-dropdown');
+    document.querySelectorAll('.nav-dropdown.active').forEach(d => {
+      if (d !== clickedDD) d.classList.remove('active');
+    });
   });
   // Close on Escape
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+    if (e.key !== 'Escape') return;
+    if (navLinks.classList.contains('active')) {
       closeMobileMenu();
     }
+    document.querySelectorAll('.nav-dropdown.active').forEach(d => d.classList.remove('active'));
   });
   // Close on resize to desktop
   mobileMQ.addEventListener('change', (e) => {
@@ -241,10 +256,9 @@ document.querySelectorAll('.nav-links a[href^="#"], .footer-links a[href^="#"]')
     if (!href || href === '#') return;
     const targetId = href.replace('#', '');
     if (document.getElementById(targetId)) {
-      const isMobile = window.innerWidth <= 768;
       const parent = link.closest('.nav-dropdown');
-      if (isMobile && parent && link === parent.querySelector(':scope > a')) {
-        return;
+      if (parent && link === parent.querySelector(':scope > a')) {
+        return; // Dropdown parent toggle — handled separately
       }
       e.preventDefault();
       hamburger?.classList.remove('active');
