@@ -142,11 +142,19 @@
     <span></span>
   </button>
   <ul class="nav-links" id="navLinks">
-    <li><a href="#about" data-i18n="nav.about">À Propos</a></li>
-    <li><a href="#team" data-i18n="nav.team">Équipe</a></li>
-    <li><a href="#services" data-i18n="nav.services">Services</a></li>
-    <li><a href="#dossiers" style="font-size:0.7rem;opacity:0.8" data-i18n="nav.dossiers">— Vente Terrain</a></li>
-    <li><a href="#pricing" data-i18n="nav.pricing">Tarifs</a></li>
+    <li class="nav-dropdown">
+      <a href="#about" data-i18n="nav.about">À Propos</a>
+      <ul class="nav-submenu">
+        <li><a href="#team" data-i18n="nav.team">Équipe</a></li>
+      </ul>
+    </li>
+    <li class="nav-dropdown">
+      <a href="#services" data-i18n="nav.services">Services</a>
+      <ul class="nav-submenu">
+        <li><a href="#dossiers" data-i18n="nav.dossiers">Vente Terrain</a></li>
+        <li><a href="#pricing" data-i18n="nav.pricing">Tarifs</a></li>
+      </ul>
+    </li>
     <li><a href="#projects" data-i18n="nav.projects">Réalisations</a></li>
     <li><a href="#blog" data-i18n="nav.blog">Blog</a></li>
     <li class="nav-lang-selector">
