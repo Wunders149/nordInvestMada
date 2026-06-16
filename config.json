@@ -51,30 +51,21 @@
     }
   ],
   "locations": [
-    {
-      "name": "Diego Suarez (Antsiranana)",
-      "code": "diego-suarez",
-      "region": "Diana",
-      "multiplier": 1
-    },
-    {
-      "name": "Nosy Be",
-      "code": "nosy-be",
-      "region": "Diana",
-      "multiplier": 1.15
-    },
-    {
-      "name": "Sambava",
-      "code": "sambava",
-      "region": "SAVA",
-      "multiplier": 1.05
-    },
-    {
-      "name": "Antalaha",
-      "code": "antalaha",
-      "region": "SAVA",
-      "multiplier": 1.08
-    }
+    { "name": "Antsiranana (Diego Suarez)", "code": "diego-suarez", "region": "Diana", "multiplier": 1.0 },
+    { "name": "Nosy Be", "code": "nosy-be", "region": "Diana", "multiplier": 1.15 },
+    { "name": "Sambava", "code": "sambava", "region": "SAVA", "multiplier": 1.05 },
+    { "name": "Antalaha", "code": "antalaha", "region": "SAVA", "multiplier": 1.08 },
+    { "name": "Antananarivo", "code": "antananarivo", "region": "Analamanga", "multiplier": 1.0 },
+    { "name": "Toamasina (Tamatave)", "code": "toamasina", "region": "Atsinanana", "multiplier": 1.05 },
+    { "name": "Fianarantsoa", "code": "fianarantsoa", "region": "Haute Matsiatra", "multiplier": 1.05 },
+    { "name": "Mahajanga (Majunga)", "code": "mahajanga", "region": "Boeny", "multiplier": 1.0 },
+    { "name": "Toliara (Tulear)", "code": "toliara", "region": "Atsimo-Andrefana", "multiplier": 1.08 },
+    { "name": "Antsirabe", "code": "antsirabe", "region": "Vakinankaratra", "multiplier": 1.03 },
+    { "name": "Morondava", "code": "morondava", "region": "Menabe", "multiplier": 1.08 },
+    { "name": "Taolagnaro (Fort Dauphin)", "code": "taolagnaro", "region": "Anosy", "multiplier": 1.12 },
+    { "name": "Antsohihy", "code": "antsohihy", "region": "Sofia", "multiplier": 1.03 },
+    { "name": "Ambatondrazaka", "code": "ambatondrazaka", "region": "Alaotra-Mangoro", "multiplier": 1.05 },
+    { "name": "Manakara", "code": "manakara", "region": "Vatovavy-Fitovinany", "multiplier": 1.08 }
   ],
   "exchange_rates": {
     "EUR": 5000,

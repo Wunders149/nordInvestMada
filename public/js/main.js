@@ -447,7 +447,7 @@ async function runCalculation() {
     </div>
     <div class="result-details">
       <div class="detail-item">
-        <span>${dBase} ${data.serviceType} (${data.finishingLevel})</span>
+        <span>${dBase} (${getNestedTranslation(`pricing.tiers.${data.serviceType}.${data.finishingLevel}`) || data.finishingLevel})</span>
         <span>${formatAr(data.basePrice)} / ${data.serviceType === 'forage' ? 'ml' : 'm²'}</span>
       </div>
       <div class="detail-item">
@@ -475,13 +475,31 @@ async function runCalculation() {
 function transferToForm(service, tier, surface, location, total) {
   const serviceSelect = document.getElementById('serviceType');
   const projectInput = document.getElementById('projectType');
+  const budgetInput = document.getElementById('budget');
+  const budgetCurrency = document.getElementById('budgetCurrency');
   const messageTextarea = document.getElementById('message');
 
+  const serviceDisplay = {
+    construction: 'Construction Neuve',
+    rehabilitation: 'Études et Conception',
+    forage: 'Forage d\'Eau'
+  }[service] || service;
+  const tierDisplay = getNestedTranslation(`pricing.tiers.${service}.${tier}`) || tier;
+
   serviceSelect.value = service;
-  projectInput.value = `Simulation: ${service} ${tier} (${surface} units) \u00e0 ${location}`;
+  projectInput.value = `${serviceDisplay} - ${tierDisplay} (${surface} ${service === 'forage' ? 'ml' : 'm²'})`;
+
+  if (total > 0) {
+    budgetInput.value = total;
+    budgetCurrency.value = 'Ar';
+    budgetCurrency.dataset.lastCurrency = 'Ar';
+  }
 
   const tLocale = currentLang === 'en' ? 'en-US' : 'fr-MG';
-  messageTextarea.value = `Bonjour, j'ai effectu\u00e9 une simulation sur votre site :\n- Service : ${service}\n- Gamme : ${tier}\n- Volume : ${surface}\n- Lieu : ${location}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\nJe souhaite obtenir un devis d\u00e9finitif.`;
+  const locationSelect = document.getElementById('calc-location');
+  const locationDisplay = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : location;
+
+  messageTextarea.value = `Bonjour, j'ai effectué une simulation sur votre site :\n- Service : ${serviceDisplay}\n- Gamme : ${tierDisplay}\n- Surface : ${surface} ${service === 'forage' ? 'ml' : 'm²'}\n- Lieu : ${locationDisplay}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\nJe souhaite obtenir un devis définitif.`;
 
   setTimeout(() => {
     document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
@@ -1298,7 +1316,18 @@ const CITY_COORDS = {
   'nosyhara': [-12.2333, 49.0],
   'anjianjia': [-12.3833, 49.3],
   'djabala': [-13.4167, 48.3],
-  'mahatsinjo': [-13.35, 48.25]
+  'mahatsinjo': [-13.35, 48.25],
+  'antananarivo': [-18.9333, 47.5167],
+  'toamasina': [-18.1667, 49.3833],
+  'fianarantsoa': [-21.45, 47.0833],
+  'mahajanga': [-15.7167, 46.3167],
+  'toliara': [-23.35, 43.6667],
+  'antsirabe': [-19.8667, 47.0333],
+  'morondava': [-20.2833, 44.2833],
+  'taolagnaro': [-25.0333, 46.9833],
+  'antsohihy': [-14.8833, 47.9833],
+  'ambatondrazaka': [-17.8333, 48.4167],
+  'manakara': [-22.15, 48.0]
 };
 
 function getCityCoords(location) {
@@ -1316,7 +1345,7 @@ let projectMap = null;
 function initOfficeMap() {
   const el = document.getElementById('officeMap');
   if (!el || officeMap) return;
-  officeMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-12.28, 49.32], 12);
+  officeMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-18.0, 47.5], 5);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap'
@@ -1333,7 +1362,7 @@ function initOfficeMap() {
 function initProjectMap() {
   const el = document.getElementById('projectMap');
   if (!el || projectMap) return;
-  projectMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-13.5, 49.2], 7);
+  projectMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-19.5, 47.0], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap'
