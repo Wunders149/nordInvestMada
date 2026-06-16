@@ -101,6 +101,42 @@ async function loadSiteConfig() {
   }
 }
 
+// ─── Live Exchange Rates (cached, 1h TTL) ───
+let ratesCache = { rates: null, timestamp: 0 };
+const CACHE_TTL = 60 * 60 * 1000;
+
+async function fetchLiveExchangeRates() {
+  const now = Date.now();
+  if (ratesCache.rates && (now - ratesCache.timestamp) < CACHE_TTL) {
+    return ratesCache.rates;
+  }
+  try {
+    const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/mga.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const mga = data.mga || {};
+    const rates = {
+      EUR: mga.eur ? Math.round(1 / mga.eur) : null,
+      USD: mga.usd ? Math.round(1 / mga.usd) : null
+    };
+    if (rates.EUR && rates.USD) {
+      ratesCache = { rates, timestamp: now };
+      console.log('Live exchange rates updated');
+      return rates;
+    }
+    throw new Error('Invalid rates from API');
+  } catch (err) {
+    console.warn('Live rates unavailable, using fallback:', err.message);
+    return null;
+  }
+}
+
+async function getExchangeRates() {
+  const live = await fetchLiveExchangeRates();
+  if (live) return live;
+  return staticConfig.exchange_rates || {};
+}
+
 app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), async (req, res) => {
   try {
     const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
@@ -146,6 +182,10 @@ app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), asyn
     const tax = estimatedTotal * taxRate;
     const grandTotal = estimatedTotal + tax;
 
+    const rates = await getExchangeRates();
+    const eurTotal = rates.EUR ? Math.round(grandTotal / rates.EUR) : null;
+    const usdTotal = rates.USD ? Math.round(grandTotal / rates.USD) : null;
+
     res.json({
       serviceType,
       squareMeters: serviceType !== 'forage' ? sqMeters : 1,
@@ -157,6 +197,9 @@ app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), asyn
       estimatedTotal: Math.round(estimatedTotal),
       tax: Math.round(tax),
       grandTotal: Math.round(grandTotal),
+      grandTotalEUR: eurTotal,
+      grandTotalUSD: usdTotal,
+      exchangeRates: rates,
       currency: 'Ariary (Ar)',
       disclaimer: 'This is an estimate. Final pricing depends on site conditions, soil type, and material availability.'
     });
@@ -340,10 +383,11 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
 app.get('/api/config', async (req, res) => {
   try {
     const siteCfg = await loadSiteConfig();
+    const rates = await getExchangeRates();
     res.json({
       ...staticConfig,
       pricing: siteCfg.pricing || staticConfig.pricing || {},
-      locations: siteCfg.locations || staticConfig.locations || [],
+      exchange_rates: rates,
       contingency_rate: siteCfg.contingency_rate ?? staticConfig.contingency_rate ?? 0.1,
       tax_rate: siteCfg.tax_rate ?? staticConfig.tax_rate ?? 0.2,
       experience_years: siteCfg.experience_years ?? staticConfig.experience_years ?? 10,
@@ -403,8 +447,10 @@ app.get('/api/blog', async (req, res) => {
 app.get('/api/pricing', async (req, res) => {
   try {
     const siteCfg = await loadSiteConfig();
+    const rates = await getExchangeRates();
     res.json({
       pricing: siteCfg.pricing || staticConfig.pricing || {},
+      exchange_rates: rates,
       contingency_rate: siteCfg.contingency_rate ?? staticConfig.contingency_rate ?? 0.1,
       tax_rate: siteCfg.tax_rate ?? staticConfig.tax_rate ?? 0.2,
       locations: siteCfg.locations || staticConfig.locations || []

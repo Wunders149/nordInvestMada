@@ -533,8 +533,8 @@ router.get('/settings', requireAuth, async (req, res) => {
       googleAnalyticsId: settings.googleAnalyticsId || process.env.GOOGLE_ANALYTICS_ID || 'G-MQ14N6E1ZG',
       whatsappNumber: settings.whatsappNumber || '261328231280',
       siteUrl: settings.siteUrl || process.env.SITE_URL || 'https://nordinvest.mg',
-      seoDescription: settings.seoDescription || "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, réhabilitation et vente immobilière.",
-      seoKeywords: settings.seoKeywords || ["immobilier", "construction", "madagascar", "antsiranana", "diego-suarez", "forage", "réhabilitation"]
+      seoDescription: settings.seoDescription || "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, études et conception et vente immobilière.",
+      seoKeywords: settings.seoKeywords || ["immobilier", "construction", "madagascar", "antsiranana", "diego-suarez", "forage", "études", "conception"]
     });
   } catch (err) {
     console.error('Settings get error:', err);

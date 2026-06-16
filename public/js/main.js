@@ -237,7 +237,7 @@ function switchTab(name) {
 function fillContactForm(button) {
   const card = button.closest('.price-card');
   const service = card.getAttribute('data-service');
-  const tier = card.getAttribute('data-tier');
+  const tier = card.getAttribute('data-tier-name');
   const type = card.getAttribute('data-type');
   const price = card.getAttribute('data-price');
   const budgetRange = card.getAttribute('data-budget');
@@ -251,31 +251,28 @@ function fillContactForm(button) {
   const serviceSelect = document.getElementById('serviceType');
   const projectInput = document.getElementById('projectType');
   const budgetInput = document.getElementById('budget');
+  const budgetCurrency = document.getElementById('budgetCurrency');
   const messageTextarea = document.getElementById('message');
 
   serviceSelect.value = serviceMap[service] || '';
-  projectInput.value = `${type} (${tier})`;
+  projectInput.value = `${type} - ${tier}`;
 
-  if (budgetRange) {
-    const budgetLabel = {
-      '10-25': '10-25 millions Ar',
-      '25-100': '25-100 millions Ar',
-      '100+': '100+ millions Ar',
-      '5-15': '5-15 millions Ar',
-      '15-50': '15-50 millions Ar',
-      '50+': '50+ millions Ar',
-      '2.5-5': '2.5-5 millions Ar'
-    }[budgetRange] || '';
-    budgetInput.value = budgetLabel;
+  const budgetVal = parseInt(budgetRange, 10);
+  if (budgetVal > 0) {
+    budgetInput.value = budgetVal;
+    budgetCurrency.value = 'Ar';
+    budgetCurrency.dataset.lastCurrency = 'Ar';
   }
 
   const serviceLabel = {
     'construction': 'Construction Neuve',
-    'rehabilitation': 'Réhabilitation',
+    'rehabilitation': 'Études et Conception',
     'forage': 'Forage d\'Eau'
   }[service] || '';
 
-  messageTextarea.value = `Je suis intéressé par : ${type}\nFormule : ${tier}\nTarif référence : ${price ? price + ' Ar/m²' : 'Sur devis'}\n\nMerci de me contacter pour un devis détaillé.`;
+  const priceDisplay = price ? Number(price).toLocaleString('fr-FR') + ' Ar/m²' : 'Sur devis';
+
+  messageTextarea.value = `Je suis intéressé par : ${type}\nFormule : ${tier}\nTarif référence : ${priceDisplay}\n\nMerci de me contacter pour un devis détaillé.`;
 
   setTimeout(() => {
     document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
@@ -296,13 +293,15 @@ function handleSubmit(e) {
   btn.disabled = true;
   messageDiv.style.display = 'none';
 
+  const budgetAmount = document.getElementById('budget').value;
+  const budgetCurrency = document.getElementById('budgetCurrency').value;
   const formData = {
     name: document.getElementById('name').value,
     email: document.getElementById('email').value,
     phone: document.getElementById('phone').value || '',
     serviceType: document.getElementById('serviceType').value,
     projectType: document.getElementById('projectType').value,
-    budget: document.getElementById('budget').value || '',
+    budget: budgetAmount ? `${Number(budgetAmount).toLocaleString('fr-FR')} ${budgetCurrency}` : '',
     message: document.getElementById('message').value
   };
 
@@ -412,7 +411,20 @@ async function runCalculation() {
   }
 
   const priceLocale = currentLang === 'en' ? 'en-US' : 'fr-MG';
-  const formatPrice = (val) => new Intl.NumberFormat(priceLocale).format(val) + ' Ar';
+  const fmt = (val) => new Intl.NumberFormat(priceLocale).format(val);
+  const formatAr = (val) => fmt(val) + ' Ar';
+  const foreignTotal = data.grandTotalEUR && data.grandTotalUSD
+    ? `<div class="calc-foreign">
+        <div class="calc-foreign-item">
+          <span class="calc-foreign-symbol">€</span>
+          <span class="calc-foreign-val">${fmt(data.grandTotalEUR)}</span>
+        </div>
+        <div class="calc-foreign-item">
+          <span class="calc-foreign-symbol">$</span>
+          <span class="calc-foreign-val">${fmt(data.grandTotalUSD)}</span>
+        </div>
+      </div>`
+    : '';
 
   const rTitle = getNestedTranslation('calculator.resultTitle') || 'Estimation Prévisionnelle';
   const rUnit = getNestedTranslation('calculator.resultUnit') || 'Toutes Taxes Comprises (TTC)';
@@ -429,29 +441,30 @@ async function runCalculation() {
   resultPanel.innerHTML = `
     <div class="result-header">
       <div class="result-title">${rTitle}</div>
-      <div class="result-main">${formatPrice(data.grandTotal)}</div>
+      <div class="result-main">${formatAr(data.grandTotal)}</div>
+      ${foreignTotal}
       <div class="result-unit">${rUnit}</div>
     </div>
     <div class="result-details">
       <div class="detail-item">
         <span>${dBase} ${data.serviceType} (${data.finishingLevel})</span>
-        <span>${formatPrice(data.basePrice)} / ${data.serviceType === 'forage' ? 'ml' : 'm²'}</span>
+        <span>${formatAr(data.basePrice)} / ${data.serviceType === 'forage' ? 'ml' : 'm²'}</span>
       </div>
       <div class="detail-item">
         <span>${dSub}</span>
-        <span>${formatPrice(data.subtotal)}</span>
+        <span>${formatAr(data.subtotal)}</span>
       </div>
       <div class="detail-item">
         <span>${dCont}</span>
-        <span>${formatPrice(data.contingency)}</span>
+        <span>${formatAr(data.contingency)}</span>
       </div>
       <div class="detail-item">
         <span>${dTax}</span>
-        <span>${formatPrice(data.tax)}</span>
+        <span>${formatAr(data.tax)}</span>
       </div>
       <div class="detail-item total">
         <span>${dTotal}</span>
-        <span>${formatPrice(data.grandTotal)}</span>
+        <span>${formatAr(data.grandTotal)}</span>
       </div>
     </div>
     <p class="result-note">${rNote}</p>
@@ -1026,43 +1039,64 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeBlogPost();
 });
 
+let exchangeRates = {};
+
 async function loadPricingData() {
   try {
     const res = await fetch(`${API_BASE}/api/pricing`);
     const data = await res.json();
     const pricing = data.pricing || {};
+    exchangeRates = data.exchange_rates || {};
     const categories = ['construction', 'rehabilitation', 'forage'];
     categories.forEach(cat => {
       const container = document.getElementById(`pricingGrid-${cat}`);
       if (!container) return;
       const tiers = pricing[cat] || {};
       const tierKeys = Object.keys(tiers);
+      const defaultProjectSize = cat === 'forage' ? 12 : 100;
       const catLabels = {
-        construction: { unit: 'm²', budgetMap: { economic: '10-25', standard: '25-100', premium: '100+' } },
-        rehabilitation: { unit: 'm²', budgetMap: { economic: '5-15', standard: '15-50', premium: '50+' } },
-        forage: { unit: 'ml', budgetMap: { economic: '', standard: '2.5-5', premium: '' } }
+        construction: { unit: 'm²' },
+        rehabilitation: { unit: 'm²' },
+        forage: { unit: 'ml' }
       };
       container.innerHTML = tierKeys.map((tier, ti) => {
         const t = tiers[tier];
         const price = t.pricePerM2 || t.pricePerML || t.price || 0;
         const unit = t.unit || catLabels[cat]?.unit || 'm²';
-        const budget = catLabels[cat]?.budgetMap[tier] || '';
+        const budget = Math.round(price * defaultProjectSize);
         const type = getNestedTranslation(`pricing.tiers.${cat}.${tier}`) || t.name;
         const isFeatured = ti === 1;
         const priceLocale = currentLang === 'en' ? 'en-US' : 'fr-MG';
         const priceStr = price.toLocaleString(priceLocale);
+        const priceEUR = exchangeRates.EUR ? Math.round(price / exchangeRates.EUR).toLocaleString(priceLocale) : null;
+        const priceUSD = exchangeRates.USD ? Math.round(price / exchangeRates.USD).toLocaleString(priceLocale) : null;
         const badgeKey = cat === 'construction' && tier === 'standard' ? 'popular'
           : cat === 'rehabilitation' && tier === 'standard' ? 'recommended'
           : cat === 'forage' && tier === 'standard' ? 'allInclusive' : '';
         const badge = badgeKey ? getNestedTranslation(`pricing.badge.${badgeKey}`) : '';
+        const foreignHtml = priceEUR && priceUSD ? `
+          <div class="price-foreign">
+            <div class="price-foreign-item">
+              <span class="price-foreign-symbol">€</span>
+              <span class="price-foreign-val">${priceEUR}</span>
+            </div>
+            <div class="price-foreign-item">
+              <span class="price-foreign-symbol">$</span>
+              <span class="price-foreign-val">${priceUSD}</span>
+            </div>
+          </div>` : '';
         return `
-        <div class="price-card${isFeatured ? ' featured' : ''}" data-service="${cat}" data-tier="${tier}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
+        <div class="price-card${isFeatured ? ' featured' : ''}" data-service="${cat}" data-tier="${tier}" data-tier-name="${escapeHtml(t.name)}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
           ${badge ? `<div class="price-badge">${badge}</div>` : ''}
           <div class="price-tier">${escapeHtml(t.name)}</div>
           <div class="price-type">${escapeHtml(type)}</div>
           <div class="price-val">
-            <div class="price-num">${priceStr}</div>
-            <div class="price-unit">Ar / ${unit}</div>
+            <div class="price-main">
+              <span class="price-num">${priceStr}</span>
+              <span class="price-currency">Ar</span>
+            </div>
+            <div class="price-unit">/ ${unit}</div>
+            ${foreignHtml}
           </div>
           <hr class="price-divider">
           <ul class="price-features">
@@ -1353,7 +1387,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadConfigData();
   initImageReveal();
   initMaps();
+  initBudgetCurrencyConversion();
 });
+
+// ═══════════════════════════════════════════════════════
+// BUDGET CURRENCY CONVERTER
+// ═══════════════════════════════════════════════════════
+
+function convertBudget() {
+  const input = document.getElementById('budget');
+  const select = document.getElementById('budgetCurrency');
+  const amount = parseFloat(input.value);
+  if (!amount || amount <= 0 || !exchangeRates.EUR) return;
+
+  const oldCur = select.dataset.lastCurrency || 'Ar';
+  const newCur = select.value;
+  if (oldCur === newCur) return;
+
+  const rateMap = { Ar: 1, EUR: exchangeRates.EUR, USD: exchangeRates.USD };
+  const oldRate = rateMap[oldCur] || 1;
+  const newRate = rateMap[newCur] || 1;
+
+  const arValue = amount * oldRate;
+  const converted = Math.round(arValue / newRate);
+
+  input.value = converted;
+  select.dataset.lastCurrency = newCur;
+}
+
+function initBudgetCurrencyConversion() {
+  const select = document.getElementById('budgetCurrency');
+  if (select) {
+    select.addEventListener('change', convertBudget);
+  }
+}
 
 // ═══════════════════════════════════════════════════════
 // SSE — Live refresh when admin updates content

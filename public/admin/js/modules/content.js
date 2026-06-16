@@ -42,7 +42,7 @@ const ENTITY_CONFIG = {
       { key: 'description', label: 'Description', type: 'textarea' },
       { key: 'category', label: 'Catégorie', type: 'select', options: [
         { value: 'construction', label: 'Construction' },
-        { value: 'rehabilitation', label: 'Réhabilitation' },
+        { value: 'rehabilitation', label: 'Études et Conception' },
         { value: 'forage', label: 'Forage' }
       ]},
       { key: 'image', label: 'Image', type: 'text' },
@@ -153,7 +153,7 @@ export function renderEntity(entity) {
       const d = new Date(item.date);
       metaHtml = `<span class="admin-card-meta">${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`;
     } else if (entity === 'projects' && item.category) {
-      const catLabels = { construction: 'Construction', rehabilitation: 'Réhabilitation', forage: 'Forage' };
+      const catLabels = { construction: 'Construction', rehabilitation: 'Études et Conception', forage: 'Forage' };
       metaHtml = `<span class="admin-card-meta admin-card-cat">${catLabels[item.category] || item.category}</span>`;
     } else if (entity === 'team' && item.role) {
       metaHtml = `<span class="admin-card-meta">${escapeHtml(item.role)}</span>`;

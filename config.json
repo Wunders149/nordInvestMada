@@ -9,7 +9,7 @@
     "antsiranana",
     "diego-suarez",
     "forage",
-    "réhabilitation"
+    "études"
   ],
   "author": "Nord Invest Madagascar",
   "contact": {
@@ -31,8 +31,8 @@
     },
     {
       "id": "rehabilitation",
-      "name": "Réhabilitation",
-      "description": "Rénovation et extension de bâtiments existants"
+      "name": "Études et Conception",
+      "description": "Conception architecturale, études techniques et BIM"
     },
     {
       "id": "forage",
@@ -76,10 +76,14 @@
       "multiplier": 1.08
     }
   ],
+  "exchange_rates": {
+    "EUR": 5000,
+    "USD": 4600
+  },
   "pricing": {
     "construction": {
       "economic": {
-        "name": "Économique",
+        "name": "Bas Standing",
         "pricePerM2": 400000,
         "unit": "m²",
         "features": [
@@ -92,7 +96,7 @@
         ]
       },
       "standard": {
-        "name": "Standard",
+        "name": "Moyen Standing",
         "pricePerM2": 850000,
         "unit": "m²",
         "features": [
@@ -107,7 +111,7 @@
         ]
       },
       "premium": {
-        "name": "Premium",
+        "name": "Haut Standing",
         "pricePerM2": 1600000,
         "unit": "m²",
         "features": [
@@ -124,47 +128,47 @@
     },
     "rehabilitation": {
       "economic": {
-        "name": "Rafraîchissement",
-        "pricePerM2": 200000,
+        "name": "Bas Standing",
+        "pricePerM2": 15000,
         "unit": "m²",
         "features": [
-          "Peinture intérieure complète",
-          "Réparation des fissures",
-          "Nettoyage en profondeur",
-          "Remplacement des prises et interrupteurs",
-          "Petites réparations plomberie"
+          "Avant-projet sommaire (APS)",
+          "Plans architecturaux de base",
+          "Notice descriptive",
+          "Estimation budgétaire préliminaire"
         ]
       },
       "standard": {
-        "name": "Rénovation Complète",
-        "pricePerM2": 550000,
+        "name": "Moyen Standing",
+        "pricePerM2": 35000,
         "unit": "m²",
         "features": [
-          "Reprise électricité complète",
-          "Plomberie intégrale",
-          "Carrelage et revêtements neufs",
-          "Menuiserie intérieure neuve",
-          "Toiture et étanchéité",
-          "Enduits et peinture"
+          "Avant-projet détaillé (APD)",
+          "Plans architecturaux complets",
+          "Coupes et façades",
+          "Plans techniques (électricité, plomberie)",
+          "Devis quantitatif estimatif (DQE)",
+          "Modélisation 3D"
         ]
       },
       "premium": {
-        "name": "Confortement & Extension",
-        "pricePerM2": 1000000,
+        "name": "Haut Standing",
+        "pricePerM2": 65000,
         "unit": "m²",
         "features": [
-          "Extension de surface habitable",
-          "Confortement structurel (poteaux, poutres)",
-          "Finition haut de gamme",
-          "Isolation thermique et acoustique",
-          "Véranda ou terrasse couverte",
-          "Permis de construire inclus"
+          "Étude de conception complète",
+          "Modélisation BIM (Revit / ArchiCAD)",
+          "Calculs structurels (Robot Structural)",
+          "Plans d'exécution détaillés",
+          "VRD et études techniques",
+          "Dossier de consultation des entreprises",
+          "Suivi et assistance à la réalisation"
         ]
       }
     },
     "forage": {
       "economic": {
-        "name": "Géophysique Préalable",
+        "name": "Bas Standing",
         "price": 3500000,
         "unit": "mission",
         "features": [
@@ -176,7 +180,7 @@
         ]
       },
       "standard": {
-        "name": "Forage + Équipement",
+        "name": "Moyen Standing",
         "pricePerML": 300000,
         "unit": "ml",
         "features": [
@@ -190,7 +194,7 @@
         ]
       },
       "premium": {
-        "name": "Entretien & Réhabilitation",
+        "name": "Haut Standing",
         "price": 5500000,
         "unit": "mission",
         "features": [

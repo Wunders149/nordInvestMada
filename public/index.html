@@ -6,8 +6,8 @@
 <title data-i18n="page.title">Nord Invest Madagascar — Immobilier & Construction à Antsiranana</title>
 
 <!-- SEO Meta Tags -->
-<meta name="description" content="Nord Invest Madagascar - Immobilier, construction neuve, réhabilitation et forage d'eau à Antsiranana, Nosy Be et le nord de Madagascar. Devis gratuit.">
-<meta name="keywords" content="immobilier madagascar, construction antsiranana, forage d'eau, réhabilitation bâtiments, vente achat immobilier, diego suarez">
+<meta name="description" content="Nord Invest Madagascar - Immobilier, construction neuve, études et conception et forage d'eau à Antsiranana, Nosy Be et le nord de Madagascar. Devis gratuit.">
+<meta name="keywords" content="immobilier madagascar, construction antsiranana, forage d'eau, études conception, vente achat immobilier, diego suarez">
 <meta name="author" content="Nord Invest Madagascar">
 <meta name="robots" content="index, follow">
 <meta name="language" content="French">
@@ -64,7 +64,7 @@
   "@type": "LocalBusiness",
   "name": "Nord Invest Madagascar",
   "image": "https://res.cloudinary.com/dkhgdfcmq/image/upload/v1780649564/nord-invest/logos/logo-1780649561624.jpg",
-  "description": "Services immobiliers, construction neuve, réhabilitation et forage d'eau à Madagascar",
+  "description": "Services immobiliers, construction neuve, études et conception et forage d'eau à Madagascar",
   "url": "https://www.nordinvest.mg/",
   "telephone": "+261328231280",
   "email": "contact@nordinvest.mg",
@@ -87,7 +87,7 @@
   ],
   "areaServed": ["Antsiranana", "Nosy Be", "Sambava", "Antalaha"],
   "foundingDate": "2015",
-  "knowsAbout": ["Construction", "Réhabilitation", "Forage d'eau", "Immobilier"],
+  "knowsAbout": ["Construction", "Études et Conception", "Forage d'eau", "Immobilier"],
   "employees": {
     "@type": "AggregateRating",
     "ratingValue": "34",
@@ -174,7 +174,7 @@
   <div class="hero-left">
     <div class="hero-tag" data-i18n="hero.tag">Immobilier & Construction — Madagascar</div>
     <h1 data-i18n-html="hero.title">Bâtir<br>l'<em>excellence</em><br>au Nord.</h1>
-    <p class="hero-sub" data-i18n="hero.subtitle">Depuis 2015, Nord Invest Madagascar conçoit et réalise vos projets de construction, réhabilitation, forage d'eau et transactions immobilières avec rigueur et expertise.</p>
+    <p class="hero-sub" data-i18n="hero.subtitle">Depuis 2015, Nord Invest Madagascar conçoit et réalise vos projets de construction, études et conception, forage d'eau et transactions immobilières avec rigueur et expertise.</p>
     <div class="hero-btns">
       <a href="#pricing" class="btn-primary" data-i18n="hero.btnPricing">Voir les tarifs</a>
       <a href="#contact" class="btn-outline" data-i18n="hero.btnContact">Demander un devis</a>
@@ -389,7 +389,7 @@
 
     <div class="pricing-tabs reveal">
     <button class="tab-btn active" onclick="switchTab('construction')" data-i18n="pricing.tab1">Construction Neuve</button>
-    <button class="tab-btn" onclick="switchTab('rehab')" data-i18n="pricing.tab2">Réhabilitation</button>
+    <button class="tab-btn" onclick="switchTab('rehab')" data-i18n="pricing.tab2">Études et Conception</button>
     <button class="tab-btn" onclick="switchTab('forage')" data-i18n="pricing.tab3">Forage d'Eau</button>
   </div>
 
@@ -398,7 +398,7 @@
     <div id="pricingGrid-construction" class="pricing-grid reveal reveal-stagger"><div class="loading-spinner" style="margin:24px auto"></div></div>
   </div>
 
-  <!-- Réhabilitation -->
+  <!-- Études et Conception -->
   <div class="pricing-panel" id="tab-rehab">
     <div id="pricingGrid-rehabilitation" class="pricing-grid reveal reveal-stagger"><div class="loading-spinner" style="margin:24px auto"></div></div>
   </div>
@@ -434,7 +434,7 @@
           <label class="form-label" data-i18n="calculator.serviceLabel">Type de Service</label>
           <select id="calc-service" class="form-select" onchange="updateCalcFields()">
             <option value="construction" data-i18n="calculator.optConstruction">Construction Neuve</option>
-            <option value="rehabilitation" data-i18n="calculator.optRehab">Réhabilitation</option>
+            <option value="rehabilitation" data-i18n="calculator.optRehab">Études et Conception</option>
             <option value="forage" data-i18n="calculator.optForage">Forage d'Eau</option>
           </select>
         </div>
@@ -635,7 +635,7 @@
           <select id="serviceType" name="serviceType" class="form-select" required>
             <option value="" data-i18n="contact.optSelect">-- Sélectionner --</option>
             <option value="construction" data-i18n="contact.optConstruction">Construction Neuve</option>
-            <option value="rehabilitation" data-i18n="contact.optRehab">Réhabilitation</option>
+            <option value="rehabilitation" data-i18n="contact.optRehab">Études et Conception</option>
             <option value="forage" data-i18n="contact.optForage">Forage d'Eau</option>
             <option value="immobilier" data-i18n="contact.optImmobilier">Vente & Achat Immobilier</option>
             <option value="suivi" data-i18n="contact.optSuivi">Suivi & Contrôle Qualité</option>
@@ -651,7 +651,14 @@
         </div>
         <div class="form-group">
           <label for="budget" class="form-label" data-i18n="contact.formBudget">Budget Estimé</label>
-          <input type="text" id="budget" name="budget" class="form-input" placeholder="Ex: 50 millions Ar">
+          <div class="budget-row">
+            <input type="number" id="budget" name="budget" class="form-input budget-input" placeholder="Montant" min="0">
+            <select id="budgetCurrency" class="form-select budget-currency-select">
+              <option value="Ar" data-i18n="contact.budgetAr">Ar</option>
+              <option value="EUR" data-i18n="contact.budgetEur">€ EUR</option>
+              <option value="USD" data-i18n="contact.budgetUsd">$ USD</option>
+            </select>
+          </div>
         </div>
       </div>
 

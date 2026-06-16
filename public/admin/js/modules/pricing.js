@@ -21,7 +21,7 @@ function renderPricingEditor() {
 
   ['construction', 'rehabilitation', 'forage'].forEach(cat => {
     const tiers = pricingData[cat] || {};
-    const catLabels = { construction: 'Construction Neuve', rehabilitation: 'Réhabilitation', forage: 'Forage d\'Eau' };
+    const catLabels = { construction: 'Construction Neuve', rehabilitation: 'Études et Conception', forage: 'Forage d\'Eau' };
     html += `<div class="pricing-cat"><h4>${catLabels[cat]}</h4>`;
     Object.keys(tiers).forEach(tier => {
       const t = tiers[tier];

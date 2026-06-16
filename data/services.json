@@ -17,9 +17,9 @@
   },
   {
     "id": "rehabilitation",
-    "title": "Réhabilitation",
-    "description": "Rénovation complète, extension, surélévation, mise aux normes parasismiques et cycloniques, ravalement et modernisation des bâtiments existants.",
-    "icon": "🔨",
+    "title": "Études et Conception",
+    "description": "Conception architecturale et structurelle complète, études techniques, modélisation BIM et assistance à la réalisation de vos projets.",
+    "icon": "📐",
     "order": 3,
     "visible": true
   },
