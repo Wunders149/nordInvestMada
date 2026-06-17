@@ -13,7 +13,7 @@
     "tag": "Trano sy Fananana — Madagasikara",
     "badge": "Hatramin'ny 2015",
     "title": "Manorina<br><em>fahaizana</em><br>any Avaratra.",
-    "subtitle": "Nanomboka tamin'ny 2015, Nord Invest Madagascar dia mamolavola sy manatanteraka ny tetikasanao momba ny fanorenana, fandalinana sy drafitra, fandavahana rano ary varotra trano amin'ny fahaizana sy fahamalinana.",
+    "subtitle": "Nanomboka tamin'ny 2021, Nord Invest Madagascar dia mamolavola sy manatanteraka ny tetikasanao momba ny fanorenana, fandalinana sy drafitra, fandavahana rano ary varotra trano amin'ny fahaizana sy fahamalinana.",
     "btnPricing": "Jereo ny vidiny",
     "btnContact": "Mangataka tombana",
     "stat1Val": "10+",
@@ -41,7 +41,7 @@
   },
   "mission": {
     "title": "Ny Irakanay",
-    "text": "\"Manatanteraka fandalinana, fanorenana ary serivisy fananana amin'ny fahaizana, kalitao ary fanajana ny fenitra.\""
+    "text": "\"Manatanteraka fandalinana teknika, fanorenana ary serivisy fananana amin'ny fahaizana, kalitao ary fanajana ny fenitra.\""
   },
   "standards": {
     "tag": "Fenitra & Fiarovana",
@@ -52,7 +52,7 @@
     "item2Title": "Kajy Rafitra (VEx)",
     "item2Desc": "Ny fandalinanay dia mampiditra ny fenitry ny <strong>Rivotra Mahery (VEx 1 à 4)</strong> eto Madagasikara. Ny rafitra tsirairay dia kajiana mba hahatanty ny rivodoza any Avaratra.",
     "item2Badge": "Mifanaraka amin'i Madagasikara",
-    "item3Title": "Drafitra BIM",
+    "item3Title": "Drafitra maritrano (BIM)",
     "item3Desc": "Fampiasana rindrambaiko malaza: <strong>AutoCAD, Revit ary ArchiCAD</strong> ho an'ny drafitra, ary <strong>Robot Structural Analysis</strong> ho an'ny fankatoavana ny kajy enta-mavesatra.",
     "item4Title": "Fankatoavana Ara-pitantanana",
     "item4Desc": "Fanampiana amin'ny fahazoana alalana hanorina. Fiaraha-miasa tsy tapaka amin'ny arisitika ekena ao amin'ny Filankevitry ny Arisitika Nasionaly."
@@ -223,7 +223,7 @@
   "team": {
     "tag": "Ny Ekipanay",
     "title": "Manam-pahaizana<br>vonona hanampy anao.",
-    "lead": "Ekipa misy teknisianina sy injeniera 34, vonona ho an'ny tetikasanao manerana ny avaratr'i Madagasikara.",
+    "lead": "Ekipa misy teknisianina sy injeniera 34, manolo-tena hanatanteraka ny tetikasanao manerana an'i Madagasikara sy iraisam-pirenena.",
     "role1": "Tale Jeneraly",
     "desc1": "15 taona traikefa amin'ny injenieria sivily sy fitantanana tetikasa.",
     "role2": "Injeniera Lehibe",
@@ -239,7 +239,7 @@
     "title2": "Fiarovana Aloha",
     "desc2": "Safety First no fitsipika fototra. Fitaovana fiarovana, faritra voamarika ary fanaraha-maso tsy tapaka.",
     "title3": "Fiantraikany eo An-toerana",
-    "desc3": "Fanofanana sy fampiasana teknisianina eo an-toerana. Fampiasana fitaovana eo an-toerana hanohanana ny toekaren'i Diana sy SAVA."
+    "desc3": "Fanofanana sy fampiasana teknisianina eo an-toerana. Fampiasana fitaovana eo an-toerana hanohanana ny toekaren'ny faritra sy ny firenena."
   },
   "blog": {
     "tag": "Blaogy",

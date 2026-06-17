@@ -12,7 +12,7 @@
   "hero": {
     "tag": "Immobilier & Construction — Madagascar",
     "title": "Bâtir<br>l'<em>excellence</em><br>au Nord.",
-    "subtitle": "Depuis 2015, Nord Invest Madagascar conçoit et réalise vos projets de construction, études et conception, forage d'eau et transactions immobilières avec rigueur et expertise.",
+    "subtitle": "Depuis 2021, Nord Invest Madagascar conçoit et réalise vos projets de construction, études et conception, forage d'eau et transactions immobilières avec rigueur et expertise.",
     "btnPricing": "Voir les tarifs",
     "btnContact": "Demander un devis",
     "stat1Val": "10+",
@@ -41,7 +41,7 @@
   },
   "mission": {
     "title": "Notre Mission",
-    "text": "\"Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes.\""
+    "text": "\"Réaliser des études technique, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes.\""
   },
   "standards": {
     "tag": "Normes & Sécurité",
@@ -52,7 +52,7 @@
     "item2Title": "Calculs Structurels (VEx)",
     "item2Desc": "Nos études intègrent les normes de <strong>Vent Extrême (VEx 1 à 4)</strong> de Madagascar. Chaque structure est calculée pour résister aux conditions cycloniques spécifiques du Nord.",
     "item2Badge": "Conformité Madagascar",
-    "item3Title": "Conception BIM",
+    "item3Title": "Conception architectural(BIM)",
     "item3Desc": "Utilisation des logiciels leaders du marché : <strong>AutoCAD, Revit et ArchiCAD</strong> pour la conception, et <strong>Robot Structural Analysis</strong> pour la validation des calculs de charge.",
     "item4Title": "Régularité Administrative",
     "item4Desc": "Accompagnement pour l'obtention des permis de construire. Collaboration systématique avec des architectes agréés inscrits à l'Ordre National des Architectes."
@@ -140,7 +140,7 @@
   "team": {
     "tag": "Notre Équipe",
     "title": "Des experts<br>à votre service.",
-    "lead": "Une équipe de 34 techniciens et ingénieurs passionnés, mobilisés pour vos projets dans tout le nord de Madagascar.",
+    "lead": "Une équipe de 34 techniciens et ingénieurs passionnés, engagés à concrétiser vos projets à travers tout Madagascar et à l'international.",
     "role1": "Directeur Général",
     "desc1": "15 ans d'expérience en ingénierie civile et management de projets.",
     "role2": "Ingénieur en Chef",
@@ -156,7 +156,7 @@
     "title2": "Sécurité Avant Tout",
     "desc2": "Safety First est notre règle d'or. Équipements de protection, zones balisées et contrôles réguliers pour un chantier sans accident.",
     "title3": "Impact Local",
-    "desc3": "Employeurs et formation de techniciens locaux. Utilisation de matériaux locaux pour soutenir l'économie de la région Diana et SAVA."
+    "desc3": "Employeurs et formation de techniciens locaux. Utilisation de matériaux locaux pour soutenir l'économie de la région et du pays."
   },
   "blog": {
     "tag": "Actualités",

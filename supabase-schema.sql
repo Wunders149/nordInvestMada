@@ -181,7 +181,7 @@ VALUES (
   1,
   '{"phone":"032 82 312 80 / 037 07 396 07","email":"nordinvestmada@gmail.com","address":"Tanambao 1 en face de Madahoufi, rue comores, Antsiranana, Madagascar"}'::jsonb,
   '{"facebook":"https://www.facebook.com/nordinvest","instagram":"https://www.instagram.com/nordinvest"}'::jsonb,
-  'Réaliser des études, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes.',
+  'Réaliser des études technique, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes.',
   'Devenir un acteur de référence dans le secteur du bâtiment et de l''immobilier à Madagascar et en Afrique.',
   '{"total_staff":34,"civil_engineers":4,"technicians":30}'::jsonb,
   2015, 10,

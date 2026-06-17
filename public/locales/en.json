@@ -13,7 +13,7 @@
     "tag": "Real Estate & Construction — Madagascar",
     "badge": "Since 2015",
     "title": "Building<br><em>excellence</em><br>in the North.",
-    "subtitle": "Since 2015, Nord Invest Madagascar designs and executes your construction, studies and design, water drilling and real estate projects with rigor and expertise.",
+    "subtitle": "Since 2021, Nord Invest Madagascar designs and executes your construction, studies and design, water drilling and real estate projects with rigor and expertise.",
     "btnPricing": "View pricing",
     "btnContact": "Request a quote",
     "stat1Val": "10+",
@@ -41,7 +41,7 @@
   },
   "mission": {
     "title": "Our Mission",
-    "text": "\"To carry out studies, construction works and real estate services with professionalism, quality and respect for standards.\""
+    "text": "\"To carry out technical studies, construction works and real estate services with professionalism, quality and respect for standards.\""
   },
   "standards": {
     "tag": "Standards & Safety",
@@ -52,7 +52,7 @@
     "item2Title": "Structural Calculations (VEx)",
     "item2Desc": "Our studies integrate Madagascar's <strong>Extreme Wind (VEx 1 to 4)</strong> standards. Every structure is calculated to withstand the specific cyclone conditions of the North.",
     "item2Badge": "Madagascar Compliant",
-    "item3Title": "BIM Design",
+    "item3Title": "Architectural Design (BIM)",
     "item3Desc": "Use of market-leading software: <strong>AutoCAD, Revit and ArchiCAD</strong> for design, and <strong>Robot Structural Analysis</strong> for load calculation validation.",
     "item4Title": "Administrative Compliance",
     "item4Desc": "Support for obtaining building permits. Systematic collaboration with approved architects registered with the National Order of Architects."
@@ -223,7 +223,7 @@
   "team": {
     "tag": "Our Team",
     "title": "Experts<br>at your service.",
-    "lead": "A team of 34 passionate technicians and engineers, mobilized for your projects throughout northern Madagascar.",
+    "lead": "A team of 34 passionate technicians and engineers, committed to realizing your projects throughout Madagascar and internationally.",
     "role1": "CEO",
     "desc1": "15 years of experience in civil engineering and project management.",
     "role2": "Chief Engineer",
@@ -239,7 +239,7 @@
     "title2": "Safety First",
     "desc2": "Safety is our golden rule. Protective equipment, marked zones and regular checks for accident-free sites.",
     "title3": "Local Impact",
-    "desc3": "Employment and training of local technicians. Use of local materials to support the economy of the Diana and SAVA regions."
+    "desc3": "Employment and training of local technicians. Use of local materials to support the economy of the region and the country."
   },
   "blog": {
     "tag": "Blog",
