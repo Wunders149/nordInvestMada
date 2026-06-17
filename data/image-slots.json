@@ -4,7 +4,15 @@
       "id": "hero",
       "section": "hero",
       "originalFile": "architecture.svg",
-      "label": "Hero - Architecture",
+      "label": "Hero - Image Droite",
+      "uploadedFile": null,
+      "updatedAt": null
+    },
+    {
+      "id": "hero-bg-left",
+      "section": "hero",
+      "originalFile": "architecture-left.svg",
+      "label": "Hero - Fond colonne gauche",
       "uploadedFile": null,
       "updatedAt": null
     },

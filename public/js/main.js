@@ -845,16 +845,68 @@ async function loadImageSlots() {
     slots.forEach(slot => {
       if (!slot.uploadedFile && !slot.cloudinaryUrl) return;
       if (!slot.currentUrl || slot.currentUrl.endsWith('placeholder.svg')) return;
-      const img = document.querySelector(`[data-image-slot="${slot.id}"]`);
-      if (img) {
-        img.src = slot.currentUrl;
-        img.dataset.originalSrc = slot.originalFile ? `/images/${slot.section}/${slot.originalFile}` : '';
+      const el = document.querySelector(`[data-image-slot="${slot.id}"]`);
+      if (!el) return;
+      if (el.tagName === 'IMG') {
+        el.src = slot.currentUrl;
+        el.dataset.originalSrc = slot.originalFile ? `/images/${slot.section}/${slot.originalFile}` : '';
+      } else {
+        el.style.backgroundImage = `url('${slot.currentUrl}')`;
+        el.dataset.originalSrc = slot.originalFile ? `/images/${slot.section}/${slot.originalFile}` : '';
       }
     });
+    initHeroSwap();
     rebuildGallery();
   } catch (err) {
     // Silent fail — SVGs remain as fallbacks
   }
+}
+
+// ═══════════════════════════════════════════════════════
+// HERO IMAGE SWAP — swap left bg and right img every 5s
+// ═══════════════════════════════════════════════════════
+
+let heroSwapTimer = null;
+let heroSwapInitialized = false;
+
+function initHeroSwap() {
+  const heroLeftBg = document.querySelector('.hero-left-bg');
+  const heroImg = document.querySelector('.hero-img');
+  if (!heroLeftBg || !heroImg) return;
+
+  if (heroSwapTimer) clearInterval(heroSwapTimer);
+  heroSwapInitialized = false;
+
+  const leftBg = getComputedStyle(heroLeftBg).backgroundImage;
+  const rightSrc = heroImg.src;
+  if (!leftBg || leftBg === 'none' || !rightSrc) return;
+  if (leftBg.includes('placeholder.svg') || rightSrc.includes('placeholder.svg')) return;
+
+  heroSwapInitialized = true;
+
+  heroSwapTimer = setInterval(() => {
+    const currentLeftBg = heroLeftBg.style.backgroundImage || getComputedStyle(heroLeftBg).backgroundImage;
+    const currentRightSrc = heroImg.src;
+
+    if (!currentLeftBg || currentLeftBg === 'none' || !currentRightSrc) return;
+    if (currentLeftBg.includes('placeholder.svg') || currentRightSrc.includes('placeholder.svg')) return;
+
+    const leftUrl = currentLeftBg.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
+    const rightUrl = currentRightSrc;
+
+    heroLeftBg.classList.add('swap-out');
+    heroImg.classList.add('swap-out');
+
+    setTimeout(() => {
+      heroLeftBg.style.backgroundImage = `url('${rightUrl}')`;
+      heroImg.src = leftUrl;
+
+      requestAnimationFrame(() => {
+        heroLeftBg.classList.remove('swap-out');
+        heroImg.classList.remove('swap-out');
+      });
+    }, 400);
+  }, 5000);
 }
 
 // ═══════════════════════════════════════════════════════

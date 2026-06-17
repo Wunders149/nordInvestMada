@@ -16,6 +16,7 @@ const SKIP_FILES = ['.gitkeep', '.DS_Store', 'Thumbs.db', 'placeholder.svg'];
 // These slot IDs are already used in the database and match data-image-slot in index.html
 const SLOT_ID_MAP = {
   'hero/architecture.svg': 'hero',
+  'hero/architecture-left.svg': 'hero-bg-left',
   'about/team.svg': 'about-team',
   'about/accent.svg': 'about-accent',
   'team/director.svg': 'team-director',
