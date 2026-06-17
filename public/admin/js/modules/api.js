@@ -1,4 +1,5 @@
 export const API_BASE = '/api/admin';
+export const API_IMAGES_BASE = '/api';
 export let token = '';
 export let contacts = [];
 export let quotes = [];

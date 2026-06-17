@@ -1,4 +1,4 @@
-import { API_BASE, getHeaders, token, clearToken } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, token, clearToken } from './api.js';
 import { showToast, showConfirm } from './ui.js';
 
 export let blogCategories = [];
@@ -115,7 +115,7 @@ export async function catUploadClick(index) {
     fd.append('section', 'blog');
     fd.append('image', file);
     try {
-      const res = await fetch('/api/upload', {
+      const res = await fetch(`${API_IMAGES_BASE}/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: fd

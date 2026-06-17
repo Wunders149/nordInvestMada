@@ -1,4 +1,4 @@
-import { API_BASE, getHeaders, contentPage, slots, token, clearToken } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, contentPage, slots, token, clearToken } from './api.js';
 import { escapeHtml } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, renderPagination, exportToCsv } from './ui.js';
 import { blogCategories } from './blogCategories.js';
@@ -75,7 +75,7 @@ export async function loadEntity(entity) {
   if (!contentPage[entity]) contentPage[entity] = 1;
   if (slots.length === 0) {
     try {
-      const res = await fetch('/api/images/slots');
+      const res = await fetch(`${API_IMAGES_BASE}/images/slots`);
       const data = await res.json();
       slots.length = 0;
       slots.push(...data);
@@ -200,7 +200,7 @@ export async function openCrudForm(entity, editId) {
   if (!cfg) return;
   if (slots.length === 0) {
     try {
-      const res = await fetch('/api/images/slots');
+      const res = await fetch(`${API_IMAGES_BASE}/images/slots`);
       const data = await res.json();
       slots.length = 0;
       slots.push(...data);
@@ -337,7 +337,7 @@ export async function uploadSlotImage(fieldKey, section) {
 
   status.textContent = 'Upload…';
   try {
-    const res = await fetch('/api/upload', {
+    const res = await fetch(`${API_IMAGES_BASE}/upload`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: fd
@@ -349,7 +349,7 @@ export async function uploadSlotImage(fieldKey, section) {
     status.textContent = '✓ Uploadé';
     status.style.color = 'var(--success)';
 
-    const sr = await fetch('/api/images/slots');
+    const sr = await fetch(`${API_IMAGES_BASE}/images/slots`);
     const newSlots = await sr.json();
     const previousIds = slots.map(s => s.id);
     slots.length = 0;
@@ -488,7 +488,7 @@ export async function uploadBlogImage() {
   fd.append('image', file);
 
   try {
-    const res = await fetch('/api/upload', {
+    const res = await fetch(`${API_IMAGES_BASE}/upload`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: fd

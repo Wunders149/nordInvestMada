@@ -1,10 +1,10 @@
-import { getHeaders, token, slots, images, clearToken } from './api.js';
+import { getHeaders, token, slots, images, clearToken, API_IMAGES_BASE } from './api.js';
 import { escapeHtml, humanSize } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, openLightbox } from './ui.js';
 
 export async function loadSlots() {
   try {
-    const res = await fetch('/api/images/slots');
+    const res = await fetch(`${API_IMAGES_BASE}/images/slots`);
     slots.length = 0;
     const data = await res.json();
     slots.push(...data);
@@ -29,7 +29,7 @@ function populateSlotSelect() {
 export async function loadImages() {
   showSkeletonGrid('imageGrid', 6);
   try {
-    const res = await fetch('/api/images', { headers: getHeaders() });
+    const res = await fetch(`${API_IMAGES_BASE}/images`, { headers: getHeaders() });
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
     const data = await res.json();
     Object.keys(images).forEach(k => delete images[k]);
@@ -83,7 +83,7 @@ export function renderImages() {
 export async function assignSlot(section, filename, slotId) {
   if (!slotId) return;
   try {
-    const res = await fetch(`/api/images/slots/${slotId}`, {
+    const res = await fetch(`${API_IMAGES_BASE}/images/slots/${slotId}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ filename })
@@ -97,7 +97,7 @@ export async function assignSlot(section, filename, slotId) {
 export function confirmDeleteImage(section, filename) {
   showConfirm('Supprimer l\'image', `Supprimer ${filename} ? Cette action est irréversible.`, async () => {
     try {
-      const res = await fetch(`/api/images/${encodeURIComponent(section)}/${encodeURIComponent(filename)}`, { method: 'DELETE', headers: getHeaders() });
+      const res = await fetch(`${API_IMAGES_BASE}/images/${encodeURIComponent(section)}/${encodeURIComponent(filename)}`, { method: 'DELETE', headers: getHeaders() });
       if (!res.ok) throw new Error('Delete failed');
       loadImages(); loadSlots();
       showToast('Image supprimée', 'success');
@@ -178,7 +178,7 @@ export async function saveImageEdit() {
     const replaceFile = document.getElementById('imageEditFile').files[0];
 
     if (newName && newName !== getBase(filename)) {
-      const renameRes = await fetch(`/api/images/${encodeURIComponent(section)}/${encodeURIComponent(filename)}/rename`, {
+      const renameRes = await fetch(`${API_IMAGES_BASE}/images/${encodeURIComponent(section)}/${encodeURIComponent(filename)}/rename`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify({ newName: newName + getExt(filename) })
@@ -192,7 +192,7 @@ export async function saveImageEdit() {
       const currentName = imageEditState.filename;
       const fd = new FormData();
       fd.append('image', replaceFile);
-      const replaceRes = await fetch(`/api/images/${encodeURIComponent(section)}/${encodeURIComponent(currentName)}/replace`, {
+      const replaceRes = await fetch(`${API_IMAGES_BASE}/images/${encodeURIComponent(section)}/${encodeURIComponent(currentName)}/replace`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: fd
@@ -210,7 +210,7 @@ export async function saveImageEdit() {
     } else {
       const currentAssigned = slots.find(s => s.section === section && s.uploadedFile === imageEditState.filename);
       if (currentAssigned) {
-        await fetch(`/api/images/slots/${currentAssigned.id}`, {
+        await fetch(`${API_IMAGES_BASE}/images/slots/${currentAssigned.id}`, {
           method: 'PUT', headers: getHeaders(), body: JSON.stringify({ filename: null })
         });
       }
@@ -269,7 +269,7 @@ document.getElementById('imageUploadForm')?.addEventListener('submit', async (e)
     fd.append('newSlotLabel', document.getElementById('newSlotLabel').value.trim());
     fd.append('image', file);
 
-    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
+    const res = await fetch(`${API_IMAGES_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
@@ -316,7 +316,7 @@ document.getElementById('newSlotSubmit')?.addEventListener('click', async () => 
   const label = document.getElementById('newSlotLabelInput').value.trim();
   if (!label) { showToast('Veuillez entrer un libellé', 'error'); return; }
   try {
-    const res = await fetch('/api/images/slots', {
+    const res = await fetch(`${API_IMAGES_BASE}/images/slots`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ section, label })
