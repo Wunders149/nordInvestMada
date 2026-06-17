@@ -2666,3 +2666,160 @@ input:focus, select:focus, textarea:focus,
   .tab-content { display: block !important; }
   .admin-card-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ══════════════════════════════════════════════
+   SECTIONS EDITOR
+   ══════════════════════════════════════════════ */
+.sections-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+.sections-info {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  min-width: 200px;
+}
+.sections-toolbar .btn-primary {
+  width: auto;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.sections-footer {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+.sections-footer .btn-primary {
+  width: auto;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.875rem;
+}
+
+.sections-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.section-accordion-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition);
+}
+.section-accordion-item:hover {
+  box-shadow: var(--shadow-md);
+}
+.section-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.125rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+}
+.section-accordion-header:hover {
+  background: var(--bg-card-hover);
+}
+.section-accordion-icon {
+  font-size: 1.125rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card-hover);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.section-accordion-title {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.section-accordion-arrow {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+.section-accordion-item.open .section-accordion-arrow {
+  transform: rotate(180deg);
+}
+.section-accordion-body {
+  display: none;
+  padding: 0 1.125rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+.section-accordion-item.open .section-accordion-body {
+  display: block;
+}
+.section-accordion-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+.section-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.section-field:has(textarea) {
+  grid-column: 1 / -1;
+}
+.section-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.section-input {
+  padding: 0.5rem 0.625rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color var(--transition);
+}
+.section-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(24,119,242,0.12);
+}
+.section-textarea {
+  padding: 0.5rem 0.625rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color var(--transition);
+}
+.section-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(24,119,242,0.12);
+}
+
+@media (max-width: 768px) {
+  .section-accordion-fields {
+    grid-template-columns: 1fr;
+  }
+  .sections-toolbar {
+    flex-direction: column;
+  }
+  .sections-toolbar .btn-primary {
+    width: 100%;
+  }
+}

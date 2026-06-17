@@ -8,7 +8,7 @@ import fs from 'fs';
 import rateLimit from 'express-rate-limit';
 import { adminRouter } from './admin.js';
 import { imageRouter } from './images.js';
-import { supabase, getSiteConfig } from './supabase.js';
+import { supabase, getSiteConfig, getSetting } from './supabase.js';
 import { addClient, broadcast, heartbeat as sseHeartbeat } from './events.js';
 import { getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
 import { validate, contactSchema, newsletterSchema, quoteSchema, pricingSchema } from './validation.js';
@@ -385,6 +385,7 @@ app.get('/api/config', async (req, res) => {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     const siteCfg = await loadSiteConfig();
     const rates = await getExchangeRates();
+    const sections = await getSetting('sections_content');
     res.json({
       ...staticConfig,
       pricing: siteCfg.pricing || staticConfig.pricing || {},
@@ -396,7 +397,8 @@ app.get('/api/config', async (req, res) => {
       social: siteCfg.social || staticConfig.social || {},
       mission: siteCfg.mission || staticConfig.mission || '',
       vision: siteCfg.vision || staticConfig.vision || '',
-      team_stats: siteCfg.team_stats || staticConfig.team || {}
+      team_stats: siteCfg.team_stats || staticConfig.team || {},
+      sections: sections || {}
     });
   } catch {
     res.json(staticConfig);

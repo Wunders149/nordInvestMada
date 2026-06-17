@@ -729,4 +729,66 @@ router.delete('/dossiers/:id', requireAuth, async (req, res) => {
   }
 });
 
+// ─── SECTIONS CONTENT MANAGEMENT ───
+const DEFAULT_SECTIONS_CONTENT = {
+  hero: { tag: 'Immobilier & Construction — Madagascar', title: 'Bâtir<br>l\'<em>excellence</em><br>au Nord.', subtitle: 'Depuis 2021, Nord Invest Madagascar conçoit et réalise vos projets de construction, études et conception, forage d\'eau et transactions immobilières avec rigueur et expertise.', badge: 'Fondée à Diego Suarez' },
+  about: { tag: 'À Propos', title: 'Une expertise<br>technique au service<br>de vos projets.', lead: 'Fondée en 2015 à Antsiranana, Nord Invest Madagascar est spécialisée dans la construction, le forage d\'eau et l\'immobilier. Nous mettons en œuvre notre expertise technique pour garantir des infrastructures modernes, durables et économiques.' },
+  standards: { tag: 'Normes & Sécurité', title: 'L\'ingénierie au cœur<br>de chaque ouvrage.', lead: 'Nous appliquons les standards internationaux et locaux les plus exigeants pour garantir la pérennité de vos investissements.' },
+  values: { title1: 'Qualité & Conformité', desc1: 'Respect strict des normes malgaches et internationales. Collaboration avec des architectes agréés pour des ouvrages durables et conformes.', title2: 'Sécurité Avant Tout', desc2: 'Safety First est notre règle d\'or. Équipements de protection, zones balisées et contrôles réguliers pour un chantier sans accident.', title3: 'Impact Local', desc3: 'Employeurs et formation de techniciens locaux. Utilisation de matériaux locaux pour soutenir l\'économie de la région et du pays.' },
+  team: { tag: 'Notre Équipe', title: 'Des experts<br>à votre service.', lead: 'Une équipe de 34 techniciens et ingénieurs passionnés, engagés à concrétiser vos projets à travers tout Madagascar et à l\'international.' },
+  services: { tag: 'Nos Services', title: 'Ce que nous<br>réalisons pour vous.', lead: 'Une offre complète, de la conception à la livraison, pour particuliers, ONG, entreprises et institutions.' },
+  pricing: { tag: 'Grille Tarifaire', title: 'Des tarifs clairs,<br>au mètre carré.', lead: 'Nos prix sont exprimés en Ariary malgache (Ar) par m² avec conversion en EUR et USD. Ils varient selon la gamme de finition, la complexité du projet et sa localisation. Devis personnalisé sur demande.', note: '<strong>Note importante :</strong> Les prix indiqués sont des tarifs de référence hors taxes. Le coût réel dépend des conditions d\'accès au site, du type de sol, des matériaux locaux disponibles et des spécificités de votre projet. <strong>Un devis personnalisé gratuit et sans engagement est réalisé après visite du terrain.</strong> Contactez-nous au <strong>032 82 312 80</strong> ou par email.' },
+  calculator: { tag: 'Simulateur', title: 'Estimez votre<br>budget en un clic.', lead: 'Sélectionnez vos options pour obtenir une estimation budgétaire instantanée basée sur nos tarifs actuels.' },
+  projects: { tag: 'Réalisations', title: 'Nos chantiers<br>parlent d\'eux-mêmes.', lead: 'Un aperçu de nos projets récents à Antsiranana, Nosy Be et dans tout le nord de Madagascar.' },
+  dossiers: { tag: 'Vente de Terrains', title: 'Dossiers de terrains<br>à vendre', lead: 'Consultez nos dossiers détaillés de terrains disponibles à la vente dans le nord de Madagascar. Cliquez sur un dossier pour le consulter.' },
+  blog: { tag: 'Actualités', title: 'Conseils &<br>actualités du bâtiment.', lead: 'Découvrez nos conseils techniques, guides pratiques et actualités sur la construction, le forage et l\'immobilier à Madagascar.' },
+  contact: { tag: 'Contact', title: 'Parlons de<br>votre projet.', lead: 'Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.' },
+  numbers: { exp: 'Années d\'expérience', tech: 'Techniciens & ingénieurs', engineers: 'Ingénieurs génie civil', sites: 'Sites d\'opération' }
+};
+
+function mergeSectionsWithDefaults(dbSections) {
+  const merged = {};
+  for (const [key, defaults] of Object.entries(DEFAULT_SECTIONS_CONTENT)) {
+    const dbEntry = dbSections?.[key] || {};
+    const filtered = {};
+    for (const [fk, fv] of Object.entries(dbEntry)) {
+      if (fv !== '' && fv != null) {
+        filtered[fk] = fv;
+      }
+    }
+    merged[key] = { ...defaults, ...filtered };
+  }
+  return merged;
+}
+
+router.get('/sections', requireAuth, async (req, res) => {
+  try {
+    let dbSections = await getSetting('sections_content');
+    if (!dbSections || typeof dbSections !== 'object') {
+      dbSections = {};
+    }
+    const merged = mergeSectionsWithDefaults(dbSections);
+    res.json(merged);
+  } catch (err) {
+    console.error('Sections get error:', err);
+    res.status(500).json({ error: 'Failed to load sections' });
+  }
+});
+
+router.put('/sections', requireAuth, async (req, res) => {
+  try {
+    const sections = req.body;
+    if (typeof sections !== 'object' || sections === null) {
+      return res.status(400).json({ error: 'Invalid sections data' });
+    }
+    await setSetting('sections_content', sections);
+    logActivity('sections_update', 'Contenu des sections mis à jour', req.admin.username);
+    broadcast('config');
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Sections update error:', err);
+    res.status(500).json({ error: 'Failed to update sections' });
+  }
+});
+
 export { router as adminRouter };

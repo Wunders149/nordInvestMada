@@ -23,6 +23,7 @@ import {
 import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pricing.js';
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
+import { loadSectionsEditor, saveAllSections } from './modules/sections.js';
 import { loadDossiers, filterDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
 import { loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager, catUploadClick, catRemoveImage } from './modules/blogCategories.js';
 import { loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager } from './modules/teamPositions.js';
@@ -40,7 +41,7 @@ function _switchTab(tabId) {
     dashboard: 'Tableau de bord', contacts: 'Messages', quotes: 'Devis',
     subscribers: 'Newsletter', images: 'Galerie', dossiers: 'Dossiers',
     team: 'Équipe', services: 'Services', projects: 'Projets',
-    blog: 'Blog', pricing: 'Tarifs', settings: 'Paramètres',
+    blog: 'Blog',     sections: 'Contenu des sections', pricing: 'Tarifs', settings: 'Paramètres',
     activity: "Journal d'activité"
   };
   const pageTitle = document.getElementById('pageTitle');
@@ -64,6 +65,7 @@ function _switchTab(tabId) {
       case 'services': loadEntity('services'); break;
       case 'projects': loadEntity('projects'); break;
       case 'blog': (async () => { await loadBlogCategories(); loadEntity('blog'); })(); break;
+      case 'sections': loadSectionsEditor(); break;
       case 'pricing': loadPricingEditor(); break;
       case 'settings': loadSettings(); break;
       case 'activity': loadActivityLog(); break;
@@ -103,7 +105,7 @@ Object.assign(window, {
   loadEntity, renderEntity, openCrudForm, closeCrudForm, saveCrudItem, confirmDeleteItem,
   previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
   exportEntity,
-  loadPricingEditor, addPricingFeature, savePricing,
+  loadSectionsEditor, loadPricingEditor, addPricingFeature, savePricing,
   loadSettings, saveSettings, testEmail,
   loadActivityLog,
   loadDossiers, closeDossierRename, confirmDossierRename, filterDossiers,
@@ -225,6 +227,7 @@ document.addEventListener('keydown', (e) => {
   if (num === 0) { switchTab('pricing'); return; }
   if (e.key === '-' || e.key === '_') { switchTab('dossiers'); return; }
   if (e.key === '=' || e.key === '+') { switchTab('settings'); return; }
+  if (e.key === 's' || e.key === 'S') { switchTab('sections'); return; }
   if (e.key === 'l' || e.key === 'L') { switchTab('activity'); return; }
   if (e.key === '?') { document.getElementById('shortcutsModal')?.classList.toggle('open'); }
 });
