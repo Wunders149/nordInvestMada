@@ -59,9 +59,9 @@ async function loadTranslations(lang) {
   }
 }
 
-function setLanguage(lang) {
-  loadTranslations(lang);
-  // Track analytics
+async function setLanguage(lang) {
+  await loadTranslations(lang);
+  loadConfigData();
   if (typeof gtag !== 'undefined') {
     gtag('event', 'language_switch', { 'language': lang });
   }
@@ -1248,16 +1248,39 @@ async function loadConfigData() {
     if (cfg.experience_years && heroExp) heroExp.textContent = cfg.experience_years;
     const heroStaff = document.getElementById('heroStaff');
     if (cfg.team_stats?.total_staff && heroStaff) heroStaff.textContent = cfg.team_stats.total_staff;
+    const heroEng = document.getElementById('heroEngineers');
+    if (cfg.team_stats?.civil_engineers && heroEng) heroEng.textContent = cfg.team_stats.civil_engineers;
 
     // Vision & Mission
     const visionEl = document.getElementById('visionText');
-    if (cfg.vision && visionEl) visionEl.textContent = `"${cfg.vision}"`;
+    if (visionEl) {
+      if (cfg.vision) {
+        visionEl.textContent = `"${cfg.vision}"`;
+      } else {
+        const fb = getNestedTranslation('vision.text');
+        if (fb) visionEl.textContent = fb;
+      }
+    }
     const missionEl = document.getElementById('missionText');
-    if (cfg.mission && missionEl) missionEl.textContent = `"${cfg.mission}"`;
+    if (missionEl) {
+      if (cfg.mission) {
+        missionEl.textContent = `"${cfg.mission}"`;
+      } else {
+        const fb = getNestedTranslation('mission.text');
+        if (fb) missionEl.textContent = fb;
+      }
+    }
 
     // Contact info
     const phoneEl = document.getElementById('contactPhone');
-    if (cfg.contact?.phone && phoneEl) phoneEl.textContent = cfg.contact.phone;
+    if (phoneEl) {
+      if (cfg.contact?.phone) {
+        phoneEl.textContent = cfg.contact.phone;
+      } else {
+        const fb = getNestedTranslation('contact.phoneVal');
+        if (fb) phoneEl.textContent = fb;
+      }
+    }
     const emailEl = document.getElementById('contactEmail');
     if (cfg.contact?.email && emailEl) emailEl.textContent = cfg.contact.email;
     const addrEl = document.getElementById('contactAddress');

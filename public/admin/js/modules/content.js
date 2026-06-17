@@ -59,7 +59,7 @@ const ENTITY_CONFIG = {
       { key: 'date', label: 'Date', type: 'date' },
       { key: 'excerpt', label: 'Extrait', type: 'textarea' },
       { key: 'content', label: 'Contenu (HTML)', type: 'textarea' },
-      { key: 'imageSlot', label: 'Catégorie', type: 'select', options: 'dynamic_blog_categories' },
+      { key: 'categoryId', label: 'Catégorie', type: 'select', options: 'dynamic_blog_categories' },
       { key: 'image', label: 'URL de l\'image (optionnelle)', type: 'text' },
       { key: 'published', label: 'Publié', type: 'checkbox', default: true }
     ]
@@ -93,7 +93,7 @@ export async function loadEntity(entity) {
     else if (entity === 'projects') { projectsData.length = 0; projectsData.push(...data); }
     else if (entity === 'blog') { blogData.length = 0; blogData.push(...data); }
     renderEntity(entity);
-  } catch (err) { console.error(`${entity} load error:`, err); }
+  } catch (err) { console.error(`${entity} load error:`, err); showToast(`Erreur lors du chargement des ${cfg.labelPlural.toLowerCase()}`, 'error'); }
 }
 
 export function renderEntity(entity) {
@@ -137,8 +137,9 @@ export function renderEntity(entity) {
     let thumbIcon = '';
     if (item.image) {
       thumbUrl = item.image.startsWith('http') || item.image.startsWith('/') ? item.image : `/images/blog/${item.image}`;
-    } else if (item.imageSlot) {
-      const slot = slots.find(s => s.id === item.imageSlot);
+    } else if (item.categoryId || item.imageSlot) {
+      const slotId = item.categoryId || item.imageSlot;
+      const slot = slots.find(s => s.id === slotId);
       if (slot && slot.currentUrl) thumbUrl = slot.currentUrl;
     }
     if (!thumbUrl) {
@@ -232,7 +233,9 @@ export async function openCrudForm(entity, editId) {
 
   let html = '';
   for (const field of cfg.fields) {
-    const val = item[field.key] !== undefined ? item[field.key] : (field.default !== undefined ? field.default : '');
+    let val = item[field.key] !== undefined ? item[field.key] : undefined;
+    if (val === undefined && field.key === 'categoryId') val = item['imageSlot'];
+    if (val === undefined) val = field.default !== undefined ? field.default : '';
     html += `<div class="form-group" data-field="${field.type}">`;
     html += `<label for="crud_${field.key}">${field.label}${field.required ? ' <span style="color:var(--danger)">*</span>' : ''}</label>`;
 
@@ -259,32 +262,6 @@ export async function openCrudForm(entity, editId) {
         html += `<option value="${escapeHtml(String(val))}" selected>${escapeHtml(String(val))} (ancien)</option>`;
       }
       html += `</select>`;
-    } else if (field.type === 'slot-select') {
-      html += `<div style="display:flex;gap:0.75rem;align-items:start;flex-wrap:wrap">`;
-      html += `<div style="flex:1;min-width:160px">`;
-      html += `<select id="crud_${field.key}" class="status-select" style="width:100%" onchange="previewSlotImage(this)" data-section="${field.section}">`;
-      html += `<option value="">— Aucune —</option>`;
-      const sectionSlots = slots.filter(s => s.section === field.section);
-      for (const s of sectionSlots) {
-        const hasImg = s.uploadedFile ? ' 📷' : '';
-        html += `<option value="${s.id}" data-url="${escapeHtml(s.currentUrl || '')}" ${val === s.id ? 'selected' : ''}>${escapeHtml(s.label)}${hasImg}</option>`;
-      }
-      html += `</select>`;
-      html += `</div>`;
-      html += `<div id="crud_${field.key}_preview" class="slot-preview">`;
-      const currentSlot = sectionSlots.find(s => s.id === val);
-      if (currentSlot && currentSlot.currentUrl) {
-        html += `<img src="${currentSlot.currentUrl}" alt="aperçu" style="width:100%;height:100%;object-fit:cover">`;
-      } else {
-        html += `<span style="opacity:0.3">🖼</span>`;
-      }
-      html += `</div>`;
-      html += `</div>`;
-      html += `<div style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">`;
-      html += `<input type="file" id="crud_${field.key}_file" accept="image/*" style="font-size:0.75rem;flex:1;min-width:120px">`;
-      html += `<button type="button" class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem" onclick="uploadSlotImage('${field.key}', '${field.section}')">Upload</button>`;
-      html += `<span id="crud_${field.key}_status" style="font-size:0.75rem;color:var(--gray-500)"></span>`;
-      html += `</div>`;
     } else if (field.type === 'date') {
       const dateVal = val ? val.substring(0, 10) : '';
       html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
@@ -305,8 +282,23 @@ export async function openCrudForm(entity, editId) {
   }
 
   document.getElementById('crudFormBody').innerHTML = html;
-  const sel = document.querySelector(`#crudFormBody select[onchange="previewSlotImage(this)"]`);
-  if (sel) previewSlotImage(sel);
+
+  if (entity === 'blog') {
+    const titleInput = document.getElementById('crud_title');
+    const slugInput = document.getElementById('crud_slug');
+    if (titleInput && slugInput && !currentEditId) {
+      titleInput.addEventListener('input', function autoSlug() {
+        const slug = this.value
+          .toLowerCase()
+          .replace(/[^a-z0-9-\s\u00e0-\u00fc]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        slugInput.value = slug;
+      });
+    }
+  }
+
   document.getElementById('crudModal').classList.add('open');
 }
 

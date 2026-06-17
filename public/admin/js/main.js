@@ -23,7 +23,7 @@ import {
 import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pricing.js';
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
-import { loadDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
+import { loadDossiers, filterDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
 import { loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager, catUploadClick, catRemoveImage } from './modules/blogCategories.js';
 import { loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager } from './modules/teamPositions.js';
 
@@ -106,7 +106,7 @@ Object.assign(window, {
   loadPricingEditor, addPricingFeature, savePricing,
   loadSettings, saveSettings, testEmail,
   loadActivityLog,
-  loadDossiers, closeDossierRename, confirmDossierRename,
+  loadDossiers, closeDossierRename, confirmDossierRename, filterDossiers,
   loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager, catUploadClick, catRemoveImage,
   loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager
 });
@@ -203,8 +203,8 @@ document.getElementById('exportContactsBtn')?.addEventListener('click', () => ex
   ...contacts.map(c => [c.date, c.name, c.email, c.phone, c.projectType, c.budget, c.serviceType, c.message, c.resolved ? 'Résolu' : c.read ? 'Lu' : 'Nouveau', c.notes || ''])
 ]));
 document.getElementById('exportQuotesBtn')?.addEventListener('click', () => exportToCsv('devis.csv', [
-  ['Date', 'N° Devis', 'Nom', 'Email', 'Service', 'Localisation', 'Statut'],
-  ...quotes.map(q => [q.date, q.quoteNumber, q.name, q.email, q.serviceType, q.location, q.status || 'pending'])
+  ['Date', 'N° Devis', 'Nom', 'Email', 'Service', 'Localisation', 'Statut', 'Notes'],
+  ...quotes.map(q => [q.date, q.quoteNumber, q.name, q.email, q.serviceType, q.location, q.status || 'pending', q.notes || ''])
 ]));
 document.getElementById('exportSubsBtn')?.addEventListener('click', () => exportToCsv('abonnes.csv', [
   ['Date', 'Email'],
@@ -219,10 +219,13 @@ document.getElementById('subSearch')?.addEventListener('input', renderSubscriber
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog'];
+  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog', 'dossiers'];
   const num = parseInt(e.key);
   if (num >= 1 && num <= 9 && tabs[num - 1]) { switchTab(tabs[num - 1]); return; }
   if (num === 0) { switchTab('pricing'); return; }
+  if (e.key === '-' || e.key === '_') { switchTab('dossiers'); return; }
+  if (e.key === '=' || e.key === '+') { switchTab('settings'); return; }
+  if (e.key === 'l' || e.key === 'L') { switchTab('activity'); return; }
   if (e.key === '?') { document.getElementById('shortcutsModal')?.classList.toggle('open'); }
 });
 

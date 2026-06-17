@@ -160,15 +160,19 @@ export async function saveSettings() {
       siteUrl: document.getElementById('setSiteUrl')?.value || ''
     };
 
-    await Promise.all([
+    const [ciRes, setRes] = await Promise.all([
       fetch(`${API_BASE}/contact-info`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(contactPayload) }),
       fetch(`${API_BASE}/settings`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(settingsPayload) })
     ]);
-
+    if (!ciRes.ok || !setRes.ok) {
+      const ciErr = ciRes.ok ? null : (await ciRes.json().catch(() => ({}))).error;
+      const setErr = setRes.ok ? null : (await setRes.json().catch(() => ({}))).error;
+      throw new Error(ciErr || setErr || 'Erreur serveur');
+    }
     markClean();
     showToast('Paramètres enregistrés', 'success');
   } catch (err) {
-    showToast('Erreur lors de l\'enregistrement', 'error');
+    showToast('Erreur lors de l\'enregistrement' + (err.message ? ': ' + err.message : ''), 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; }
   }

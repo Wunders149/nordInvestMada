@@ -1,7 +1,10 @@
 import { API_BASE, getHeaders, subscribers, clearToken } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
-import { showToast, showConfirm, showSkeletonTable, emptyState } from './ui.js';
+import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState } from './ui.js';
 import { loadStats } from './dashboard.js';
+
+let subPage = 1;
+const SUB_PER_PAGE = 20;
 
 export async function loadSubscribers() {
   showSkeletonTable('subscribersBody', 3, 4);
@@ -11,6 +14,7 @@ export async function loadSubscribers() {
     subscribers.length = 0;
     const data = await res.json();
     subscribers.push(...data);
+    subPage = 1;
     renderSubscribers();
   } catch (err) { console.error('Subscribers error:', err); showToast('Erreur lors du chargement', 'error'); }
 }
@@ -22,9 +26,14 @@ export function renderSubscribers() {
   const filtered = subscribers.filter(s => s.email.toLowerCase().includes(search));
   if (filtered.length === 0) {
     tbody.innerHTML = emptyState('📧', 'Aucun abonné', 'Les inscrits à la newsletter apparaîtront ici.');
+    document.getElementById('subPagination').innerHTML = '';
     return;
   }
-  tbody.innerHTML = filtered.map(s => `
+  const total = filtered.length;
+  if (subPage > Math.ceil(total / SUB_PER_PAGE)) subPage = 1;
+  const start = (subPage - 1) * SUB_PER_PAGE;
+  const page = filtered.slice(start, start + SUB_PER_PAGE);
+  tbody.innerHTML = page.map(s => `
     <tr>
       <td data-label="Date">${formatDate(s.date)}</td>
       <td data-label="Email"><a href="mailto:${escapeHtml(s.email)}">${escapeHtml(s.email)}</a></td>
@@ -33,7 +42,10 @@ export function renderSubscribers() {
       </td>
     </tr>
   `).join('');
+  renderPagination('subPagination', subPage, total, SUB_PER_PAGE, 'sub');
 }
+
+window._pg_sub = (p) => { subPage = p; renderSubscribers(); };
 
 export function confirmDeleteSubscriber(email) {
   showConfirm('Supprimer l\'abonné', `Retirer ${email} de la liste ?`, async () => {

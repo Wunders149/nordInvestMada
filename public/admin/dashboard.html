@@ -310,6 +310,7 @@
               <tbody id="subscribersBody"></tbody>
             </table>
           </div>
+          <div class="pagination" id="subPagination"></div>
         </div>
       </section>
 
@@ -397,7 +398,10 @@
       <!-- ─── DOSSIERS TAB ─── -->
       <section id="tab-dossiers" class="tab-content">
         <div class="tab-toolbar">
-          <div class="search-wrap" style="display:none"></div>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="dossierSearch" class="search-input" placeholder="Rechercher un dossier..." oninput="filterDossiers()">
+          </div>
           <div class="tab-toolbar-actions">
             <button class="btn-secondary" onclick="document.getElementById('dossierUploadInput').click()">📄 Upload PDF</button>
             <input type="file" id="dossierUploadInput" accept=".pdf" style="display:none">
@@ -518,6 +522,7 @@
               <tbody id="activityBody"></tbody>
             </table>
           </div>
+          <div class="pagination" id="activityPagination"></div>
         </div>
       </section>
     </div>
@@ -544,6 +549,9 @@
         <div class="shortcut-row"><kbd>8</kbd><span>Projets</span></div>
         <div class="shortcut-row"><kbd>9</kbd><span>Blog</span></div>
         <div class="shortcut-row"><kbd>0</kbd><span>Tarifs</span></div>
+        <div class="shortcut-row"><kbd>-</kbd><span>Dossiers</span></div>
+        <div class="shortcut-row"><kbd>=</kbd><span>Paramètres</span></div>
+        <div class="shortcut-row"><kbd>L</kbd><span>Journal</span></div>
         <div class="shortcut-row"><kbd>Escape</kbd><span>Fermer les modales</span></div>
         <div class="shortcut-row"><kbd>?</kbd><span>Ce menu</span></div>
       </div>

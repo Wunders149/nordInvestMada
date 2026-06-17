@@ -21,7 +21,8 @@
     "stat2Val": "34",
     "stat2Label": "Technicians",
     "stat3Val": "2",
-    "stat3Label": "Sites — Antsiranana & Nosy Be"
+    "stat3Label": "Sites — Antsiranana & Nosy Be",
+    "stat4Label": "Civil engineers"
   },
   "about": {
     "tag": "About Us",

@@ -382,6 +382,7 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
 
 app.get('/api/config', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     const siteCfg = await loadSiteConfig();
     const rates = await getExchangeRates();
     res.json({

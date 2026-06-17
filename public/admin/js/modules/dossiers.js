@@ -3,6 +3,7 @@ import { escapeHtml, humanSize } from './helpers.js';
 import { showToast, showConfirm } from './ui.js';
 
 let dossiers = [];
+let filteredDossiers = [];
 let renameTargetId = null;
 
 export async function loadDossiers() {
@@ -10,21 +11,29 @@ export async function loadDossiers() {
     const res = await fetch(`${API_BASE}/dossiers`, { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to load');
     dossiers = await res.json();
-    renderDossiers();
+    filteredDossiers = [...dossiers];
+    filterDossiers();
   } catch (err) {
     console.error('loadDossiers error:', err);
     document.getElementById('dossiersList').innerHTML = '<p class="empty-row">Erreur de chargement</p>';
   }
 }
 
-export function renderDossiers() {
+export function filterDossiers() {
+  const term = (document.getElementById('dossierSearch')?.value || '').toLowerCase();
+  filteredDossiers = term ? dossiers.filter(d => d.name.toLowerCase().includes(term)) : [...dossiers];
+  renderDossiersList();
+}
+
+function renderDossiersList() {
   const el = document.getElementById('dossiersList');
   if (!el) return;
-  if (!dossiers.length) {
+  const items = filteredDossiers;
+  if (!items.length) {
     el.innerHTML = '<p class="empty-row">Aucun dossier. Cliquez sur "Upload PDF" pour ajouter un fichier.</p>';
     return;
   }
-  el.innerHTML = dossiers.map(d => {
+  el.innerHTML = items.map(d => {
     const thumbSrc = d.thumbnail_url || '';
     return `<div class="admin-card dossier-card" data-id="${escapeHtml(d.id)}" data-name="${escapeHtml(d.name)}">
       <div class="dossier-thumb-wrap">

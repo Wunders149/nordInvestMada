@@ -19,7 +19,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 const FIELD_MAP = {
-  imageSlot: 'image_slot'
+  imageSlot: 'image_slot',
+  categoryId: 'image_slot'
 };
 
 function mapFields(body, direction = 'toDb') {
@@ -234,7 +235,7 @@ async function notifySubscribersOnPublish(post) {
     if (!subs || subs.length === 0) return;
     const emails = subs.map(s => s.email);
 
-    const siteUrl = process.env.SITE_URL || 'https://orinvestmada.onrender.com';
+    const siteUrl = process.env.SITE_URL || 'https://nordinvest.mg';
     const postUrl = post.slug ? `${siteUrl}/blog/${encodeURIComponent(post.slug)}` : siteUrl;
     const excerpt = post.excerpt || '';
     const title = post.title || 'Nouvel article';
