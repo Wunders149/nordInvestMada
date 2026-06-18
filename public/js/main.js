@@ -7,30 +7,28 @@ function toggleTheme() {
   const current = html.getAttribute('data-theme');
   const next = current === 'light' ? 'dark' : 'light';
   html.setAttribute('data-theme', next);
-  localStorage.setItem('nim_theme', next);
-  
+  try { localStorage.setItem('nim_theme', next); } catch (e) {}
+
   // Sync checkbox
   const checkbox = document.getElementById('checkbox');
   if (checkbox) {
     checkbox.checked = next === 'light';
   }
-
-  // Update GA tracking
-  if (typeof gtag !== 'undefined') {
-    gtag('event', 'theme_toggle', { 'theme': next });
-  }
 }
 
 function initTheme() {
-  const saved = localStorage.getItem('nim_theme');
+  const checkbox = document.getElementById('checkbox');
+  if (checkbox) {
+    checkbox.addEventListener('change', toggleTheme);
+  }
+
+  try { var saved = localStorage.getItem('nim_theme'); } catch (e) {}
   let theme = 'light';
   if (saved === 'light' || saved === 'dark') {
     theme = saved;
   }
   document.documentElement.setAttribute('data-theme', theme);
-  
-  // Sync checkbox on load
-  const checkbox = document.getElementById('checkbox');
+
   if (checkbox) {
     checkbox.checked = theme === 'light';
   }
@@ -308,17 +306,12 @@ function switchTab(name) {
 
 function fillContactForm(button) {
   const card = button.closest('.price-card');
+  if (!card) return;
   const service = card.getAttribute('data-service');
   const tier = card.getAttribute('data-tier-name');
   const type = card.getAttribute('data-type');
   const price = card.getAttribute('data-price');
   const budgetRange = card.getAttribute('data-budget');
-
-  const serviceMap = {
-    'construction': 'construction',
-    'rehabilitation': 'rehabilitation',
-    'forage': 'forage'
-  };
 
   const serviceSelect = document.getElementById('serviceType');
   const projectInput = document.getElementById('projectType');
@@ -326,29 +319,26 @@ function fillContactForm(button) {
   const budgetCurrency = document.getElementById('budgetCurrency');
   const messageTextarea = document.getElementById('message');
 
-  serviceSelect.value = serviceMap[service] || '';
-  projectInput.value = `${type} - ${tier}`;
+  if (serviceSelect && service) serviceSelect.value = service;
+  if (projectInput) projectInput.value = `${type} - ${tier}`;
 
   const budgetVal = parseInt(budgetRange, 10);
-  if (budgetVal > 0) {
+  if (budgetVal > 0 && budgetInput && budgetCurrency) {
     budgetInput.value = budgetVal;
     budgetCurrency.value = 'Ar';
     budgetCurrency.dataset.lastCurrency = 'Ar';
   }
 
-  const serviceLabel = {
-    'construction': 'Construction Neuve',
-    'rehabilitation': 'Études et Conception',
-    'forage': 'Forage d\'Eau'
-  }[service] || '';
-
   const priceDisplay = price ? Number(price).toLocaleString('fr-FR') + ' Ar/m²' : 'Sur devis';
 
-  messageTextarea.value = `Je suis intéressé par : ${type}\nFormule : ${tier}\nTarif référence : ${priceDisplay}\n\nMerci de me contacter pour un devis détaillé.`;
+  if (messageTextarea) {
+    messageTextarea.value = `Je suis intéressé par : ${type}\nFormule : ${tier}\nTarif référence : ${priceDisplay}\n\nMerci de me contacter pour un devis détaillé.`;
+  }
 
-  setTimeout(() => {
-    document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-  }, 100);
+  const contactSection = document.getElementById('contact');
+  if (contactSection) {
+    contactSection.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -540,7 +530,7 @@ async function runCalculation() {
       </div>
     </div>
     <p class="result-note">${rNote}</p>
-    <a href="#contact" class="price-cta" style="margin-top:32px;" onclick="transferToForm('${serviceType}', '${finishingLevel}', ${squareMeters}, '${location}', ${data.grandTotal})">${rCTA}</a>
+    <a href="#contact" class="price-cta" style="margin-top:32px;" onclick="event.preventDefault();transferToForm('${serviceType}', '${finishingLevel}', ${squareMeters}, '${location}', ${data.grandTotal})">${rCTA}</a>
   `;
 }
 
@@ -558,10 +548,10 @@ function transferToForm(service, tier, surface, location, total) {
   }[service] || service;
   const tierDisplay = getNestedTranslation(`pricing.tiers.${service}.${tier}`) || tier;
 
-  serviceSelect.value = service;
-  projectInput.value = `${serviceDisplay} - ${tierDisplay} (${surface} ${service === 'forage' ? 'ml' : 'm²'})`;
+  if (serviceSelect) serviceSelect.value = service;
+  if (projectInput) projectInput.value = `${serviceDisplay} - ${tierDisplay} (${surface} ${service === 'forage' ? 'ml' : 'm²'})`;
 
-  if (total > 0) {
+  if (total > 0 && budgetInput && budgetCurrency) {
     budgetInput.value = total;
     budgetCurrency.value = 'Ar';
     budgetCurrency.dataset.lastCurrency = 'Ar';
@@ -571,11 +561,14 @@ function transferToForm(service, tier, surface, location, total) {
   const locationSelect = document.getElementById('calc-location');
   const locationDisplay = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : location;
 
-  messageTextarea.value = `Bonjour, j'ai effectué une simulation sur votre site :\n- Service : ${serviceDisplay}\n- Gamme : ${tierDisplay}\n- Surface : ${surface} ${service === 'forage' ? 'ml' : 'm²'}\n- Lieu : ${locationDisplay}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\nJe souhaite obtenir un devis définitif.`;
+  if (messageTextarea) {
+    messageTextarea.value = `Bonjour, j'ai effectué une simulation sur votre site :\n- Service : ${serviceDisplay}\n- Gamme : ${tierDisplay}\n- Surface : ${surface} ${service === 'forage' ? 'ml' : 'm²'}\n- Lieu : ${locationDisplay}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\nJe souhaite obtenir un devis définitif.`;
+  }
 
-  setTimeout(() => {
-    document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-  }, 100);
+  const contactSection = document.getElementById('contact');
+  if (contactSection) {
+    contactSection.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1332,7 +1325,7 @@ async function loadPricingData() {
             ${(t.features || []).map(f => `<li>${escapeHtml(f)}</li>`).join('')}
           </ul>
           <div class="price-note">${getNestedTranslation('pricing.priceNote')}</div>
-          <a href="#contact" class="price-cta" onclick="fillContactForm(this)">${getNestedTranslation('pricing.cta')}</a>
+           <a href="#contact" class="price-cta" onclick="event.preventDefault();fillContactForm(this)">${getNestedTranslation('pricing.cta')}</a>
         </div>`;
       }).join('');
     });
@@ -2011,18 +2004,6 @@ function initBudgetCurrencyConversion() {
 // ═══════════════════════════════════════════════════════
 // COOKIE CONSENT
 // ═══════════════════════════════════════════════════════
-
-function initGA() {
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { dataLayer.push(arguments); }
-  window.gtag = gtag;
-  gtag('js', new Date());
-  gtag('config', 'G-MQ14N6E1ZG');
-  var s = document.createElement('script');
-  s.async = true;
-  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-MQ14N6E1ZG';
-  document.head.appendChild(s);
-}
 
 function initCookieConsent() {
   var banner = document.getElementById('cookieConsent');

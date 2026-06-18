@@ -33,12 +33,13 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", 'https://www.googletagmanager.com', 'https://www.google-analytics.com', 'https://unpkg.com', 'https://cdn.jsdelivr.net'],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://unpkg.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://www.google-analytics.com'],
-      connectSrc: ["'self'", 'https://res.cloudinary.com', 'https://cdn.jsdelivr.net', 'https://www.google-analytics.com'],
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://www.google-analytics.com', 'https://tile.openstreetmap.org', 'https://unpkg.com'],
+      connectSrc: ["'self'", 'https://res.cloudinary.com', 'https://cdn.jsdelivr.net', 'https://www.google-analytics.com', 'https://unpkg.com'],
       frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
+      objectSrc: ["'self'", 'https://res.cloudinary.com'],
       baseUri: ["'self'"],
       formAction: ["'self'"]
     }
