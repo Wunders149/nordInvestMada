@@ -2190,7 +2190,10 @@ h1 { animation-delay: 0.2s; }
   margin-bottom: 36px;
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s ease, transform 0.6s ease, display 0.6s ease allow-discrete;
+}
+.timeline-entry.hidden {
+  display: none;
 }
 .timeline-entry.timeline-visible {
   opacity: 1;
@@ -2329,6 +2332,37 @@ h1 { animation-delay: 0.2s; }
   transition: transform 0.2s;
 }
 .timeline-link:hover { gap: 10px; }
+
+/* ─── BLOG TOGGLE ─── */
+.blog-footer {
+  text-align: center;
+  margin-top: 8px;
+}
+.blog-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 36px;
+  border-radius: 50px;
+  border: 2px solid var(--rust);
+  background: transparent;
+  color: var(--rust);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.blog-toggle:hover {
+  background: var(--rust);
+  color: #fff;
+  gap: 12px;
+}
+.blog-toggle[data-expanded="true"]::after {
+  content: '\2191';
+}
+.blog-toggle[data-expanded="false"]::after {
+  content: '\2193';
+}
 
 /* ─── NEWSLETTER ─── */
 #newsletter {

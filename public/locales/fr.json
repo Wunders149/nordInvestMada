@@ -173,7 +173,9 @@
     "excerpt3": "Les démarches administratives et conseils pratiques pour l'achat d'un terrain à Antsiranana et dans le nord de Madagascar.",
     "readmore": "Lire l'article",
     "share": "Partager",
-    "related": "Articles similaires"
+    "related": "Articles similaires",
+    "showall": "Voir tous les articles",
+    "showless": "Voir moins"
   },
   "newsletter": {
     "title": "Restez informé",

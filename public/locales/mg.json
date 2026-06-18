@@ -256,7 +256,9 @@
     "excerpt3": "Fomba fitantanana sy torohevitra azo ampiharina amin'ny fividianana tany any Antsiranana sy ny avaratr'i Madagasikara.",
     "readmore": "Hamaky lahatsoratra",
     "share": "Zarao",
-    "related": "Lahatsoratra mitovy"
+    "related": "Lahatsoratra mitovy",
+    "showall": "Hijery ny lahatsoratra rehetra",
+    "showless": "Ahena"
   },
   "newsletter": {
     "title": "Mahazoa vaovao",

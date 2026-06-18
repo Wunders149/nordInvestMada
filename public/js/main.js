@@ -85,6 +85,15 @@ function applyTranslations() {
       el.innerHTML = value;
     }
   });
+
+  // Update blog toggle button text
+  const btn = document.getElementById('blogToggleBtn');
+  if (btn) {
+    const expanded = btn.dataset.expanded === 'true';
+    btn.textContent = expanded
+      ? (getNestedTranslation('blog.showless') || 'Show less')
+      : (getNestedTranslation('blog.showall') || 'See all articles');
+  }
 }
 
 function getNestedTranslation(key) {
@@ -1021,6 +1030,37 @@ async function loadBlog() {
     const container = document.getElementById('blogTimeline');
     if (!container) return;
     window._allPosts = posts;
+    const showAll = document.getElementById('blogFooter');
+    if (posts.length <= 3) {
+      if (showAll) showAll.style.display = 'none';
+    } else {
+      if (showAll) showAll.style.display = '';
+      const btn = document.getElementById('blogToggleBtn');
+      if (btn) {
+        btn.textContent = getNestedTranslation('blog.showall') || 'Voir tous les articles';
+        btn.onclick = () => {
+          const expanded = btn.dataset.expanded === 'true';
+          const hidden = container.querySelectorAll('.timeline-entry.hidden');
+          btn.dataset.expanded = expanded ? 'false' : 'true';
+          btn.textContent = expanded
+            ? (getNestedTranslation('blog.showall') || 'Voir tous les articles')
+            : (getNestedTranslation('blog.showless') || 'Voir moins');
+          hidden.forEach(el => {
+            el.classList.toggle('hidden');
+            if (!expanded) {
+              el.classList.add('timeline-visible');
+              el.style.display = '';
+            } else {
+              el.classList.remove('timeline-visible');
+              el.style.display = '';
+            }
+          });
+          if (expanded) {
+            hidden.forEach(el => { el.classList.add('hidden'); });
+          }
+        };
+      }
+    }
     container.innerHTML = posts.map((p, i) => {
       const date = new Date(p.date);
       const dateLocale = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
@@ -1033,8 +1073,9 @@ async function loadBlog() {
       const imgUrl = postImg || catImg || `/images/blog/${blogSvg}`;
       const rt = readingTime(p.content);
       const slotAttr = hasOwnImg ? '' : (p.image_slot || '');
+      const isHidden = i >= 3 && posts.length > 3;
       return `
-      <div class="timeline-entry${i === 0 ? ' timeline-visible' : ''}" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}">
+      <div class="timeline-entry${i === 0 ? ' timeline-visible' : ''}${isHidden ? ' hidden' : ''}" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}"${isHidden ? ' style="display:none"' : ''}>
         <div class="timeline-marker"></div>
         <div class="timeline-card">
           <div class="timeline-img-wrap">
@@ -1062,7 +1103,8 @@ async function loadBlog() {
         );
       });
     });
-    initBlogReveal();
+    const entries = container.querySelectorAll('.timeline-entry:not(.hidden):not(.timeline-visible)');
+    if (entries.length) initBlogReveal();
     loadImageSlots();
   } catch (err) { console.warn('Blog load error:', err); showSectionError('blogTimeline', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
