@@ -1018,10 +1018,10 @@ async function loadBlog() {
   try {
     const res = await fetch(`${API_BASE}/api/blog`);
     const posts = await res.json();
-    const grid = document.getElementById('blogGrid');
-    if (!grid) return;
+    const container = document.getElementById('blogTimeline');
+    if (!container) return;
     window._allPosts = posts;
-    grid.innerHTML = posts.map(p => {
+    container.innerHTML = posts.map((p, i) => {
       const date = new Date(p.date);
       const dateLocale = currentLang === 'mg' ? 'mg-MG' : currentLang === 'en' ? 'en-US' : 'fr-FR';
       const dateStr = date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
@@ -1034,35 +1034,37 @@ async function loadBlog() {
       const rt = readingTime(p.content);
       const slotAttr = hasOwnImg ? '' : (p.image_slot || '');
       return `
-      <article class="blog-card" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}">
-        <div class="blog-img-wrap">
-          <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" class="blog-img img-reveal" loading="lazy"${slotAttr ? ` data-image-slot="${slotAttr}"` : ''}>
-          ${cat.label ? `<span class="blog-badge" style="--badge-color: ${cat.color}">${cat.icon} ${cat.label}</span>` : ''}
-        </div>
-        <div class="blog-body">
-          <div class="blog-meta">
-            <span class="blog-date">${dateStr}</span>
-            <span class="blog-readtime">${rt} min</span>
+      <div class="timeline-entry${i === 0 ? ' timeline-visible' : ''}" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}">
+        <div class="timeline-marker"></div>
+        <div class="timeline-card">
+          <div class="timeline-img-wrap">
+            <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy"${slotAttr ? ` data-image-slot="${slotAttr}"` : ''}>
+            ${cat.label ? `<span class="timeline-badge" style="--badge-color: ${cat.color}">${cat.icon} ${cat.label}</span>` : ''}
           </div>
-          <div class="blog-title">${escapeHtml(p.title)}</div>
-          <div class="blog-excerpt">${escapeHtml(p.excerpt)}</div>
-          <a href="#" class="blog-link">${getNestedTranslation('blog.readmore')}</a>
+          <div class="timeline-body">
+            <div class="timeline-meta">
+              <span class="timeline-date">${dateStr}</span>
+              <span class="timeline-readtime">${rt} min</span>
+            </div>
+            <h3 class="timeline-title">${escapeHtml(p.title)}</h3>
+            <p class="timeline-excerpt">${escapeHtml(p.excerpt)}</p>
+            <a href="#" class="timeline-link">${getNestedTranslation('blog.readmore')}</a>
+          </div>
         </div>
-      </article>`;
+      </div>`;
     }).join('');
-    grid.querySelectorAll('.blog-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.blog-link')) e.preventDefault();
+    container.querySelectorAll('.timeline-entry').forEach(entry => {
+      entry.addEventListener('click', (e) => {
+        if (e.target.closest('.timeline-link')) e.preventDefault();
         openBlogPost(
-          card.dataset.title, card.dataset.date, card.dataset.content,
-          card.dataset.img, card.dataset.slug, card.dataset.imageSlot, card.dataset.id
+          entry.dataset.title, entry.dataset.date, entry.dataset.content,
+          entry.dataset.img, entry.dataset.slug, entry.dataset.imageSlot, entry.dataset.id
         );
       });
     });
+    initBlogReveal();
     loadImageSlots();
-    initImageReveal();
-    initBlogCarousel();
-  } catch (err) { console.warn('Blog load error:', err); showSectionError('blogGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
+  } catch (err) { console.warn('Blog load error:', err); showSectionError('blogTimeline', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
 function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
@@ -1673,100 +1675,18 @@ function initDossiersCarousel() {
   startAutoTimer();
 }
 
-function initBlogCarousel() {
-  const grid = document.getElementById('blogGrid');
-  const nav = document.querySelector('.blog-carousel-nav');
-  if (!grid || !nav) return;
-  const cards = grid.querySelectorAll('.blog-card');
-  nav.style.display = cards.length < 2 ? 'none' : '';
-
-  const dotsContainer = nav.querySelector('.carousel-dots');
-  const prevBtn = nav.querySelector('.carousel-prev');
-  const nextBtn = nav.querySelector('.carousel-next');
-  if (!dotsContainer) return;
-
-  dotsContainer.innerHTML = '';
-  let autoTimer = null;
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let isDragging = false;
-
-  cards.forEach((_, i) => {
-    const dot = document.createElement('button');
-    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-    dot.addEventListener('click', () => scrollToIndex(i));
-    dotsContainer.appendChild(dot);
-  });
-
-  function getActiveIndex() {
-    const scrollLeft = grid.scrollLeft;
-    let best = 0;
-    let bestDist = Infinity;
-    cards.forEach((c, i) => {
-      const dist = Math.abs(c.offsetLeft - scrollLeft);
-      if (dist < bestDist) { bestDist = dist; best = i; }
-    });
-    return best;
-  }
-
-  function updateDots() {
-    const idx = getActiveIndex();
-    dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
-      d.classList.toggle('active', i === idx);
-    });
-  }
-
-  function scrollToIndex(idx) {
-    if (idx < 0 || idx >= cards.length) return;
-    grid.scrollTo({ left: cards[idx].offsetLeft, behavior: 'smooth' });
-  }
-
-  if (prevBtn) prevBtn.addEventListener('click', () => scrollToIndex(getActiveIndex() - 1));
-  if (nextBtn) nextBtn.addEventListener('click', () => scrollToIndex(getActiveIndex() + 1));
-
-  grid.addEventListener('scroll', () => {
-    updateDots();
-    resetAutoTimer();
-  }, { passive: true });
-
-  grid.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    isDragging = true;
-    resetAutoTimer();
-  }, { passive: true });
-
-  grid.addEventListener('touchend', () => {
-    isDragging = false;
-    startAutoTimer();
-  }, { passive: true });
-
-  nav.addEventListener('mouseenter', () => clearAutoTimer());
-  nav.addEventListener('mouseleave', () => startAutoTimer());
-
-  function clearAutoTimer() {
-    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-  }
-
-  function startAutoTimer() {
-    clearAutoTimer();
-    if (cards.length < 2) return;
-    autoTimer = setInterval(() => {
-      const next = getActiveIndex() + 1;
-      if (next >= cards.length) {
-        grid.scrollTo({ left: cards[0].offsetLeft, behavior: 'smooth' });
-      } else {
-        scrollToIndex(next);
+function initBlogReveal() {
+  const entries = document.querySelectorAll('.timeline-entry:not(.timeline-visible)');
+  if (!entries.length) return;
+  const observer = new IntersectionObserver((entries_) => {
+    entries_.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('timeline-visible');
+        observer.unobserve(entry.target);
       }
-    }, 5000);
-  }
-
-  function resetAutoTimer() {
-    clearAutoTimer();
-    startAutoTimer();
-  }
-
-  startAutoTimer();
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  entries.forEach(el => observer.observe(el));
 }
 
 // ═══════════════════════════════════════════════════════
