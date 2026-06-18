@@ -1,14 +1,14 @@
 export const API_BASE = '/api/admin';
 export const API_IMAGES_BASE = '/api';
 export let token = '';
-export let contacts = [];
-export let quotes = [];
-export let subscribers = [];
-export let slots = [];
-export let images = {};
-export let activityLogs = [];
-export let selectedContactIds = new Set();
-export let selectedQuoteIds = new Set();
+export const contacts = [];
+export const quotes = [];
+export const subscribers = [];
+export const slots = [];
+export const images = {};
+export const activityLogs = [];
+export const selectedContactIds = new Set();
+export const selectedQuoteIds = new Set();
 
 export const PER_PAGE = 10;
 export const contentPage = {};

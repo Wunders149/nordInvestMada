@@ -20,7 +20,7 @@ export function getCloudinaryUrl(publicId, options = {}) {
   });
 }
 
-export async function uploadImage(buffer, { folder, publicId, mimetype }) {
+export async function uploadImage(buffer, { folder, publicId, mimetype: _mimetype }) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {

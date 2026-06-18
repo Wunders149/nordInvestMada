@@ -1,6 +1,6 @@
 import { API_BASE, getHeaders, contacts, selectedContactIds, PER_PAGE, clearToken, state } from './api.js';
 import { escapeHtml, formatDate } from './helpers.js';
-import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState, showSkeletonStats } from './ui.js';
+import { showToast, showConfirm, showSkeletonTable, renderPagination, emptyState } from './ui.js';
 import { loadStats } from './dashboard.js';
 
 export function setContactFilter(filter) {
@@ -23,7 +23,7 @@ export async function loadContacts() {
     state.contactPage = 1;
     renderContacts();
     loadStats();
-  } catch (err) { console.error('Contacts error:', err); showToast('Erreur lors du chargement des messages', 'error'); }
+  } catch (_err) { console.error('Contacts error:', _err); showToast('Erreur lors du chargement des messages', 'error'); }
 }
 
 export function toggleContactSelect(id, checked) {
@@ -79,7 +79,7 @@ export async function bulkMarkRead() {
     document.getElementById('contactSelectAll').checked = false;
     renderContacts(); loadStats();
     showToast(`${ids.length} message(s) marqué(s) comme lu`, 'success');
-  } catch (err) { showToast('Erreur', 'error'); }
+  } catch (_err) { showToast('Erreur', 'error'); }
 }
 
 export async function bulkDeleteContacts() {
@@ -95,7 +95,7 @@ export async function bulkDeleteContacts() {
       document.getElementById('contactSelectAll').checked = false;
       renderContacts(); loadStats();
       showToast(`${ids.length} message(s) supprimé(s)`, 'success');
-    } catch (err) { showToast('Erreur', 'error'); }
+    } catch (_err) { showToast('Erreur', 'error'); }
   });
 }
 
@@ -109,7 +109,7 @@ export async function markAllRead() {
     unread.forEach(c => c.read = true);
     renderContacts(); loadStats();
     showToast(`${unread.length} message(s) marqué(s) comme lu`, 'success');
-  } catch (err) { showToast('Erreur', 'error'); }
+  } catch (_err) { showToast('Erreur', 'error'); }
 }
 
 export function renderContacts() {
@@ -293,7 +293,7 @@ document.getElementById('detailNotesSave')?.addEventListener('click', async () =
     if (c) c.notes = notes;
     showToast('Notes enregistrées', 'success');
     openContactDetail(state.contactDetailId);
-  } catch (err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
+  } catch (_err) { showToast('Erreur lors de l\'enregistrement', 'error'); }
 });
 
 document.addEventListener('keydown', (e) => {

@@ -14,7 +14,7 @@ export default [
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error',
       'no-console': 'off',
       semi: ['warn', 'always'],
@@ -24,7 +24,7 @@ export default [
     }
   },
   {
-    files: ['public/js/**/*.js', 'public/admin/js/**/*.js'],
+    files: ['public/admin/js/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -36,7 +36,30 @@ export default [
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-undef': 'error',
+      'no-console': 'off',
+      semi: ['warn', 'always'],
+      quotes: ['warn', 'single', { avoidEscape: true }],
+      'no-var': 'warn',
+      'prefer-const': 'warn'
+    }
+  },
+  {
+    files: ['public/js/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: {
+        ...globals.browser,
+        gtag: 'readonly',
+        L: 'readonly',
+        dataLayer: 'readonly',
+        initGA: 'readonly'
+      }
+    },
+    rules: {
+      'no-unused-vars': ['warn', { vars: 'local', argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error',
       'no-console': 'off',
       semi: ['warn', 'always'],

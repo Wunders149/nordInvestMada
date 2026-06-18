@@ -75,7 +75,7 @@ export async function bulkDeleteQuotes() {
       document.getElementById('quoteSelectAll').checked = false;
       renderQuotes(); loadStats();
       showToast(`${ids.length} devis(s) supprimé(s)`, 'success');
-    } catch (err) { showToast('Erreur', 'error'); }
+    } catch (_err) { showToast('Erreur', 'error'); }
   });
 }
 

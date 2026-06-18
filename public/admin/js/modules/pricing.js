@@ -37,7 +37,7 @@ function renderPricingEditor() {
         </div>
       </div>`;
     });
-    html += `</div>`;
+    html += '</div>';
   });
 
   html += `<div class="pricing-cat"><h4>Taux</h4>

@@ -1,5 +1,5 @@
 import { escapeHtml } from './helpers.js';
-import { isDirty, markClean, API_BASE, getHeaders, loadedTabs } from './api.js';
+import { isDirty, markClean } from './api.js';
 
 export let confirmCallback = null;
 
@@ -46,7 +46,7 @@ export function showSkeletonGrid(id, count = 6) {
   const grid = document.getElementById(id);
   if (!grid) return;
   grid.innerHTML = Array(count).fill(0).map(() =>
-    `<div class="skeleton skeleton-card"></div>`
+    '<div class="skeleton skeleton-card"></div>'
   ).join('');
 }
 

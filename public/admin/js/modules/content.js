@@ -4,10 +4,10 @@ import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, renderPaginat
 import { blogCategories } from './blogCategories.js';
 import { teamPositions } from './teamPositions.js';
 
-export let teamData = [];
-export let servicesData = [];
-export let projectsData = [];
-export let blogData = [];
+export const teamData = [];
+export const servicesData = [];
+export const projectsData = [];
+export const blogData = [];
 
 const ENTITY_CONFIG = {
   team: {
@@ -79,7 +79,7 @@ export async function loadEntity(entity) {
       const data = await res.json();
       slots.length = 0;
       slots.push(...data);
-    } catch (err) { console.error('Failed to load slots:', err); }
+    } catch (_err) { console.error('Failed to load slots:', _err); }
   }
   showSkeletonGrid(`${entity}List`, 4);
   try {
@@ -93,7 +93,7 @@ export async function loadEntity(entity) {
     else if (entity === 'projects') { projectsData.length = 0; projectsData.push(...data); }
     else if (entity === 'blog') { blogData.length = 0; blogData.push(...data); }
     renderEntity(entity);
-  } catch (err) { console.error(`${entity} load error:`, err); showToast(`Erreur lors du chargement des ${cfg.labelPlural.toLowerCase()}`, 'error'); }
+  } catch (_err) { console.error(`${entity} load error:`, _err); showToast(`Erreur lors du chargement des ${cfg.labelPlural.toLowerCase()}`, 'error'); }
 }
 
 export function renderEntity(entity) {
@@ -130,7 +130,7 @@ export function renderEntity(entity) {
 
   container.innerHTML = page.map(item => {
     const title = item.name || item.title || item.label || 'Sans titre';
-    const subtitle = item.role || item.location || '';
+    const _subtitle = item.role || item.location || '';
     const preview = item.description || item.excerpt || item.bio || '';
 
     let thumbUrl = '';
@@ -204,8 +204,8 @@ export async function openCrudForm(entity, editId) {
       const data = await res.json();
       slots.length = 0;
       slots.push(...data);
-    } catch (err) {
-      console.error('Failed to load slots:', err);
+    } catch (_err) {
+      console.error('Failed to load slots:', _err);
     }
   }
   if (entity === 'team' && teamPositions.length === 0) {
@@ -254,31 +254,31 @@ export async function openCrudForm(entity, editId) {
         : (field.options || []);
       const hasMatch = val ? opts.some(o => o.value === val) : true;
       html += `<select id="crud_${field.key}" class="status-select" style="width:100%">`;
-      html += `<option value="">— Aucune —</option>`;
+      html += '<option value="">— Aucune —</option>';
       for (const opt of opts) {
         html += `<option value="${opt.value}" ${val === opt.value ? 'selected' : ''}>${opt.label}</option>`;
       }
       if (val && !hasMatch) {
         html += `<option value="${escapeHtml(String(val))}" selected>${escapeHtml(String(val))} (ancien)</option>`;
       }
-      html += `</select>`;
+      html += '</select>';
     } else if (field.type === 'date') {
       const dateVal = val ? val.substring(0, 10) : '';
       html += `<input type="date" id="crud_${field.key}" class="search-input" value="${dateVal}">`;
     } else if (field.key === 'image' && (entity === 'blog' || entity === 'team' || entity === 'projects')) {
       const imgSrc = val && (val.startsWith('http') || val.startsWith('/')) ? val : val ? `/images/blog/${val}` : '';
       html += `<input type="hidden" id="crud_${field.key}" value="${escapeHtml(String(val))}">`;
-      html += `<div class="blog-img-upload">`;
-      html += `<div class="blog-img-preview" id="crud_image_preview">${imgSrc ? `<img src="${imgSrc}" alt="">` : `<span class="blog-img-placeholder">🖼</span>`}</div>`;
-      html += `<div class="blog-img-actions">`;
-      html += `<input type="file" id="crud_image_file" accept="image/*">`;
-      html += `<button type="button" class="btn-secondary" onclick="uploadBlogImage()">Upload</button>`;
-      html += `<span id="crud_image_status"></span>`;
-      html += `</div></div>`;
+      html += '<div class="blog-img-upload">';
+      html += `<div class="blog-img-preview" id="crud_image_preview">${imgSrc ? `<img src="${imgSrc}" alt="">` : '<span class="blog-img-placeholder">🖼</span>'}</div>`;
+      html += '<div class="blog-img-actions">';
+      html += '<input type="file" id="crud_image_file" accept="image/*">';
+      html += '<button type="button" class="btn-secondary" onclick="uploadBlogImage()">Upload</button>';
+      html += '<span id="crud_image_status"></span>';
+      html += '</div></div>';
     } else {
       html += `<input type="${field.type}" id="crud_${field.key}" class="search-input" value="${escapeHtml(String(val))}">`;
     }
-    html += `</div>`;
+    html += '</div>';
   }
 
   document.getElementById('crudFormBody').innerHTML = html;
@@ -310,7 +310,7 @@ export function previewSlotImage(sel) {
   const url = opt ? opt.dataset.url : '';
   preview.innerHTML = url
     ? `<img src="${url}" alt="aperçu" style="width:100%;height:100%;object-fit:cover">`
-    : `<span style="opacity:0.3;font-size:1.5rem">🖼</span>`;
+    : '<span style="opacity:0.3;font-size:1.5rem">🖼</span>';
 }
 
 export async function uploadSlotImage(fieldKey, section) {
@@ -361,7 +361,7 @@ export async function uploadSlotImage(fieldKey, section) {
     }
 
     if (slotId) {
-      select.innerHTML = `<option value="">— Aucune —</option>`;
+      select.innerHTML = '<option value="">— Aucune —</option>';
       for (const s of slots) {
         if (s.section !== section) continue;
         const hasImg = s.uploadedFile ? ' 📷' : '';
@@ -371,8 +371,8 @@ export async function uploadSlotImage(fieldKey, section) {
       previewSlotImage(select);
     }
     fileInput.value = '';
-  } catch (err) {
-    status.textContent = '✗ ' + err.message;
+  } catch (_err) {
+    status.textContent = '✗ ' + _err.message;
     status.style.color = 'var(--danger)';
   }
 }
@@ -428,7 +428,7 @@ export async function saveCrudItem() {
     closeCrudForm();
     showToast(`${cfg.label} ${currentEditId ? 'modifié' : 'ajouté'} avec succès`, 'success');
     loadEntity(currentEntity);
-  } catch (err) {
+  } catch (_err) {
     showToast('Erreur lors de l\'enregistrement', 'error');
   }
 }
@@ -442,7 +442,7 @@ export function confirmDeleteItem(entity, id) {
       if (!res.ok) throw new Error('Erreur');
       showToast(`${cfg.label} supprimé`, 'success');
       loadEntity(entity);
-    } catch (err) {
+    } catch (_err) {
       showToast('Erreur lors de la suppression', 'error');
     }
   });
@@ -501,8 +501,8 @@ export async function uploadBlogImage() {
     if (preview) preview.innerHTML = `<img src="${data.url}" alt="">`;
     if (status) { status.textContent = '✓'; status.className = 'upload-status success'; }
     fileInput.value = '';
-  } catch (err) {
-    if (status) { status.textContent = '✗ ' + err.message; status.className = 'upload-status error'; }
+  } catch (_err) {
+    if (status) { status.textContent = '✗ ' + _err.message; status.className = 'upload-status error'; }
   }
 }
 

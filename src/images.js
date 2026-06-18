@@ -5,7 +5,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { requireAuth, logActivity } from './auth.js';
 import { supabase } from './supabase.js';
-import { uploadImage, deleteImage, getCloudinaryUrl, getCloudinaryMapping, setCloudinaryMapping, clearCloudinaryMapping } from './cloudinary.js';
+import { uploadImage, deleteImage, getCloudinaryMapping, setCloudinaryMapping } from './cloudinary.js';
 import { broadcast } from './events.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -68,7 +68,7 @@ async function updateImageSlot(id, data) {
   return result;
 }
 
-async function deleteImageSlot(id) {
+async function _deleteImageSlot(id) {
   const { error } = await supabase.from('image_slots').delete().eq('id', id);
   if (error) throw error;
   return true;

@@ -7,7 +7,7 @@ function toggleTheme() {
   const current = html.getAttribute('data-theme');
   const next = current === 'light' ? 'dark' : 'light';
   html.setAttribute('data-theme', next);
-  try { localStorage.setItem('nim_theme', next); } catch (e) {}
+  try { localStorage.setItem('nim_theme', next); } catch (_e) {}
 
   // Sync checkbox
   const checkbox = document.getElementById('checkbox');
@@ -22,7 +22,8 @@ function initTheme() {
     checkbox.addEventListener('change', toggleTheme);
   }
 
-  try { var saved = localStorage.getItem('nim_theme'); } catch (e) {}
+  let saved;
+  try { saved = localStorage.getItem('nim_theme'); } catch (_e) {}
   let theme = 'light';
   if (saved === 'light' || saved === 'dark') {
     theme = saved;
@@ -51,7 +52,7 @@ async function loadTranslations(lang) {
     applyTranslations();
     updateLangButtons();
     document.documentElement.lang = lang === 'en' ? 'en' : lang === 'mg' ? 'mg' : 'fr';
-  } catch (e) {
+  } catch (_e) {
     console.warn('Failed to load translations for', lang, '- falling back to fr');
     if (lang !== 'fr') loadTranslations('fr');
   }
@@ -375,7 +376,7 @@ function handleSubmit(e) {
     body: JSON.stringify(formData)
   })
   .then(response => response.json())
-  .then(result => {
+  .then(_result => {
     btn.textContent = getNestedTranslation('contact.sent');
     btn.style.background = '#2a7a4a';
     messageDiv.textContent = getNestedTranslation('contact.sentMessage');
@@ -432,10 +433,10 @@ function updateCalcFields() {
   const inputSurface = document.getElementById('calc-surface');
 
   if (service === 'forage') {
-    labelSurface.textContent = getNestedTranslation(`calculator.depthLabel`);
+    labelSurface.textContent = getNestedTranslation('calculator.depthLabel');
     inputSurface.value = 40;
   } else {
-    labelSurface.textContent = getNestedTranslation(`calculator.surfaceLabel`);
+    labelSurface.textContent = getNestedTranslation('calculator.surfaceLabel');
     inputSurface.value = 100;
   }
 }
@@ -452,7 +453,7 @@ async function runCalculation() {
     return;
   }
 
-  const loadingText = getNestedTranslation(`calculator.loading`) || 'Calcul de votre estimation en cours...';
+  const loadingText = getNestedTranslation('calculator.loading') || 'Calcul de votre estimation en cours...';
   resultPanel.innerHTML = `
     <div class="result-placeholder">
       <div class="loading-spinner"></div>
@@ -463,7 +464,7 @@ async function runCalculation() {
   const data = await calculatePricing(serviceType, squareMeters, finishingLevel, location);
 
   if (!data || data.error) {
-    const errText = getNestedTranslation(`calculator.error`) || 'Erreur lors du calcul. Veuillez réessayer.';
+    const errText = getNestedTranslation('calculator.error') || 'Erreur lors du calcul. Veuillez réessayer.';
     resultPanel.innerHTML = `
       <div class="result-placeholder">
         <p style="color: var(--rust-light);">${errText}</p>
@@ -872,7 +873,7 @@ async function loadImageSlots() {
     });
     initHeroSwap();
     rebuildGallery();
-  } catch (err) {
+  } catch (_err) {
     // Silent fail — SVGs remain as fallbacks
   }
 }
@@ -1163,7 +1164,7 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
   if (!modal || !titleEl || !bodyEl) return;
   titleEl.textContent = title;
   dateEl.textContent = date;
-  if (authorEl) authorEl.textContent = `Publié par Nord Invest Madagascar`;
+  if (authorEl) authorEl.textContent = 'Publié par Nord Invest Madagascar';
   if (contentEl) {
     if (imgUrl) {
       contentEl.style.backgroundImage = `url('${imgUrl}')`;
@@ -1191,7 +1192,6 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
   if (relatedEl && window._allPosts) {
     const others = window._allPosts.filter(p => p.id !== postId);
     if (others.length > 0) {
-      const slotMap = window._slotMap || {};
       relatedEl.innerHTML = `
         <div class="blog-related-title">${getNestedTranslation('blog.related') || 'Articles similaires'}</div>
         <div class="blog-related-grid">${others.slice(0, 2).map(p => {
@@ -1669,7 +1669,7 @@ async function loadDossiers() {
   const grid = document.getElementById('dossiersGrid');
   if (!grid) return;
   try {
-    const res = await fetch(`/api/dossiers`);
+    const res = await fetch('/api/dossiers');
     const dossiers = await res.json();
     if (!dossiers.length) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
@@ -1729,9 +1729,9 @@ function initDossiersCarousel() {
 
   dotsContainer.innerHTML = '';
   let autoTimer = null;
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let isDragging = false;
+  let _touchStartX = 0;
+  let _touchStartY = 0;
+  let _isDragging = false;
 
   cards.forEach((_, i) => {
     const dot = document.createElement('button');
@@ -1775,14 +1775,14 @@ function initDossiersCarousel() {
   }, { passive: true });
 
   grid.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    isDragging = true;
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+    _isDragging = true;
     resetAutoTimer();
   }, { passive: true });
 
   grid.addEventListener('touchend', () => {
-    isDragging = false;
+    _isDragging = false;
     startAutoTimer();
   }, { passive: true });
 
@@ -2006,9 +2006,9 @@ function initBudgetCurrencyConversion() {
 // ═══════════════════════════════════════════════════════
 
 function initCookieConsent() {
-  var banner = document.getElementById('cookieConsent');
+  const banner = document.getElementById('cookieConsent');
   if (!banner) return;
-  var consent = localStorage.getItem('gaConsent');
+  const consent = localStorage.getItem('gaConsent');
   if (consent === 'accepted' || consent === 'refused') {
     banner.style.display = 'none';
     return;
@@ -2018,7 +2018,7 @@ function initCookieConsent() {
     localStorage.setItem('gaConsent', 'accepted');
     banner.classList.remove('show');
     setTimeout(function () { banner.style.display = 'none'; }, 400);
-    if (typeof initGA === 'function') initGA();
+    if (typeof window.initGA === 'function') window.initGA();
   });
   document.getElementById('cookieRefuse').addEventListener('click', function () {
     localStorage.setItem('gaConsent', 'refused');

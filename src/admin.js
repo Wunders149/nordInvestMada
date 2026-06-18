@@ -1,20 +1,15 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { requireAuth, loginLimiter, createSession, destroySession, loginUser, hashPassword, logActivity, getTokenFromRequest } from './auth.js';
+import { requireAuth, loginLimiter, createSession, destroySession, loginUser, logActivity, getTokenFromRequest } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
-import { uploadPdf, deleteImage, getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
+import { uploadPdf, deleteImage, getPdfThumbnailUrl } from './cloudinary.js';
 import { broadcast } from './events.js';
 import { validate, loginSchema } from './validation.js';
-import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, '..');
-
-const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -65,7 +60,7 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
     return res.status(401).json({ error: 'Identifiants invalides' });
   }
   const token = await createSession(user);
-  logActivity('login', `Connexion réussie`, user.username);
+  logActivity('login', 'Connexion réussie', user.username);
   const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
   res.cookie('admin_token', token, {
     httpOnly: true,
@@ -79,7 +74,7 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
 
 // ─── LOGOUT ───
 router.post('/logout', requireAuth, async (req, res) => {
-  logActivity('logout', `Déconnexion`, req.admin.username);
+  logActivity('logout', 'Déconnexion', req.admin.username);
   const token = getTokenFromRequest(req);
   if (token) await destroySession(token);
   res.clearCookie('admin_token', { path: '/api/admin' });
@@ -544,8 +539,8 @@ router.get('/settings', requireAuth, async (req, res) => {
       googleAnalyticsId: settings.googleAnalyticsId || process.env.GOOGLE_ANALYTICS_ID || 'G-MQ14N6E1ZG',
       whatsappNumber: settings.whatsappNumber || '261328231280',
       siteUrl: settings.siteUrl || process.env.SITE_URL || 'https://nordinvest.mg',
-      seoDescription: settings.seoDescription || "Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, études et conception et vente immobilière.",
-      seoKeywords: settings.seoKeywords || ["immobilier", "construction", "madagascar", "antsiranana", "diego-suarez", "forage", "études", "conception"]
+      seoDescription: settings.seoDescription || 'Nord Invest Madagascar — Immobilier & Construction à Antsiranana. Expertise en bâtiment, forage, études et conception et vente immobilière.',
+      seoKeywords: settings.seoKeywords || ['immobilier', 'construction', 'madagascar', 'antsiranana', 'diego-suarez', 'forage', 'études', 'conception']
     });
   } catch (err) {
     console.error('Settings get error:', err);

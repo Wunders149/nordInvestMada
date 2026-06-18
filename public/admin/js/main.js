@@ -1,4 +1,4 @@
-import { checkAuth, markDirty, markClean, contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state, contacts, quotes, subscribers } from './modules/api.js';
+import { checkAuth, markDirty, markClean, contentPage as _contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state, contacts, quotes, subscribers } from './modules/api.js';
 import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox, closeLightbox, updateDarkBtn, confirmCallback } from './modules/ui.js';
 import { loadStats, renderCharts, renderDashboard } from './modules/dashboard.js';
 import {
@@ -23,7 +23,7 @@ import {
 import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pricing.js';
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
-import { loadSectionsEditor, saveAllSections } from './modules/sections.js';
+import { loadSectionsEditor, saveAllSections as _saveAllSections } from './modules/sections.js';
 import { loadDossiers, filterDossiers, closeDossierRename, confirmDossierRename } from './modules/dossiers.js';
 import { loadBlogCategories, openCategoryManager, closeCategoryManager, addCategoryRow, removeCategoryRow, saveCategoryManager, catUploadClick, catRemoveImage } from './modules/blogCategories.js';
 import { loadTeamPositions, openPositionManager, closePositionManager, addPositionRow, removePositionRow, savePositionManager } from './modules/teamPositions.js';

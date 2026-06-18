@@ -1,4 +1,4 @@
-import { API_BASE, API_IMAGES_BASE, getHeaders, clearToken, markDirty, markClean, token } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, clearToken, markClean, token } from './api.js';
 import { showToast } from './ui.js';
 import { escapeHtml } from './helpers.js';
 

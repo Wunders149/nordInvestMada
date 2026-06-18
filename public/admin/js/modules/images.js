@@ -1,6 +1,6 @@
 import { getHeaders, token, slots, images, clearToken, API_IMAGES_BASE } from './api.js';
 import { escapeHtml, humanSize } from './helpers.js';
-import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, openLightbox } from './ui.js';
+import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid } from './ui.js';
 
 export async function loadSlots() {
   try {

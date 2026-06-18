@@ -13,8 +13,8 @@ import rateLimit from 'express-rate-limit';
 import { adminRouter } from './admin.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig, getSetting } from './supabase.js';
-import { addClient, broadcast, heartbeat as sseHeartbeat } from './events.js';
-import { getPdfThumbnailUrl, getPdfUrl } from './cloudinary.js';
+import { addClient, broadcast as _broadcast, heartbeat as sseHeartbeat } from './events.js';
+import { getPdfThumbnailUrl, getPdfUrl as _getPdfUrl } from './cloudinary.js';
 import { validate, contactSchema, newsletterSchema, quoteSchema, pricingSchema } from './validation.js';
 
 dotenv.config();
@@ -165,7 +165,7 @@ async function getExchangeRates() {
 
 app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), async (req, res) => {
   try {
-    const { serviceType, squareMeters, finishingLevel, projectType, location } = req.body;
+    const { serviceType, squareMeters, finishingLevel, projectType: _projectType, location } = req.body;
 
     const sqMeters = parseFloat(squareMeters);
     if (!serviceType || !squareMeters || !finishingLevel) {
@@ -183,7 +183,7 @@ app.post('/api/calculate-pricing', pricingLimiter, validate(pricingSchema), asyn
       return res.status(400).json({ error: 'Invalid service type or finishing level' });
     }
 
-    let basePrice = servicePricing.pricePerM2 || servicePricing.pricePerML || servicePricing.price;
+    const basePrice = servicePricing.pricePerM2 || servicePricing.pricePerML || servicePricing.price;
     const unit = servicePricing.unit || (servicePricing.pricePerML ? 'ml' : 'm²');
 
     const locationMultiplier = {};
@@ -635,7 +635,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(projectRoot, 'public', 'index.html'));
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Server error:', err);
   if (req.path.startsWith('/api')) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -659,7 +659,7 @@ app.listen(PORT, () => {
   console.log(`✓ Nord Invest Madagascar server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`✓ Uploads directory: ${uploadsDir}`);
-  console.log(`✓ API endpoints available at: /api/*`);
+  console.log('✓ API endpoints available at: /api/*');
 
   // SSE heartbeat every 25s to keep connections alive
   setInterval(() => sseHeartbeat(), 25000);

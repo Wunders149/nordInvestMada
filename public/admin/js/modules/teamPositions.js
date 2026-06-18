@@ -1,7 +1,7 @@
 import { API_BASE, getHeaders } from './api.js';
 import { showToast } from './ui.js';
 
-export let teamPositions = [];
+export const teamPositions = [];
 
 export async function loadTeamPositions() {
   try {
@@ -10,8 +10,8 @@ export async function loadTeamPositions() {
     teamPositions.length = 0;
     teamPositions.push(...(await res.json()));
     return teamPositions;
-  } catch (err) {
-    console.error('Load team positions error:', err);
+  } catch (_err) {
+    console.error('Load team positions error:', _err);
     return [];
   }
 }
@@ -28,7 +28,7 @@ export async function saveTeamPositions(positions) {
     teamPositions.push(...positions);
     showToast('Postes enregistrés', 'success');
     return true;
-  } catch (err) {
+  } catch (_err) {
     showToast('Erreur lors de l\'enregistrement', 'error');
     return false;
   }

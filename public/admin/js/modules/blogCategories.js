@@ -1,7 +1,7 @@
 import { API_BASE, API_IMAGES_BASE, getHeaders, token, clearToken } from './api.js';
-import { showToast, showConfirm } from './ui.js';
+import { showToast, showConfirm as _showConfirm } from './ui.js';
 
-export let blogCategories = [];
+export const blogCategories = [];
 
 export async function loadBlogCategories() {
   try {
@@ -10,8 +10,8 @@ export async function loadBlogCategories() {
     blogCategories.length = 0;
     blogCategories.push(...(await res.json()));
     return blogCategories;
-  } catch (err) {
-    console.error('Load blog categories error:', err);
+  } catch (_err) {
+    console.error('Load blog categories error:', _err);
     return [];
   }
 }
@@ -28,7 +28,7 @@ export async function saveBlogCategories(categories) {
     blogCategories.push(...categories);
     showToast('Catégories enregistrées', 'success');
     return true;
-  } catch (err) {
+  } catch (_err) {
     showToast('Erreur lors de l\'enregistrement', 'error');
     return false;
   }
@@ -136,8 +136,8 @@ export async function catUploadClick(index) {
         preview.alt = '';
         row.querySelector('.cat-img-upload').insertBefore(preview, fileInput);
       }
-    } catch (err) {
-      statusEl.textContent = '✗ ' + err.message;
+    } catch (_err) {
+      statusEl.textContent = '✗ ' + _err.message;
     }
   };
 }
