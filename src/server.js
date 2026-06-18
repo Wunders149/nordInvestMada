@@ -36,9 +36,9 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://unpkg.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://www.google-analytics.com', 'https://tile.openstreetmap.org', 'https://unpkg.com'],
-      connectSrc: ["'self'", 'https://res.cloudinary.com', 'https://cdn.jsdelivr.net', 'https://www.google-analytics.com', 'https://unpkg.com'],
-      frameSrc: ["'none'"],
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://www.google-analytics.com', 'https://*.tile.openstreetmap.org', 'https://unpkg.com'],
+      connectSrc: ["'self'", 'https://res.cloudinary.com', 'https://cdn.jsdelivr.net', 'https://www.google-analytics.com', 'https://www.google.com', 'https://www.googletagmanager.com', 'https://unpkg.com'],
+      frameSrc: ["'self'", 'https://res.cloudinary.com'],
       objectSrc: ["'self'", 'https://res.cloudinary.com'],
       baseUri: ["'self'"],
       formAction: ["'self'"]
