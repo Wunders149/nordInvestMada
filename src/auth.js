@@ -68,11 +68,16 @@ export async function destroySession(token) {
 }
 
 export async function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Non authentifié' });
+  let token = '';
+  if (req.cookies && req.cookies.admin_token) {
+    token = req.cookies.admin_token;
+  } else {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
+    token = authHeader.slice(7);
   }
-  const token = authHeader.slice(7);
 
   let session = sessionCache.get(token);
   if (session && session.expires < Date.now()) {
@@ -90,6 +95,13 @@ export async function requireAuth(req, res, next) {
   }
   req.admin = session;
   next();
+}
+
+export function getTokenFromRequest(req) {
+  if (req.cookies && req.cookies.admin_token) return req.cookies.admin_token;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) return authHeader.slice(7);
+  return null;
 }
 
 export const loginLimiter = rateLimit({

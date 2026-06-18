@@ -39,3 +39,19 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Runtime data
+uploads/
+data/
+server-err*.txt
+server-out*.txt
+admin-err.txt
+admin-out.txt
+stderr.txt
+stdout.txt
+server.err
+server.log
+
+# Project-specific
+*.sqlite
+*.db

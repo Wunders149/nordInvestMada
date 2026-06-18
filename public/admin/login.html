@@ -75,6 +75,8 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Identifiants invalides');
         localStorage.setItem('adminToken', data.token);
+        // Also set a flag so dashboard.html knows not to redirect if cookie fails
+        sessionStorage.setItem('adminLoggedIn', 'true');
         window.location.href = '/admin/dashboard.html';
       } catch (err) {
         errorEl.textContent = err.message;

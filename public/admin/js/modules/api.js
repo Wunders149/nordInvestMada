@@ -25,7 +25,9 @@ export const state = {
 };
 
 export function getHeaders() {
-  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+  const h = { 'Content-Type': 'application/json' };
+  if (token) h['Authorization'] = `Bearer ${token}`;
+  return h;
 }
 
 export function markDirty() { isDirty = true; }
@@ -33,9 +35,16 @@ export function markClean() { isDirty = false; }
 
 export function checkAuth() {
   token = localStorage.getItem('adminToken');
-  if (!token) { window.location.href = '/admin/login.html'; return false; }
+  if (!token && !sessionStorage.getItem('adminLoggedIn')) {
+    window.location.href = '/admin/login.html';
+    return false;
+  }
   return true;
 }
 
 export function setToken(t) { token = t; localStorage.setItem('adminToken', t); }
-export function clearToken() { token = ''; localStorage.removeItem('adminToken'); }
+export function clearToken() {
+  token = '';
+  localStorage.removeItem('adminToken');
+  sessionStorage.removeItem('adminLoggedIn');
+}

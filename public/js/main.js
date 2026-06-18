@@ -137,11 +137,14 @@ const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
 const mobileMQ = window.matchMedia('(max-width: 768px)');
 
+let lastFocusedEl = null;
+
 function closeMobileMenu() {
   if (!navLinks || !hamburger) return;
   navLinks.classList.add('closing');
   navLinks.classList.remove('active');
   hamburger.classList.remove('active');
+  hamburger.setAttribute('aria-expanded', 'false');
   // Reset all open dropdowns
   document.querySelectorAll('.nav-dropdown.active').forEach(d => d.classList.remove('active'));
   setTimeout(() => {
@@ -163,8 +166,10 @@ if (hamburger) {
       navLinks.classList.remove('closing');
       hamburger.classList.add('active');
       navLinks.classList.add('active');
+      hamburger.setAttribute('aria-expanded', 'true');
     } else {
       closeMobileMenu();
+      hamburger.setAttribute('aria-expanded', 'false');
     }
   });
   navLinks.querySelectorAll('a').forEach(a => {
@@ -591,6 +596,7 @@ function rebuildGallery() {
 let galleryIndex = 0;
 
 function openGallery(index) {
+  lastFocusedEl = document.activeElement;
   rebuildGallery();
   galleryIndex = index;
   const modal = document.getElementById('galleryModal');
@@ -610,6 +616,7 @@ function closeGallery(e) {
   const modal = document.getElementById('galleryModal');
   if (modal) modal.classList.remove('active');
   document.body.style.overflow = '';
+  if (lastFocusedEl) { lastFocusedEl.focus(); lastFocusedEl = null; }
 }
 
 function changeGallery(dir) {
@@ -726,8 +733,14 @@ if (numbersSection) counterObserver.observe(numbersSection);
 async function handleNewsletter(e) {
   e.preventDefault();
   const email = document.getElementById('newsletterEmail').value;
+  const consent = document.getElementById('newsletterConsent');
   const msg = document.getElementById('newsletterMsg');
   if (!email) return;
+  if (consent && !consent.checked) {
+    msg.textContent = getNestedTranslation('newsletter.consentRequired') || 'Veuillez accepter de recevoir nos communications';
+    msg.className = 'newsletter-msg error';
+    return;
+  }
   msg.textContent = getNestedTranslation('newsletter.sending');
   msg.className = 'newsletter-msg';
   const API_BASE = window.location.origin;
@@ -735,7 +748,7 @@ async function handleNewsletter(e) {
     const res = await fetch(`${API_BASE}/api/newsletter`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email, consent: true })
     });
     const data = await res.json();
     if (data.success) {
@@ -1144,6 +1157,7 @@ async function loadBlog() {
 }
 
 function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
+  lastFocusedEl = document.activeElement;
   const modal = document.getElementById('blogModal');
   const contentEl = document.getElementById('blogModalContent');
   const titleEl = document.getElementById('blogModalTitle');
@@ -1240,10 +1254,18 @@ function closeBlogPost(e) {
   if (modal) modal.classList.remove('active');
   document.body.style.overflow = '';
   document.querySelector('nav')?.classList.remove('hidden');
+  if (lastFocusedEl) { lastFocusedEl.focus(); lastFocusedEl = null; }
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeBlogPost();
+  if (e.key === 'Escape') {
+    const blogModal = document.getElementById('blogModal');
+    const pdfModal = document.getElementById('pdfModal');
+    const galleryModal = document.getElementById('galleryModal');
+    if (blogModal?.classList.contains('active')) closeBlogPost();
+    else if (pdfModal?.classList.contains('active')) closePdfViewer();
+    else if (galleryModal?.classList.contains('active')) closeGallery();
+  }
 });
 
 let exchangeRates = {};
@@ -1610,6 +1632,7 @@ function formatFileSize(bytes) {
 }
 
 function openPdfViewer(id, name, url) {
+  lastFocusedEl = document.activeElement;
   currentPdfId = id;
   currentPdfUrl = url;
   const modal = document.getElementById('pdfModal');
@@ -1632,6 +1655,7 @@ function closePdfViewer(e) {
   if (modal) modal.classList.remove('active');
   if (viewer) viewer.src = '';
   document.body.style.overflow = '';
+  if (lastFocusedEl) { lastFocusedEl.focus(); lastFocusedEl = null; }
 }
 
 function downloadCurrentPdf() {
@@ -1797,6 +1821,28 @@ function initDossiersCarousel() {
   startAutoTimer();
 }
 
+function filterBlogPosts(query) {
+  const container = document.getElementById('blogTimeline');
+  if (!container) return;
+  const q = query.toLowerCase().trim();
+  container.querySelectorAll('.timeline-entry').forEach(entry => {
+    const title = (entry.dataset.title || '').toLowerCase();
+    const match = !q || title.includes(q);
+    if (!match) {
+      entry.style.display = 'none';
+    } else {
+      entry.style.display = '';
+      if (!entry.classList.contains('hidden')) {
+        entry.classList.add('timeline-visible');
+      }
+    }
+  });
+  const footer = document.getElementById('blogFooter');
+  if (footer) {
+    footer.style.display = q ? 'none' : '';
+  }
+}
+
 function initBlogReveal() {
   const entries = document.querySelectorAll('.timeline-entry:not(.timeline-visible)');
   if (!entries.length) return;
@@ -1927,6 +1973,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initImageReveal();
   initMaps();
   initBudgetCurrencyConversion();
+  initCookieConsent();
 });
 
 // ═══════════════════════════════════════════════════════
@@ -1959,6 +2006,32 @@ function initBudgetCurrencyConversion() {
   if (select) {
     select.addEventListener('change', convertBudget);
   }
+}
+
+// ═══════════════════════════════════════════════════════
+// COOKIE CONSENT
+// ═══════════════════════════════════════════════════════
+
+function initCookieConsent() {
+  var banner = document.getElementById('cookieConsent');
+  if (!banner) return;
+  var consent = localStorage.getItem('gaConsent');
+  if (consent === 'accepted' || consent === 'refused') {
+    banner.style.display = 'none';
+    return;
+  }
+  setTimeout(function () { banner.classList.add('show'); }, 500);
+  document.getElementById('cookieAccept').addEventListener('click', function () {
+    localStorage.setItem('gaConsent', 'accepted');
+    banner.classList.remove('show');
+    setTimeout(function () { banner.style.display = 'none'; }, 400);
+    if (typeof initGA === 'function') initGA();
+  });
+  document.getElementById('cookieRefuse').addEventListener('click', function () {
+    localStorage.setItem('gaConsent', 'refused');
+    banner.classList.remove('show');
+    setTimeout(function () { banner.style.display = 'none'; }, 400);
+  });
 }
 
 // ═══════════════════════════════════════════════════════

@@ -18,9 +18,9 @@ services:
       - key: SITE_URL
         value: https://nord-invest-mada.onrender.com
       - key: ADMIN_USER
-        value: admin
+        sync: false
       - key: ADMIN_PASS
-        value: nordinvest2026
+        sync: false
       - key: EMAIL_USER
         sync: false
       - key: EMAIL_PASS

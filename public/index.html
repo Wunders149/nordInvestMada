@@ -30,6 +30,12 @@
 <!-- Canonical URL -->
 <link rel="canonical" href="https://www.nordinvest.mg/">
 
+<!-- Hreflang for multilingual SEO -->
+<link rel="alternate" hreflang="fr" href="https://www.nordinvest.mg/">
+<link rel="alternate" hreflang="en" href="https://www.nordinvest.mg/en">
+<link rel="alternate" hreflang="mg" href="https://www.nordinvest.mg/mg">
+<link rel="alternate" hreflang="x-default" href="https://www.nordinvest.mg/">
+
 <!-- Favicon -->
 <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon_io/favicon-16x16.png">
@@ -45,16 +51,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" media="print" onload="this.media='all'">
 
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-MQ14N6E1ZG"></script>
+<!-- Google Analytics (loaded on consent) -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-MQ14N6E1ZG', {
-    'page_path': window.location.pathname,
-    'anonymize_ip': true
-  });
+  window._gaLoaded = false;
+  window._gaId = 'G-MQ14N6E1ZG';
+  function initGA() {
+    if (window._gaLoaded) return;
+    window._gaLoaded = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + window._gaId;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', window._gaId, { 'page_path': window.location.pathname, 'anonymize_ip': true });
+  }
+  if (localStorage.getItem('gaConsent') === 'accepted') {
+    initGA();
+  }
 </script>
 
 <!-- Structured Data - JSON-LD Schema -->
@@ -122,6 +137,8 @@
 </head>
 <body>
 
+<a href="#hero" class="skip-link" id="skipLink">Aller au contenu principal</a>
+
 <!-- LOADER -->
 <div id="loader-overlay">
   <div class="loader-content">
@@ -131,12 +148,12 @@
 </div>
 
 <!-- NAV -->
-<nav>
+<nav aria-label="Navigation principale">
   <a href="#hero" class="nav-logo">
     <img src="/images/logo.jpeg" alt="Nord Invest Madagascar" class="nav-logo-img" data-image-slot="logo">
     Nord Invest <span>Madagascar</span>
   </a>
-  <button class="hamburger" id="hamburger">
+  <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="navLinks" aria-label="Menu de navigation">
     <span></span>
     <span></span>
     <span></span>
@@ -572,6 +589,9 @@
       <h2 data-i18n-html="blog.title">Conseils &<br>actualités du bâtiment.</h2>
       <p class="section-lead" data-i18n="blog.lead">Découvrez nos conseils techniques, guides pratiques et actualités sur la construction, le forage et l'immobilier à Madagascar.</p>
     </div>
+    <div class="blog-search-wrap">
+      <input type="text" id="blogSearch" class="blog-search-input" placeholder="Rechercher dans les articles..." aria-label="Rechercher un article" oninput="filterBlogPosts(this.value)">
+    </div>
     <div id="blogTimeline" class="blog-timeline"><div class="loading-spinner" style="margin:24px auto"></div></div>
     <div class="blog-footer" id="blogFooter" style="display:none">
       <button class="blog-toggle" id="blogToggleBtn" data-expanded="false">Voir tous les articles</button>
@@ -710,8 +730,12 @@
   <div class="newsletter-container reveal">
     <div class="newsletter-title" data-i18n="newsletter.title">Restez informé</div>
     <p class="newsletter-desc" data-i18n="newsletter.desc">Recevez nos actualités, conseils techniques et offres spéciales par email. Pas de spam, désabonnement à tout moment.</p>
-    <form class="newsletter-form" id="newsletterForm" onsubmit="handleNewsletter(event)">
-      <input type="email" id="newsletterEmail" class="newsletter-input" placeholder="votre@email.com" required>
+    <form class="newsletter-form" id="newsletterForm" onsubmit="handleNewsletter(event)" novalidate>
+      <input type="email" id="newsletterEmail" class="newsletter-input" placeholder="votre@email.com" required aria-label="Adresse email">
+      <div class="newsletter-consent">
+        <input type="checkbox" id="newsletterConsent" required aria-label="Consentement">
+        <label for="newsletterConsent" data-i18n="newsletter.consent">J'accepte de recevoir les communications de Nord Invest Madagascar</label>
+      </div>
       <button type="submit" class="newsletter-btn" data-i18n="newsletter.btn">S'abonner</button>
     </form>
     <div class="newsletter-msg" id="newsletterMsg"></div>
@@ -728,6 +752,9 @@
     <a href="#pricing" data-i18n="footer.pricing">Tarifs</a>
     <a href="#blog" data-i18n="nav.blog">Blog</a>
     <a href="#contact" data-i18n="footer.contact">Contact</a>
+    <a href="/privacy" data-i18n="footer.privacy">Confidentialité</a>
+    <a href="/terms" data-i18n="footer.terms">CGU</a>
+    <a href="/cookies" data-i18n="footer.cookies">Cookies</a>
   </div>
   <div class="footer-social" id="footerSocial"></div>
 </footer>
@@ -792,6 +819,14 @@
 <button id="backToTop" class="back-to-top" aria-label="Back to top">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><path d="M18 15l-6-6-6 6"/></svg>
 </button>
+
+<div id="cookieConsent" class="cookie-consent" role="dialog" aria-label="Consentement des cookies" aria-describedby="cookieDesc">
+  <p id="cookieDesc">Ce site utilise Google Analytics pour améliorer votre expérience. <a href="/cookies">En savoir plus</a></p>
+  <div class="cookie-btns">
+    <button id="cookieAccept" class="cookie-btn cookie-btn-accept">Accepter</button>
+    <button id="cookieRefuse" class="cookie-btn cookie-btn-refuse">Refuser</button>
+  </div>
+</div>
 
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script defer src="/js/main.js"></script>

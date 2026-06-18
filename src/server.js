@@ -1,5 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import path from 'path';
@@ -22,12 +26,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(cors());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://www.googletagmanager.com', 'https://www.google-analytics.com', 'https://unpkg.com', 'https://cdn.jsdelivr.net'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://unpkg.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://www.google-analytics.com'],
+      connectSrc: ["'self'", 'https://res.cloudinary.com', 'https://cdn.jsdelivr.net', 'https://www.google-analytics.com'],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
+app.use(compression());
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-app.use(express.static(path.join(projectRoot, 'public')));
-app.use('/uploads', express.static(uploadsDir));
+app.use(express.static(path.join(projectRoot, 'public'), { maxAge: '1h', etag: true, lastModified: true }));
+app.use('/uploads', express.static(uploadsDir, { maxAge: '1h', etag: true, lastModified: true }));
 
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
@@ -594,16 +619,27 @@ app.get('/api/health', (req, res) => {
 app.get('/admin', (req, res) => res.redirect('/admin/login.html'));
 app.get('/admin/', (req, res) => res.redirect('/admin/login.html'));
 
+// ─── Legal Pages ───
+const legalPages = ['/privacy', '/terms', '/cookies'];
+legalPages.forEach(page => {
+  app.get(page, (req, res) => {
+    res.sendFile(path.join(projectRoot, 'public', `${page.slice(1)}.html`));
+  });
+});
+
 app.get('*', (req, res) => {
   if (req.path.startsWith('/admin')) {
-    return res.status(404).json({ error: 'Not found' });
+    return res.status(404).sendFile(path.join(projectRoot, 'public', '404.html'));
   }
   res.sendFile(path.join(projectRoot, 'public', 'index.html'));
 });
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  if (req.path.startsWith('/api')) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  res.status(500).sendFile(path.join(projectRoot, 'public', '500.html'));
 });
 
 function escapeHtml(text) {
