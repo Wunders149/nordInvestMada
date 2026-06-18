@@ -10,7 +10,8 @@ const SECTIONS_CONFIG = {
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
       { key: 'subtitle', label: 'Sous-titre', type: 'textarea' },
-      { key: 'badge', label: 'Badge', type: 'text' }
+      { key: 'badge', label: 'Badge (label)', type: 'text' },
+      { key: 'badgeYear', label: 'Badge (année)', type: 'text' }
     ]
   },
   about: {

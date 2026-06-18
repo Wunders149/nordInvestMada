@@ -1399,6 +1399,7 @@ function applySectionContent(cfg) {
     setElHtml('#hero h1', s.hero.title);
     setElText('.hero-sub', s.hero.subtitle);
     setElText('.hero-badge-label', s.hero.badge);
+    setElText('.hero-badge-year', s.hero.badgeYear);
   }
 
   // About
