@@ -1102,11 +1102,16 @@ h2 {
 #dossiers h2 { color: var(--text-primary); }
 #dossiers .section-lead { color: var(--text-secondary); }
 .dossiers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   gap: 24px;
   margin-top: 60px;
+  padding-bottom: 8px;
 }
+.dossiers-grid::-webkit-scrollbar { display: none; }
 .dossier-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
@@ -1120,6 +1125,9 @@ h2 {
   display: block;
   text-decoration: none;
   color: inherit;
+  min-width: calc(33.333% - 16px);
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 .dossier-card::before {
   content: '';
@@ -1200,6 +1208,49 @@ h2 {
 [data-theme="light"] .dossier-thumb { background: var(--bg-secondary); border-color: var(--border-light); }
 [data-theme="light"] .dossier-thumb-fallback { background: rgba(192,64,42,0.06); }
 [data-theme="light"] #dossiers { background: var(--bg-secondary); }
+
+/* ─── DOSSIERS CAROUSEL (mobile) ─── */
+.dossiers-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+.carousel-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--rust);
+  background: transparent;
+  color: var(--rust);
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s, color 0.25s, transform 0.2s;
+  line-height: 1;
+  padding: 0;
+}
+.carousel-btn:active { transform: scale(0.9); }
+.carousel-btn:hover { background: var(--rust); color: white; }
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+}
+.carousel-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border-light);
+  transition: background 0.3s, transform 0.3s;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+.carousel-dot.active {
+  background: var(--rust);
+  transform: scale(1.3);
+}
 
 /* ─── PDF VIEWER MODAL ─── */
 .pdf-modal {
@@ -2121,20 +2172,20 @@ h1 { animation-delay: 0.2s; }
   font-size: 1.1rem;
 }
 .blog-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
-  margin-top: 64px;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 24px;
+  margin-top: 60px;
+  padding-bottom: 8px;
 }
-@media (min-width: 1300px) {
-  .blog-grid {
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 1100px;
-    gap: 36px;
-  }
+.blog-grid::-webkit-scrollbar { display: none; }
+.blog-card {
+  min-width: calc(33.333% - 16px);
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 .blog-card {
   background: var(--bg-card);
@@ -2246,6 +2297,15 @@ h1 { animation-delay: 0.2s; }
   transition: transform 0.2s;
 }
 .blog-link:hover::after { transform: translateX(4px); }
+
+/* ─── BLOG CAROUSEL NAV ─── */
+.blog-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+}
 
 /* ─── NEWSLETTER ─── */
 #newsletter {
@@ -2662,11 +2722,13 @@ h1 { animation-delay: 0.2s; }
   .standards-grid { grid-template-columns: 1fr; gap: 40px; }
   .team-grid { grid-template-columns: repeat(2, 1fr); }
   .values-grid { grid-template-columns: repeat(2, 1fr); }
-  .blog-grid { grid-template-columns: repeat(2, 1fr); max-width: 700px; gap: 24px; }
+  .blog-card { min-width: calc(50% - 12px); }
   #blog { padding: 80px 30px; }
   #team { padding: 80px 30px; }
   #newsletter { padding: 60px 30px; }
   footer { flex-direction: column; gap: 20px; text-align: center; }
+  .dossier-card { min-width: calc(50% - 8px); }
+  .dossiers-grid { gap: 16px; }
 }
 @media (max-width: 768px) {
   nav { padding: 14px 20px; }
@@ -2685,7 +2747,12 @@ h1 { animation-delay: 0.2s; }
   .projects-grid { grid-template-columns: 1fr; }
   .team-grid { grid-template-columns: 1fr; }
   .values-grid { grid-template-columns: 1fr; }
-  .blog-grid { grid-template-columns: 1fr; max-width: 500px; gap: 24px; }
+  .blog-card { min-width: 75%; }
+  .blog-grid {
+    gap: 12px;
+    padding: 8px 16px 16px;
+    margin: 40px -20px 0;
+  }
   #blog { padding: 60px 20px; }
   #blog .section-lead { font-size: 0.95rem; }
   #team { padding: 60px 20px; }
@@ -2701,6 +2768,17 @@ h1 { animation-delay: 0.2s; }
   .gallery-modal { padding: 20px; }
   .gallery-nav { padding: 12px 14px; font-size: 1.2rem; }
   footer { padding: 30px 20px; }
+  .dossiers-grid {
+    gap: 12px;
+    padding: 8px 16px 16px;
+    margin: 32px -20px 0;
+  }
+  .dossier-card {
+    min-width: 75%;
+    padding: 24px 16px;
+  }
+  .dossier-thumb { margin-bottom: 14px; }
+  .dossier-name { font-size: 1rem; }
 }
 @media (max-width: 640px) {
   nav { padding: 12px 16px; }

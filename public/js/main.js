@@ -1061,6 +1061,7 @@ async function loadBlog() {
     });
     loadImageSlots();
     initImageReveal();
+    initBlogCarousel();
   } catch (err) { console.warn('Blog load error:', err); showSectionError('blogGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
@@ -1570,6 +1571,202 @@ async function loadDossiers() {
       <p>${getNestedTranslation('dossiers.error')}</p>
     </div>`;
   }
+  initDossiersCarousel();
+}
+
+function initDossiersCarousel() {
+  const grid = document.getElementById('dossiersGrid');
+  const nav = document.querySelector('.dossiers-carousel-nav');
+  if (!grid || !nav) return;
+  const cards = grid.querySelectorAll('.dossier-card');
+  nav.style.display = cards.length < 2 ? 'none' : '';
+
+  const dotsContainer = nav.querySelector('.carousel-dots');
+  const prevBtn = nav.querySelector('.carousel-prev');
+  const nextBtn = nav.querySelector('.carousel-next');
+  if (!dotsContainer) return;
+
+  dotsContainer.innerHTML = '';
+  let autoTimer = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let isDragging = false;
+
+  cards.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => {
+      scrollToIndex(i);
+    });
+    dotsContainer.appendChild(dot);
+  });
+
+  function getActiveIndex() {
+    const scrollLeft = grid.scrollLeft;
+    let best = 0;
+    let bestDist = Infinity;
+    cards.forEach((c, i) => {
+      const dist = Math.abs(c.offsetLeft - scrollLeft);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+
+  function updateDots() {
+    const idx = getActiveIndex();
+    dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+  }
+
+  function scrollToIndex(idx) {
+    if (idx < 0 || idx >= cards.length) return;
+    const target = cards[idx].offsetLeft;
+    grid.scrollTo({ left: target, behavior: 'smooth' });
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', () => scrollToIndex(getActiveIndex() - 1));
+  if (nextBtn) nextBtn.addEventListener('click', () => scrollToIndex(getActiveIndex() + 1));
+
+  grid.addEventListener('scroll', () => {
+    updateDots();
+    resetAutoTimer();
+  }, { passive: true });
+
+  grid.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isDragging = true;
+    resetAutoTimer();
+  }, { passive: true });
+
+  grid.addEventListener('touchend', () => {
+    isDragging = false;
+    startAutoTimer();
+  }, { passive: true });
+
+  nav.addEventListener('mouseenter', () => clearAutoTimer());
+  nav.addEventListener('mouseleave', () => startAutoTimer());
+
+  function clearAutoTimer() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  function startAutoTimer() {
+    clearAutoTimer();
+    if (cards.length < 2) return;
+    autoTimer = setInterval(() => {
+      const next = getActiveIndex() + 1;
+      if (next >= cards.length) {
+        grid.scrollTo({ left: cards[0].offsetLeft, behavior: 'smooth' });
+      } else {
+        scrollToIndex(next);
+      }
+    }, 5000);
+  }
+
+  function resetAutoTimer() {
+    clearAutoTimer();
+    startAutoTimer();
+  }
+
+  startAutoTimer();
+}
+
+function initBlogCarousel() {
+  const grid = document.getElementById('blogGrid');
+  const nav = document.querySelector('.blog-carousel-nav');
+  if (!grid || !nav) return;
+  const cards = grid.querySelectorAll('.blog-card');
+  nav.style.display = cards.length < 2 ? 'none' : '';
+
+  const dotsContainer = nav.querySelector('.carousel-dots');
+  const prevBtn = nav.querySelector('.carousel-prev');
+  const nextBtn = nav.querySelector('.carousel-next');
+  if (!dotsContainer) return;
+
+  dotsContainer.innerHTML = '';
+  let autoTimer = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let isDragging = false;
+
+  cards.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => scrollToIndex(i));
+    dotsContainer.appendChild(dot);
+  });
+
+  function getActiveIndex() {
+    const scrollLeft = grid.scrollLeft;
+    let best = 0;
+    let bestDist = Infinity;
+    cards.forEach((c, i) => {
+      const dist = Math.abs(c.offsetLeft - scrollLeft);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+
+  function updateDots() {
+    const idx = getActiveIndex();
+    dotsContainer.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+  }
+
+  function scrollToIndex(idx) {
+    if (idx < 0 || idx >= cards.length) return;
+    grid.scrollTo({ left: cards[idx].offsetLeft, behavior: 'smooth' });
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', () => scrollToIndex(getActiveIndex() - 1));
+  if (nextBtn) nextBtn.addEventListener('click', () => scrollToIndex(getActiveIndex() + 1));
+
+  grid.addEventListener('scroll', () => {
+    updateDots();
+    resetAutoTimer();
+  }, { passive: true });
+
+  grid.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isDragging = true;
+    resetAutoTimer();
+  }, { passive: true });
+
+  grid.addEventListener('touchend', () => {
+    isDragging = false;
+    startAutoTimer();
+  }, { passive: true });
+
+  nav.addEventListener('mouseenter', () => clearAutoTimer());
+  nav.addEventListener('mouseleave', () => startAutoTimer());
+
+  function clearAutoTimer() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  function startAutoTimer() {
+    clearAutoTimer();
+    if (cards.length < 2) return;
+    autoTimer = setInterval(() => {
+      const next = getActiveIndex() + 1;
+      if (next >= cards.length) {
+        grid.scrollTo({ left: cards[0].offsetLeft, behavior: 'smooth' });
+      } else {
+        scrollToIndex(next);
+      }
+    }, 5000);
+  }
+
+  function resetAutoTimer() {
+    clearAutoTimer();
+    startAutoTimer();
+  }
+
+  startAutoTimer();
 }
 
 // ═══════════════════════════════════════════════════════

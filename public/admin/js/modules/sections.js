@@ -1,4 +1,4 @@
-import { API_BASE, getHeaders, clearToken, markDirty, markClean } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, clearToken, markDirty, markClean, token } from './api.js';
 import { showToast } from './ui.js';
 import { escapeHtml } from './helpers.js';
 
@@ -130,6 +130,15 @@ const SECTIONS_CONFIG = {
 
 let sectionsData = {};
 let isSaving = false;
+let allSlots = [];
+
+async function loadImageSlots() {
+  try {
+    const res = await fetch(`${API_IMAGES_BASE}/images/slots`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch { return []; }
+}
 
 export async function loadSectionsEditor() {
   const container = document.getElementById('sectionsEditor');
@@ -138,10 +147,14 @@ export async function loadSectionsEditor() {
   container.innerHTML = '<div class="loading-spinner" style="margin:2rem auto"></div>';
 
   try {
-    const res = await fetch(`${API_BASE}/sections`, { headers: getHeaders() });
-    if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
-    if (!res.ok) throw new Error('Failed to load sections');
-    sectionsData = await res.json();
+    const [sectionsRes, slots] = await Promise.all([
+      fetch(`${API_BASE}/sections`, { headers: getHeaders() }),
+      loadImageSlots()
+    ]);
+    if (sectionsRes.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
+    if (!sectionsRes.ok) throw new Error('Failed to load sections');
+    sectionsData = await sectionsRes.json();
+    allSlots = slots;
     renderSectionsEditor(container);
   } catch (err) {
     console.error('Sections editor load error:', err);
@@ -193,10 +206,46 @@ function renderSectionsEditor(container) {
       }
     }
 
-    html += `
+    const sectionSlots = allSlots.filter(s => s.section === sectionKey);
+    if (sectionSlots.length > 0) {
+      html += `</div>
+          <div class="section-image-slots">
+            <div class="section-image-slots-header">
+              <span class="section-image-slots-title">🖼 Images de la section</span>
+              <button class="btn-icon" onclick="window.createSectionSlot('${sectionKey}')" title="Nouveau slot">＋</button>
+            </div>
+            <div class="section-slots-grid">`;
+      for (const slot of sectionSlots) {
+        const hasImage = !!(slot.uploadedFile || slot.cloudinaryUrl);
+        const thumbUrl = slot.currentUrl || '';
+        html += `
+              <div class="section-slot-card">
+                <div class="section-slot-thumb"${thumbUrl ? ` style="background-image:url('${escapeHtml(thumbUrl)}')"` : ''}>
+                  ${!hasImage ? '<div class="section-slot-placeholder">📷</div>' : ''}
+                  <div class="section-slot-status ${hasImage ? 'assigned' : ''}"></div>
+                </div>
+                <div class="section-slot-info">
+                  <span class="section-slot-label">${escapeHtml(slot.label)}</span>
+                  <span class="section-slot-meta">${hasImage ? 'Assigné' : 'Vide'}</span>
+                </div>
+                <div class="section-slot-actions">
+                  <button class="btn-icon btn-icon-sm" onclick="window.uploadToSectionSlot('${slot.id}')" title="${hasImage ? 'Remplacer' : 'Uploader'}">⬆</button>
+                  <button class="btn-icon btn-icon-sm danger" onclick="window.deleteSectionSlot('${slot.id}')" title="Supprimer">✕</button>
+                </div>
+              </div>`;
+      }
+      html += `</div></div>
+        </div>
+      </div>`;
+    } else {
+      html += `</div>
+          <div class="section-image-slots section-image-slots-empty">
+            <p class="section-slots-empty-text">Aucun slot image. Les images de cette section sont gérées via l'onglet <a href="#" onclick="window.parent.switchTab('images'); return false">Galerie</a>.</p>
+            <button class="btn-secondary btn-sm" onclick="window.createSectionSlot('${sectionKey}')">＋ Créer un slot</button>
           </div>
         </div>
       </div>`;
+    }
   }
 
   html += `
@@ -255,6 +304,69 @@ export async function saveAllSections() {
     isSaving = false;
   }
 }
+
+// ─── Image slot actions ───
+window.uploadToSectionSlot = async function(slotId) {
+  const slot = allSlots.find(s => s.id === slotId);
+  if (!slot) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('section', slot.section);
+    fd.append('slotId', slotId);
+    fd.append('image', file);
+    try {
+      const res = await fetch(`${API_IMAGES_BASE}/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Upload failed'); }
+      showToast('Image uploadée avec succès', 'success');
+      loadSectionsEditor();
+    } catch (err) {
+      showToast('Erreur: ' + err.message, 'error');
+    }
+  };
+  input.click();
+};
+
+window.createSectionSlot = async function(section) {
+  const label = prompt('Nom du nouveau slot image pour cette section :');
+  if (!label || !label.trim()) return;
+  try {
+    const res = await fetch(`${API_IMAGES_BASE}/images/slots`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ section, label: label.trim() })
+    });
+    if (!res.ok) throw new Error('Échec création');
+    showToast('Slot créé', 'success');
+    loadSectionsEditor();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+};
+
+window.deleteSectionSlot = async function(slotId) {
+  if (!confirm('Supprimer ce slot image ? Les images associées ne seront pas supprimées.')) return;
+  try {
+    const res = await fetch(`${API_IMAGES_BASE}/images/slots/${slotId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ filename: null })
+    });
+    if (!res.ok) throw new Error('Échec');
+    showToast('Slot vidé', 'success');
+    loadSectionsEditor();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+};
 
 window.toggleSectionAccordion = function(header) {
   const item = header.closest('.section-accordion-item');
