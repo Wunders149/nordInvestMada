@@ -14,16 +14,18 @@ Professional real estate and construction website built with Node.js/Express bac
 - **Config Endpoint** — Merges static config.json with dynamic Supabase site_config
 - **Admin Dashboard API** — Secure token-based auth persisted in Supabase, CRUD for contacts/quotes/subscribers/team/services/projects/blog, stats, CSV export
 - **Image Upload & Management API** — Cloudinary-based upload, slot system, rename, replace, delete
+- **Sections Content API** — Dynamically editable page content (hero, about, standards, values, team, services, pricing, calculator, projects, blog, contact, vision/mission, newsletter) stored in Supabase settings
 - **Rate Limiting** — 5 req/15min on contact/quote, 3 req/15min on newsletter, 30 req/15min on pricing
 - **Input Validation** — Zod schemas for all public and admin endpoints
 - **Session Persistence** — Admin sessions stored in Supabase with in-memory cache (survives restarts)
+- **Event Tracking API** — Server-side analytics event logging
 - CORS, error handling, activity logging
 
 ### Frontend Features
 - **Responsive Design** — Mobile-first, works on all devices (480px to 1440px+)
 - **SEO Optimized** — Meta tags, structured data (JSON-LD), Open Graph, Twitter Cards
 - **Google Analytics** — Event tracking for form submissions, CTA clicks, pricing tabs, theme toggle, language switch
-- **Smooth Animations** — Scroll-reveal effects, animated counters, loader overlay
+- **Smooth Animations** — Scroll-reveal effects, animated counters, loader overlay, progressive card reveals
 - **Interactive Forms** — Client-side validation and backend integration with auto-fill from pricing cards
 - **Pricing Calculator** — Live budget estimator with 3 service tiers, location multiplier, tax/contingency breakdown
 - **Interactive Pricing Tabs** — Construction / Rehabilitation / Forage with feature cards and CTA
@@ -31,12 +33,15 @@ Professional real estate and construction website built with Node.js/Express bac
 - **Theme Toggle** — Dark/Light mode with persistent localStorage
 - **Language Switcher** — FR / EN / MG with full i18n translations
 - **WhatsApp Floating Button** — Fixed position with pulse animation
-- **Admin Dashboard** — Login-protected SPA with stats, search/filter, status management, bulk actions, CSV export, image gallery manager, pricing editor, settings editor, activity log, and CRUD for team/services/projects/blog
+- **Blog Timeline** — Alternating vertical timeline with central line, image placement alternation (odd left / even right), IntersectionObserver reveal, show-more toggle (default 3 posts)
+- **Team Spotlight** — Per-card IntersectionObserver with spring pop-in avatar, progressive content reveal (name/role/desc staggered delays), idle pulse glow, 3D tilt on hover with smooth reset
+- **Admin Dashboard** — Login-protected SPA with stats, search/filter, status management, bulk actions, CSV export, image gallery manager, pricing editor, sections editor (accordion-based with image slot integration), settings editor, activity log, and CRUD for team/services/projects/blog/dossiers
 - **Loader Navigation** — Animated section transitions on nav link click
 - **Animated Counters** — Number roll-up animation on scroll into view
 - **Project Map** — Embedded OpenStreetMap with project location pins
 - **Office Map** — Embedded OpenStreetMap with business locations
 - **Back to Top** — Fixed button appears on scroll
+- **Admin Sections Editor** — WYSIWYG accordion panels for every page section (hero, about, standards, values, team, services, pricing, calculator, projects, dossiers, blog, contact, numbers, vision/mission, newsletter) with embedded image slot management (thumbnail preview, upload/replace/delete)
 
 ### SEO & Analytics
 - Meta tags, JSON-LD Schema (LocalBusiness + Organization)
@@ -102,8 +107,9 @@ Optionally, if you need PDF/dossier support, also run the SQL from `src/create-d
 
 ### Step 4: Migrate existing data
 ```bash
-node src/migrate.js          # Migrate JSON data to Supabase
-node src/migrate-dossiers.js # Migrate PDFs to Cloudinary (if applicable)
+node src/migrate.js              # Migrate JSON data to Supabase
+node src/migrate-dossiers.js     # Migrate PDFs to Cloudinary (if applicable)
+node src/migrate-cloudinary.js   # Migrate local images to Cloudinary
 ```
 
 ### Step 5: Run the Server
@@ -150,6 +156,7 @@ npm start     # production
 | GET/PUT | `/api/admin/pricing` | Pricing grid editor |
 | GET/PUT | `/api/admin/contact-info` | Contact/social/mission/vision |
 | GET/PUT | `/api/admin/settings` | Site settings |
+| GET/PUT | `/api/admin/sections` | Page section content editor (hero, about, standards, values, team, services, pricing, calculator, projects, dossiers, blog, contact, numbers, vision/mission, newsletter) |
 | GET | `/api/admin/activity` | Activity log |
 | POST | `/api/admin/test-email` | Send test email |
 | GET/POST | `/api/admin/dossiers` | List / Upload PDF documents |
@@ -192,49 +199,73 @@ npm start     # production
 ```
 orinvestmada/
 ├── src/
-│   ├── server.js           # Express entry point (routes, rate limiters, email)
-│   ├── admin.js            # Admin API router (CRUD, pricing, settings, activity)
-│   ├── auth.js             # Auth middleware, session management (Supabase-backed)
-│   ├── images.js           # Image upload/management API (Cloudinary + slots)
-│   ├── cloudinary.js       # Cloudinary config + upload/delete/list helpers
-│   ├── supabase.js         # Supabase client + generic CRUD helpers
-│   ├── validation.js       # Zod schemas + validate() middleware
-│   ├── migrate.js              # One-time JSON → Supabase migration script
-│   ├── migrate-cloudinary.js   # One-time local → Cloudinary migration script
-│   ├── migrate-dossiers.js     # One-time PDF → Cloudinary migration script
-│   ├── create-dossiers-table.js  # SQL helper to create the dossiers table
+│   ├── server.js                # Express entry point (routes, rate limiters, email)
+│   ├── admin.js                 # Admin API router (CRUD, pricing, settings, sections, activity)
+│   ├── auth.js                  # Auth middleware, session management (Supabase-backed)
+│   ├── images.js                # Image upload/management API (Cloudinary + slots)
+│   ├── cloudinary.js            # Cloudinary config + upload/delete/list helpers
+│   ├── supabase.js              # Supabase client + generic CRUD helpers
+│   ├── validation.js            # Zod schemas + validate() middleware
+│   ├── events.js                # Server-side analytics event logging
+│   ├── migrate.js               # One-time JSON → Supabase migration script
+│   ├── migrate-cloudinary.js    # One-time local → Cloudinary migration script
+│   ├── migrate-dossiers.js      # One-time PDF → Cloudinary migration script
+│   └── create-dossiers-table.js # SQL helper to create the dossiers table
 ├── public/
-│   ├── index.html          # Main website (SPA)
+│   ├── index.html               # Main website (SPA)
 │   ├── admin/
-│   │   ├── login.html      # Admin login page
-│   │   ├── dashboard.html  # Admin dashboard shell
+│   │   ├── login.html           # Admin login page
+│   │   ├── dashboard.html       # Admin dashboard shell
 │   │   ├── css/admin.css
 │   │   └── js/
-│   │       ├── main.js     # Module entry point + tab switching
+│   │       ├── main.js          # Module entry point + tab switching
 │   │       └── modules/
-│   │           ├── api.js         # Shared state & fetch helpers
-│   │           ├── helpers.js     # formatDate, escapeHtml, humanSize
-│   │           ├── ui.js          # Toast, confirm, skeleton, pagination, dark mode, lightbox
-│   │           ├── dashboard.js   # Stats, charts, dashboard widgets
-│   │           ├── contacts.js    # Contacts tab CRUD
-│   │           ├── quotes.js      # Quotes tab CRUD
-│   │           ├── subscribers.js # Newsletter tab
-│   │           ├── images.js      # Gallery upload, slots, editor
-│   │           ├── content.js     # Team/Services/Projects/Blog CRUD
-│   │           ├── pricing.js     # Pricing grid editor
-│   │           ├── settings.js    # Settings, contact info, email test
-│   │           └── activity.js    # Activity log viewer
+│   │           ├── api.js           # Shared state & fetch helpers
+│   │           ├── helpers.js       # formatDate, escapeHtml, humanSize
+│   │           ├── ui.js            # Toast, confirm, skeleton, pagination, dark mode, lightbox
+│   │           ├── dashboard.js     # Stats, charts, dashboard widgets
+│   │           ├── contacts.js      # Contacts tab CRUD
+│   │           ├── quotes.js        # Quotes tab CRUD
+│   │           ├── subscribers.js   # Newsletter tab
+│   │           ├── images.js        # Gallery upload, slots, editor
+│   │           ├── content.js       # Team/Services/Projects/Blog CRUD
+│   │           ├── pricing.js       # Pricing grid editor
+│   │           ├── sections.js      # Page section content editor (accordion UI + image slot cards)
+│   │           ├── settings.js      # Settings, contact info, email test
+│   │           ├── activity.js      # Activity log viewer
+│   │           ├── dossiers.js      # PDF document manager
+│   │           ├── blogCategories.js# Blog category management
+│   │           └── teamPositions.js # Team position management
 │   ├── css/
+│   │   └── style.css            # Main stylesheet (blog timeline, team spotlight, etc.)
 │   ├── js/
-│   ├── locales/ (fr.json, en.json, mg.json)
-│   ├── images/ (hero/, about/, team/, projects/, blog/, standards/)
+│   │   └── main.js              # Frontend application (i18n, animations, sections content, blog reveal, team tilt)
+│   ├── locales/
+│   │   ├── fr.json              # French translations
+│   │   ├── en.json              # English translations
+│   │   └── mg.json              # Malagasy translations
+│   ├── images/
+│   │   ├── hero/                # Hero section images (SVG backgrounds)
+│   │   ├── about/               # About section images
+│   │   ├── team/                # Team member photos
+│   │   ├── projects/            # Project portfolio images
+│   │   ├── blog/                # Blog post images
+│   │   ├── services/            # Service section images
+│   │   ├── standards/           # Standards/security icons
+│   │   ├── gallery/             # Gallery images
+│   │   ├── favicon_io/          # Favicon files
+│   │   ├── logo.jpeg
+│   │   └── placeholder.svg
 │   ├── sitemap.xml
 │   └── robots.txt
-├── data/                   # JSON file fallbacks
-├── uploads/                # Runtime uploads
+├── data/                        # JSON file fallbacks
+├── uploads/                     # Runtime uploads
 ├── docs/
-├── supabase-schema.sql     # Full database schema (14 tables)
-├── config.json             # Static app configuration
+│   ├── IMAGE_GUIDE.md
+│   ├── IMAGE_SPECIFICATIONS.md
+│   └── PROJECT_STRUCTURE.md
+├── supabase-schema.sql          # Full database schema (14 tables)
+├── config.json                  # Static app configuration
 ├── package.json
 └── README.md
 ```
@@ -255,8 +286,8 @@ orinvestmada/
 | `projects` | Portfolio projects |
 | `blog_posts` | Blog articles |
 | `activity_logs` | Admin action audit trail |
-| `image_slots` | Labeled image placeholders |
-| `settings` | Key-value store (GA, WhatsApp, SEO) |
+| `image_slots` | Labeled image placeholders (with Cloudinary public ID and URL) |
+| `settings` | Key-value store (GA, WhatsApp, SEO, sections_content) |
 | `site_config` | Singleton — pricing grid, contact info, rates |
 | `dossiers` | PDF documents hosted on Cloudinary |
 
