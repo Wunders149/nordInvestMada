@@ -2068,13 +2068,21 @@ h1 { animation-delay: 0.2s; }
   border-radius: var(--radius);
   padding: 32px 24px;
   text-align: center;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s, border-color 0.3s;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease, background 0.3s, border-color 0.3s;
+  will-change: transform;
+}
+.team-card.spotlight-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 .team-card:hover {
-  transform: translateY(-6px);
   background: rgba(192,64,42,0.08);
   border-color: rgba(192,64,42,0.2);
 }
+
+/* Avatar spring pop-in + idle pulse */
 .team-avatar {
   width: 80px; height: 80px;
   border-radius: 50%;
@@ -2082,24 +2090,67 @@ h1 { animation-delay: 0.2s; }
   margin: 0 auto 16px;
   border: 3px solid var(--rust);
   display: block;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.4s ease,
+              box-shadow 0.4s ease,
+              border-color 0.4s ease;
 }
+.team-card.spotlight-visible .team-avatar {
+  transform: scale(1);
+  opacity: 1;
+  animation: avatarPulse 3s ease-in-out infinite 0.8s;
+}
+@keyframes avatarPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(192,64,42,0.15), 0 0 20px rgba(192,64,42,0.05); }
+  50% { box-shadow: 0 0 25px rgba(192,64,42,0.35), 0 0 50px rgba(192,64,42,0.12); }
+}
+
+/* Progressive content reveal */
 .team-name {
   font-family: 'Playfair Display', serif;
   font-size: 1.1rem;
   color: var(--text-primary);
   margin-bottom: 4px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
+.team-card.spotlight-visible .team-name {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.15s;
+}
+
 .team-role {
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--rust-light);
   margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
+.team-card.spotlight-visible .team-role {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.25s;
+}
+
 .team-desc {
   font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.team-card.spotlight-visible .team-desc {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.35s;
 }
 
 /* ─── VALUES / RSE ─── */
@@ -2620,16 +2671,10 @@ h1 { animation-delay: 0.2s; }
 
 /* ─── HOVER EFFECTS ─── */
 
-/* Team avatar hover glow */
-.team-avatar {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.4s ease,
-              border-color 0.4s ease;
-  border: 3px solid var(--rust);
-}
-.team-card:hover .team-avatar {
-  transform: scale(1.18) rotate(-3deg);
-  box-shadow: 0 0 50px rgba(192,64,42,0.5), 0 0 100px rgba(192,64,42,0.15);
+/* Team card: 3D tilt is handled by JS (.tilt-active) + avatar glow */
+.team-card.tilt-active .team-avatar {
+  transform: scale(1.12);
+  box-shadow: 0 0 40px rgba(192,64,42,0.35), 0 0 80px rgba(192,64,42,0.1);
   border-color: var(--rust-light);
 }
 

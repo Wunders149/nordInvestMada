@@ -934,15 +934,49 @@ async function loadTeam() {
       const hasOwnImg = m.image && (m.image.startsWith('http') || m.image.startsWith('/'));
       return `
       <div class="team-card">
-        <img src="${hasOwnImg ? m.image : '/images/placeholder.svg'}" alt="${escapeHtml(m.name)}" class="team-avatar img-reveal" loading="lazy"${!hasOwnImg ? ` data-image-slot="${m.image_slot || ''}"` : ''}>
+        <img src="${hasOwnImg ? m.image : '/images/placeholder.svg'}" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy"${!hasOwnImg ? ` data-image-slot="${m.image_slot || ''}"` : ''}>
         <div class="team-name">${escapeHtml(m.name)}</div>
         <div class="team-role">${escapeHtml(m.role)}</div>
         <div class="team-desc">${escapeHtml(m.bio)}</div>
       </div>
     `;}).join('');
     loadImageSlots();
-    initImageReveal();
+    initTeamReveal();
+    initTeamTilt();
   } catch (err) { console.warn('Team load error:', err); showSectionError('teamGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
+}
+
+function initTeamReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('spotlight-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.team-card').forEach(el => observer.observe(el));
+}
+
+function initTeamTilt() {
+  document.querySelectorAll('.team-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      if (!card.classList.contains('spotlight-visible')) return;
+      card.style.transition = 'transform 0.1s ease-out';
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rotateX = ((y - rect.height / 2) / rect.height * 2) * -6;
+      const rotateY = ((x - rect.width / 2) / rect.width * 2) * 6;
+      card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      card.classList.add('tilt-active');
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform 0.5s ease, background 0.3s, border-color 0.3s';
+      card.style.transform = '';
+      card.classList.remove('tilt-active');
+    });
+  });
 }
 
 async function loadServices() {
