@@ -1400,6 +1400,12 @@ function applySectionContent(cfg) {
     setElText('.hero-sub', s.hero.subtitle);
     setElText('.hero-badge-label', s.hero.badge);
     setElText('.hero-badge-year', s.hero.badgeYear);
+    setElText('.hero-stats > div:nth-child(1) .stat-label', s.hero.stat1Label);
+    setElText('.hero-stats > div:nth-child(2) .stat-label', s.hero.stat2Label);
+    setElText('.hero-stats > div:nth-child(3) .stat-label', s.hero.stat3Label);
+    setElText('.hero-stats > div:nth-child(4) .stat-label', s.hero.stat4Label);
+    setElText('.hero-btns .btn-primary', s.hero.btnPricing);
+    setElText('.hero-btns .btn-outline', s.hero.btnContact);
   }
 
   // About
@@ -1407,6 +1413,12 @@ function applySectionContent(cfg) {
     setElText('#about .section-tag', s.about.tag);
     setElHtml('#about h2', s.about.title);
     setElText('#about .section-lead', s.about.lead);
+    setElText('.about-features > .feat:nth-child(1) .feat-title', s.about.feat1Title);
+    setElText('.about-features > .feat:nth-child(1) .feat-desc', s.about.feat1Desc);
+    setElText('.about-features > .feat:nth-child(2) .feat-title', s.about.feat2Title);
+    setElText('.about-features > .feat:nth-child(2) .feat-desc', s.about.feat2Desc);
+    setElText('.about-features > .feat:nth-child(3) .feat-title', s.about.feat3Title);
+    setElText('.about-features > .feat:nth-child(3) .feat-desc', s.about.feat3Desc);
   }
 
   // Standards
@@ -1414,6 +1426,15 @@ function applySectionContent(cfg) {
     setElText('#technical-standards .section-tag', s.standards.tag);
     setElHtml('#technical-standards h2', s.standards.title);
     setElText('#technical-standards .section-lead', s.standards.lead);
+    setElText('.standards-grid > .standard-item:nth-child(1) h3', s.standards.item1Title);
+    setElText('.standards-grid > .standard-item:nth-child(1) p', s.standards.item1Desc);
+    setElText('.standards-grid > .standard-item:nth-child(2) h3', s.standards.item2Title);
+    setElHtml('.standards-grid > .standard-item:nth-child(2) p', s.standards.item2Desc);
+    setElText('.standards-grid > .standard-item:nth-child(2) .vex-badge', s.standards.item2Badge);
+    setElText('.standards-grid > .standard-item:nth-child(3) h3', s.standards.item3Title);
+    setElHtml('.standards-grid > .standard-item:nth-child(3) p', s.standards.item3Desc);
+    setElText('.standards-grid > .standard-item:nth-child(4) h3', s.standards.item4Title);
+    setElText('.standards-grid > .standard-item:nth-child(4) p', s.standards.item4Desc);
   }
 
   // Values
@@ -1458,6 +1479,9 @@ function applySectionContent(cfg) {
     setElText('#pricing .section-tag', s.pricing.tag);
     setElHtml('#pricing h2', s.pricing.title);
     setElText('#pricing .section-lead', s.pricing.lead);
+    setElText('.pricing-tabs > .tab-btn:nth-child(1)', s.pricing.tab1);
+    setElText('.pricing-tabs > .tab-btn:nth-child(2)', s.pricing.tab2);
+    setElText('.pricing-tabs > .tab-btn:nth-child(3)', s.pricing.tab3);
     if (s.pricing.note) {
       const note = document.querySelector('.pricing-footer');
       if (note) note.innerHTML = s.pricing.note;
@@ -1497,6 +1521,12 @@ function applySectionContent(cfg) {
     setElText('#contact .section-tag', s.contact.tag);
     setElHtml('#contact h2', s.contact.title);
     setElText('#contact .section-lead', s.contact.lead);
+    setElText('#contactPhone', s.contact.phone);
+    setElText('#contactEmail', s.contact.email);
+    setElHtml('#contactAddress', s.contact.address);
+    setElText('#contactOffice', s.contact.office);
+    setElText('.map-title', s.contact.mapTitle);
+    setElText('.project-map-title', s.contact.mapProjectsTitle);
   }
 
   // Numbers
@@ -1508,6 +1538,21 @@ function applySectionContent(cfg) {
       if (s.numbers.engineers) numLabels[2].textContent = s.numbers.engineers;
       if (s.numbers.sites) numLabels[3].textContent = s.numbers.sites;
     }
+  }
+
+  // Vision & Mission
+  if (s.visionMission) {
+    setElText('#visionMissionGrid > .vm-card:nth-child(1) .vm-label', s.visionMission.visionTitle);
+    setElText('#visionText', s.visionMission.visionText);
+    setElText('#visionMissionGrid > .vm-card:nth-child(2) .vm-label', s.visionMission.missionTitle);
+    setElText('#missionText', s.visionMission.missionText);
+  }
+
+  // Newsletter
+  if (s.newsletter) {
+    setElText('.newsletter-title', s.newsletter.title);
+    setElText('.newsletter-desc', s.newsletter.desc);
+    setElText('.newsletter-btn', s.newsletter.btn);
   }
 }
 

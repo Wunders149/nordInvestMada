@@ -11,7 +11,13 @@ const SECTIONS_CONFIG = {
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
       { key: 'subtitle', label: 'Sous-titre', type: 'textarea' },
       { key: 'badge', label: 'Badge (label)', type: 'text' },
-      { key: 'badgeYear', label: 'Badge (année)', type: 'text' }
+      { key: 'badgeYear', label: 'Badge (année)', type: 'text' },
+      { key: 'stat1Label', label: 'Statistique 1 — Label', type: 'text' },
+      { key: 'stat2Label', label: 'Statistique 2 — Label', type: 'text' },
+      { key: 'stat3Label', label: 'Statistique 3 — Label', type: 'text' },
+      { key: 'stat4Label', label: 'Statistique 4 — Label', type: 'text' },
+      { key: 'btnPricing', label: 'Bouton — Voir les tarifs', type: 'text' },
+      { key: 'btnContact', label: 'Bouton — Demander un devis', type: 'text' }
     ]
   },
   about: {
@@ -20,7 +26,13 @@ const SECTIONS_CONFIG = {
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
-      { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' }
+      { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' },
+      { key: 'feat1Title', label: 'Fonctionnalité 1 — Titre', type: 'text' },
+      { key: 'feat1Desc', label: 'Fonctionnalité 1 — Description', type: 'textarea' },
+      { key: 'feat2Title', label: 'Fonctionnalité 2 — Titre', type: 'text' },
+      { key: 'feat2Desc', label: 'Fonctionnalité 2 — Description', type: 'textarea' },
+      { key: 'feat3Title', label: 'Fonctionnalité 3 — Titre', type: 'text' },
+      { key: 'feat3Desc', label: 'Fonctionnalité 3 — Description', type: 'textarea' }
     ]
   },
   standards: {
@@ -29,7 +41,16 @@ const SECTIONS_CONFIG = {
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
-      { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' }
+      { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' },
+      { key: 'item1Title', label: 'Item 1 — Titre', type: 'text' },
+      { key: 'item1Desc', label: 'Item 1 — Description', type: 'textarea' },
+      { key: 'item2Title', label: 'Item 2 — Titre', type: 'text' },
+      { key: 'item2Desc', label: 'Item 2 — Description', type: 'textarea' },
+      { key: 'item2Badge', label: 'Item 2 — Badge', type: 'text' },
+      { key: 'item3Title', label: 'Item 3 — Titre', type: 'text' },
+      { key: 'item3Desc', label: 'Item 3 — Description', type: 'textarea' },
+      { key: 'item4Title', label: 'Item 4 — Titre', type: 'text' },
+      { key: 'item4Desc', label: 'Item 4 — Description', type: 'textarea' }
     ]
   },
   values: {
@@ -69,6 +90,9 @@ const SECTIONS_CONFIG = {
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
       { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' },
+      { key: 'tab1', label: 'Onglet 1', type: 'text' },
+      { key: 'tab2', label: 'Onglet 2', type: 'text' },
+      { key: 'tab3', label: 'Onglet 3', type: 'text' },
       { key: 'note', label: 'Note en bas de page (HTML autorisé)', type: 'textarea' }
     ]
   },
@@ -114,7 +138,13 @@ const SECTIONS_CONFIG = {
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
-      { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' }
+      { key: 'lead', label: 'Texte d\'introduction', type: 'textarea' },
+      { key: 'phone', label: 'Téléphone', type: 'text' },
+      { key: 'email', label: 'Email', type: 'text' },
+      { key: 'address', label: 'Adresse (HTML autorisé)', type: 'textarea' },
+      { key: 'office', label: 'Antenne', type: 'text' },
+      { key: 'mapTitle', label: 'Titre — Carte bureaux', type: 'text' },
+      { key: 'mapProjectsTitle', label: 'Titre — Carte projets', type: 'text' }
     ]
   },
   numbers: {
@@ -125,6 +155,25 @@ const SECTIONS_CONFIG = {
       { key: 'tech', label: 'Étiquette techniciens', type: 'text' },
       { key: 'engineers', label: 'Étiquette ingénieurs', type: 'text' },
       { key: 'sites', label: 'Étiquette sites', type: 'text' }
+    ]
+  },
+  visionMission: {
+    label: 'Vision & Mission',
+    icon: '👁️',
+    fields: [
+      { key: 'visionTitle', label: 'Vision — Titre', type: 'text' },
+      { key: 'visionText', label: 'Vision — Texte', type: 'textarea' },
+      { key: 'missionTitle', label: 'Mission — Titre', type: 'text' },
+      { key: 'missionText', label: 'Mission — Texte', type: 'textarea' }
+    ]
+  },
+  newsletter: {
+    label: 'Newsletter',
+    icon: '📧',
+    fields: [
+      { key: 'title', label: 'Titre', type: 'text' },
+      { key: 'desc', label: 'Description', type: 'textarea' },
+      { key: 'btn', label: 'Bouton', type: 'text' }
     ]
   }
 };
