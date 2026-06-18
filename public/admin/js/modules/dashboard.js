@@ -1,6 +1,6 @@
 import { API_BASE, getHeaders, contacts, quotes } from './api.js';
 import { escapeHtml, formatDateShort } from './helpers.js';
-import { showSkeletonStats } from './ui.js';
+import { showSkeletonStats, showToast } from './ui.js';
 
 export async function loadStats() {
   showSkeletonStats();

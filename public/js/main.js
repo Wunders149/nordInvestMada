@@ -2012,6 +2012,18 @@ function initBudgetCurrencyConversion() {
 // COOKIE CONSENT
 // ═══════════════════════════════════════════════════════
 
+function initGA() {
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', 'G-MQ14N6E1ZG');
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-MQ14N6E1ZG';
+  document.head.appendChild(s);
+}
+
 function initCookieConsent() {
   var banner = document.getElementById('cookieConsent');
   if (!banner) return;
