@@ -60,7 +60,6 @@ async function loadTranslations(lang) {
 
 async function setLanguage(lang) {
   await loadTranslations(lang);
-  loadConfigData();
   if (typeof gtag !== 'undefined') {
     gtag('event', 'language_switch', { 'language': lang });
   }
@@ -1953,7 +1952,6 @@ function initMaps() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
-  loadTranslations(currentLang);
   loadBlogCategories();
   loadImageSlots();
   loadTeam();
@@ -1962,7 +1960,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadDossiers();
   loadBlog();
   loadPricingData();
-  loadConfigData();
+  // Load config first, then apply translations on top so they aren't overridden
+  await loadConfigData();
+  await loadTranslations(currentLang);
   initImageReveal();
   initMaps();
   initBudgetCurrencyConversion();
