@@ -603,11 +603,13 @@ function openGallery(index) {
   const modal = document.getElementById('galleryModal');
   const img = document.getElementById('galleryImg');
   const caption = document.getElementById('galleryCaption');
+  const counter = document.getElementById('galleryCounter');
   if (!modal || !img || !caption) return;
   
   img.src = galleryImages[index].src;
   img.alt = galleryImages[index].alt;
   caption.textContent = galleryImages[index].alt;
+  if (counter) counter.textContent = `${index + 1} / ${galleryImages.length}`;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -624,6 +626,7 @@ function changeGallery(dir) {
   galleryIndex = (galleryIndex + dir + galleryImages.length) % galleryImages.length;
   const img = document.getElementById('galleryImg');
   const caption = document.getElementById('galleryCaption');
+  const counter = document.getElementById('galleryCounter');
   if (!img || !caption) return;
   
   img.style.opacity = '0';
@@ -631,6 +634,7 @@ function changeGallery(dir) {
     img.src = galleryImages[galleryIndex].src;
     img.alt = galleryImages[galleryIndex].alt;
     caption.textContent = galleryImages[galleryIndex].alt;
+    if (counter) counter.textContent = `${galleryIndex + 1} / ${galleryImages.length}`;
     img.style.opacity = '1';
   }, 150);
 }
@@ -1100,7 +1104,7 @@ async function loadBlog() {
       return `
       <div class="timeline-entry${i === 0 ? ' timeline-visible' : ''}${isHidden ? ' hidden' : ''}" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}"${isHidden ? ' style="display:none"' : ''}>
         <div class="timeline-marker"></div>
-        <div class="timeline-card">
+        <div class="timeline-card" style="--card-accent: ${cat.color || 'var(--rust)'}">
           <div class="timeline-img-wrap">
             <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy"${slotAttr ? ` data-image-slot="${slotAttr}"` : ''}>
             ${cat.label ? `<span class="timeline-badge" style="--badge-color: ${cat.color}">${cat.icon} ${cat.label}</span>` : ''}
@@ -1846,12 +1850,14 @@ function filterBlogPosts(query) {
   if (!container) return;
   const q = query.toLowerCase().trim();
   const btn = document.getElementById('blogToggleBtn');
+  let visibleCount = 0;
   container.querySelectorAll('.timeline-entry').forEach(entry => {
     const title = (entry.dataset.title || '').toLowerCase();
     const match = !q || title.includes(q);
     if (!match) {
       entry.style.display = 'none';
     } else {
+      visibleCount++;
       entry.style.display = '';
       if (q && entry.classList.contains('hidden')) {
         entry.dataset.searchRevealed = 'true';
@@ -1870,6 +1876,17 @@ function filterBlogPosts(query) {
       }
     }
   });
+  let noResult = container.querySelector('.blog-search-noresult');
+  if (q && visibleCount === 0) {
+    if (!noResult) {
+      noResult = document.createElement('div');
+      noResult.className = 'blog-search-noresult';
+      container.appendChild(noResult);
+    }
+    noResult.textContent = getNestedTranslation('blog.noresults') || 'Aucun article trouvé.';
+  } else if (noResult) {
+    noResult.remove();
+  }
   const footer = document.getElementById('blogFooter');
   if (footer) {
     footer.style.display = q ? 'none' : '';
