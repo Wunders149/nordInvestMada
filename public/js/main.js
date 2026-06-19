@@ -294,7 +294,7 @@ function switchTab(name) {
   panel.classList.add('active');
   
   document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.getAttribute('onclick')?.includes(`'${name}'`)) {
+    if (b.dataset.tab === name) {
       b.classList.add('active');
     }
   });
@@ -329,10 +329,17 @@ function fillContactForm(button) {
     budgetCurrency.dataset.lastCurrency = 'Ar';
   }
 
-  const priceDisplay = price ? Number(price).toLocaleString('fr-FR') + ' Ar/m²' : 'Sur devis';
+  const priceLocale = currentLang === 'en' ? 'en-US' : currentLang === 'mg' ? 'mg-MG' : 'fr-FR';
+  const fallbackTxt = getNestedTranslation('contact.quoteFallback') || 'Sur devis';
+  const unitTxt = getNestedTranslation('contact.quoteUnit') || 'Ar/m²';
+  const priceDisplay = price ? Number(price).toLocaleString(priceLocale) + ' ' + unitTxt : fallbackTxt;
 
   if (messageTextarea) {
-    messageTextarea.value = `Je suis intéressé par : ${type}\nFormule : ${tier}\nTarif référence : ${priceDisplay}\n\nMerci de me contacter pour un devis détaillé.`;
+    const intro = getNestedTranslation('contact.quoteIntro') || 'Je suis intéressé par :';
+    const tierLabel = getNestedTranslation('contact.quoteTier') || 'Formule :';
+    const refLabel = getNestedTranslation('contact.quoteRefPrice') || 'Tarif référence :';
+    const outro = getNestedTranslation('contact.quoteOutro') || 'Merci de me contacter pour un devis détaillé.';
+    messageTextarea.value = `${intro} ${type}\n${tierLabel} ${tier}\n${refLabel} ${priceDisplay}\n\n${outro}`;
   }
 
   const contactSection = document.getElementById('contact');
@@ -530,7 +537,7 @@ async function runCalculation() {
       </div>
     </div>
     <p class="result-note">${rNote}</p>
-    <a href="#contact" class="price-cta" style="margin-top:32px;" onclick="event.preventDefault();transferToForm('${serviceType}', '${finishingLevel}', ${squareMeters}, '${location}', ${data.grandTotal})">${rCTA}</a>
+    <a href="#contact" class="price-cta" data-i18n="calculator.resultCTA" style="margin-top:32px;" onclick="event.preventDefault();transferToForm('${serviceType}', '${finishingLevel}', ${squareMeters}, '${location}', ${data.grandTotal})">${rCTA}</a>
   `;
 }
 
@@ -542,9 +549,9 @@ function transferToForm(service, tier, surface, location, total) {
   const messageTextarea = document.getElementById('message');
 
   const serviceDisplay = {
-    construction: 'Construction Neuve',
-    rehabilitation: 'Études et Conception',
-    forage: 'Forage d\'Eau'
+    construction: getNestedTranslation('pricing.tab1') || 'Construction Neuve',
+    rehabilitation: getNestedTranslation('pricing.tab2') || 'Études et Conception',
+    forage: getNestedTranslation('pricing.tab3') || 'Forage d\'Eau'
   }[service] || service;
   const tierDisplay = getNestedTranslation(`pricing.tiers.${service}.${tier}`) || tier;
 
@@ -562,7 +569,8 @@ function transferToForm(service, tier, surface, location, total) {
   const locationDisplay = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : location;
 
   if (messageTextarea) {
-    messageTextarea.value = `Bonjour, j'ai effectué une simulation sur votre site :\n- Service : ${serviceDisplay}\n- Gamme : ${tierDisplay}\n- Surface : ${surface} ${service === 'forage' ? 'ml' : 'm²'}\n- Lieu : ${locationDisplay}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\nJe souhaite obtenir un devis définitif.`;
+    const simuIntro = getNestedTranslation('contact.simuIntro') || 'Bonjour, j\'ai effectué une simulation sur votre site :';
+    messageTextarea.value = `${simuIntro}\n- Service : ${serviceDisplay}\n- Gamme : ${tierDisplay}\n- Surface : ${surface} ${service === 'forage' ? 'ml' : 'm²'}\n- Lieu : ${locationDisplay}\n- Estimation : ${new Intl.NumberFormat(tLocale).format(total)} Ar TTC\n\n${getNestedTranslation('contact.quoteOutro') || 'Merci de me contacter pour un devis détaillé.'}`;
   }
 
   const contactSection = document.getElementById('contact');
@@ -749,7 +757,7 @@ async function handleNewsletter(e) {
       msg.className = 'newsletter-msg success';
       document.getElementById('newsletterForm').reset();
     } else {
-      msg.textContent = data.error || getNestedTranslation('newsletter.error');
+      msg.textContent = data.error || getNestedTranslation('newsletter.error') || 'Erreur';
       msg.className = 'newsletter-msg error';
     }
   } catch {
@@ -995,8 +1003,8 @@ async function loadServices() {
       <div class="service-card">
         <div class="service-num">${String(i + 1).padStart(2, '0')}</div>
         <div class="service-icon">${s.icon || '🔧'}</div>
-        <div class="service-title">${escapeHtml(s.title)}</div>
-        <p class="service-desc">${escapeHtml(s.description)}</p>
+        <div class="service-title" data-i18n="services.card${i + 1}Title">${escapeHtml(s.title)}</div>
+        <p class="service-desc" data-i18n="services.card${i + 1}Desc">${escapeHtml(s.description)}</p>
       </div>
     `).join('');
     initImageReveal();
@@ -1075,31 +1083,6 @@ async function loadBlog() {
       if (showAll) showAll.style.display = 'none';
     } else {
       if (showAll) showAll.style.display = '';
-      const btn = document.getElementById('blogToggleBtn');
-      if (btn) {
-        btn.textContent = getNestedTranslation('blog.showall') || 'Voir tous les articles';
-        btn.onclick = () => {
-          const expanded = btn.dataset.expanded === 'true';
-          const hidden = container.querySelectorAll('.timeline-entry.hidden');
-          btn.dataset.expanded = expanded ? 'false' : 'true';
-          btn.textContent = expanded
-            ? (getNestedTranslation('blog.showall') || 'Voir tous les articles')
-            : (getNestedTranslation('blog.showless') || 'Voir moins');
-          hidden.forEach(el => {
-            el.classList.toggle('hidden');
-            if (!expanded) {
-              el.classList.add('timeline-visible');
-              el.style.display = '';
-            } else {
-              el.classList.remove('timeline-visible');
-              el.style.display = '';
-            }
-          });
-          if (expanded) {
-            hidden.forEach(el => { el.classList.add('hidden'); });
-          }
-        };
-      }
     }
     container.innerHTML = posts.map((p, i) => {
       const date = new Date(p.date);
@@ -1129,7 +1112,7 @@ async function loadBlog() {
             </div>
             <h3 class="timeline-title">${escapeHtml(p.title)}</h3>
             <p class="timeline-excerpt">${escapeHtml(p.excerpt)}</p>
-            <a href="#" class="timeline-link">${getNestedTranslation('blog.readmore')}</a>
+            <a href="#" class="timeline-link" data-i18n="blog.readmore">${getNestedTranslation('blog.readmore') || 'Lire l\'article'}</a>
           </div>
         </div>
       </div>`;
@@ -1146,6 +1129,33 @@ async function loadBlog() {
     const entries = container.querySelectorAll('.timeline-entry:not(.hidden):not(.timeline-visible)');
     if (entries.length) initBlogReveal();
     loadImageSlots();
+
+    // Set up blog toggle button after HTML is in DOM
+    if (posts.length > 3) {
+      const btn = document.getElementById('blogToggleBtn');
+      if (btn) {
+        const hiddenEntries = container.querySelectorAll('.timeline-entry.hidden');
+        btn.textContent = getNestedTranslation('blog.showall') || 'Voir tous les articles';
+        btn.onclick = () => {
+          const expanded = btn.dataset.expanded === 'true';
+          btn.dataset.expanded = expanded ? 'false' : 'true';
+          btn.textContent = expanded
+            ? (getNestedTranslation('blog.showall') || 'Voir tous les articles')
+            : (getNestedTranslation('blog.showless') || 'Voir moins');
+          hiddenEntries.forEach(el => {
+            if (expanded) {
+              el.classList.add('hidden');
+              el.style.display = 'none';
+              el.classList.remove('timeline-visible');
+            } else {
+              el.classList.remove('hidden');
+              el.style.display = '';
+              el.classList.add('timeline-visible');
+            }
+          });
+        };
+      }
+    }
   } catch (err) { console.warn('Blog load error:', err); showSectionError('blogTimeline', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
@@ -1163,7 +1173,7 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
   if (!modal || !titleEl || !bodyEl) return;
   titleEl.textContent = title;
   dateEl.textContent = date;
-  if (authorEl) authorEl.textContent = 'Publié par Nord Invest Madagascar';
+  if (authorEl) authorEl.textContent = getNestedTranslation('blog.publishedBy') || 'Publié par Nord Invest Madagascar';
   if (contentEl) {
     if (imgUrl) {
       contentEl.style.backgroundImage = `url('${imgUrl}')`;
@@ -1308,9 +1318,9 @@ async function loadPricingData() {
           </div>` : '';
         return `
         <div class="price-card${isFeatured ? ' featured' : ''}" data-service="${cat}" data-tier="${tier}" data-tier-name="${escapeHtml(t.name)}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
-          ${badge ? `<div class="price-badge">${badge}</div>` : ''}
+          ${badge ? `<div class="price-badge" data-i18n="pricing.badge.${badgeKey}">${badge}</div>` : ''}
           <div class="price-tier">${escapeHtml(t.name)}</div>
-          <div class="price-type">${escapeHtml(type)}</div>
+          <div class="price-type" data-i18n="pricing.tiers.${cat}.${tier}">${escapeHtml(type)}</div>
           <div class="price-val">
             <div class="price-main">
               <span class="price-num">${priceStr}</span>
@@ -1323,8 +1333,8 @@ async function loadPricingData() {
           <ul class="price-features">
             ${(t.features || []).map(f => `<li>${escapeHtml(f)}</li>`).join('')}
           </ul>
-          <div class="price-note">${getNestedTranslation('pricing.priceNote')}</div>
-           <a href="#contact" class="price-cta" onclick="event.preventDefault();fillContactForm(this)">${getNestedTranslation('pricing.cta')}</a>
+          <div class="price-note" data-i18n="pricing.priceNote">${getNestedTranslation('pricing.priceNote') || ''}</div>
+           <a href="#contact" class="price-cta" data-i18n="pricing.cta" onclick="event.preventDefault();fillContactForm(this)">${getNestedTranslation('pricing.cta') || ''}</a>
         </div>`;
       }).join('');
     });
@@ -1597,15 +1607,23 @@ function escapeHtml(text) {
 function sanitizeHtml(html) {
   if (!html) return '';
   const el = document.createElement('div');
-  el.innerHTML = html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/<object[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed[\s\S]*?<\/embed>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/ on\w+\s*=\s*"[^"]*"/gi, '')
-    .replace(/ on\w+\s*=\s*'[^']*'/gi, '')
-    .replace(/ on\w+\s*=\s*\S+/gi, '');
+  el.innerHTML = html;
+  const bannedTags = ['script', 'iframe', 'object', 'embed', 'style', 'link', 'meta'];
+  bannedTags.forEach(tag => {
+    el.querySelectorAll(tag).forEach(node => node.remove());
+  });
+  el.querySelectorAll('*').forEach(node => {
+    const attrs = node.attributes;
+    for (let i = attrs.length - 1; i >= 0; i--) {
+      const name = attrs[i].name;
+      if (name.startsWith('on')) {
+        node.removeAttribute(name);
+      }
+    }
+    if (node.hasAttribute('href') && node.getAttribute('href').toLowerCase().startsWith('javascript:')) {
+      node.removeAttribute('href');
+    }
+  });
   return el.innerHTML;
 }
 
@@ -1619,8 +1637,8 @@ let currentPdfUrl = '';
 function formatFileSize(bytes) {
   if (!bytes) return '';
   const kb = bytes / 1024;
-  if (kb < 1024) return kb.toFixed(0) + getNestedTranslation('format.kb');
-  return (kb / 1024).toFixed(1) + getNestedTranslation('format.mb');
+  if (kb < 1024) return kb.toFixed(0) + (getNestedTranslation('format.kb') || ' Ko');
+  return (kb / 1024).toFixed(1) + (getNestedTranslation('format.mb') || ' Mo');
 }
 
 function openPdfViewer(id, name, url) {
@@ -1653,16 +1671,26 @@ function closePdfViewer(e) {
 function downloadCurrentPdf() {
   if (!currentPdfUrl) return;
   const a = document.createElement('a');
-  a.href = currentPdfUrl.replace('/upload/', '/upload/fl_attachment/');
-  a.download = '';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if (currentPdfUrl.includes('/upload/')) {
+    a.href = currentPdfUrl.replace('/upload/', '/upload/fl_attachment/');
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } else {
+    fetch(currentPdfUrl)
+      .then(r => r.blob())
+      .then(blob => {
+        a.href = URL.createObjectURL(blob);
+        a.download = document.getElementById('pdfModalTitle')?.textContent || 'document.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(() => { window.open(currentPdfUrl, '_blank'); });
+  }
 }
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closePdfViewer();
-});
 
 async function loadDossiers() {
   const grid = document.getElementById('dossiersGrid');
@@ -1672,8 +1700,8 @@ async function loadDossiers() {
     const dossiers = await res.json();
     if (!dossiers.length) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
-        <p style="font-size:1.1rem">${getNestedTranslation('dossiers.empty')}</p>
-        <p style="font-size:0.85rem;margin-top:8px">${getNestedTranslation('dossiers.emptySub')}</p>
+        <p style="font-size:1.1rem">${getNestedTranslation('dossiers.empty') || 'Aucun document disponible pour le moment.'}</p>
+        <p style="font-size:0.85rem;margin-top:8px">${getNestedTranslation('dossiers.emptySub') || 'Revenez bientôt pour découvrir nos nouvelles offres.'}</p>
       </div>`;
       return;
     }
@@ -1696,7 +1724,7 @@ async function loadDossiers() {
         </div>
         <div class="dossier-name">${escHtml(d.name)}</div>
         <div class="dossier-meta">${formatFileSize(d.size)} — PDF</div>
-        <span class="dossier-badge">${getNestedTranslation('dossiers.badge')}</span>
+        <span class="dossier-badge">${getNestedTranslation('dossiers.badge') || 'Nouveau'}</span>
       </div>`;
     }).join('');
     grid.querySelectorAll('.dossier-card').forEach(card => {
@@ -1708,7 +1736,7 @@ async function loadDossiers() {
   } catch (err) {
     console.warn('Dossiers load error:', err);
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
-      <p>${getNestedTranslation('dossiers.error')}</p>
+      <p>${getNestedTranslation('dossiers.error') || 'Erreur de chargement.'}</p>
     </div>`;
   }
   initDossiersCarousel();
@@ -1817,6 +1845,7 @@ function filterBlogPosts(query) {
   const container = document.getElementById('blogTimeline');
   if (!container) return;
   const q = query.toLowerCase().trim();
+  const btn = document.getElementById('blogToggleBtn');
   container.querySelectorAll('.timeline-entry').forEach(entry => {
     const title = (entry.dataset.title || '').toLowerCase();
     const match = !q || title.includes(q);
@@ -1824,7 +1853,19 @@ function filterBlogPosts(query) {
       entry.style.display = 'none';
     } else {
       entry.style.display = '';
-      if (!entry.classList.contains('hidden')) {
+      if (q && entry.classList.contains('hidden')) {
+        entry.dataset.searchRevealed = 'true';
+        entry.classList.remove('hidden');
+        entry.classList.add('timeline-visible');
+      } else if (!q && entry.dataset.searchRevealed === 'true') {
+        entry.dataset.searchRevealed = '';
+        if (btn && btn.dataset.expanded !== 'true') {
+          entry.classList.add('hidden');
+          entry.style.display = 'none';
+          entry.classList.remove('timeline-visible');
+        }
+      }
+      if (!entry.classList.contains('timeline-visible')) {
         entry.classList.add('timeline-visible');
       }
     }

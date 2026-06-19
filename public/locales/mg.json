@@ -86,9 +86,9 @@
     "cta": "Mangataka tombana",
     "note": "<strong>Fanamarihana manan-danja:</strong> Ny vidiny aseho dia vidiny fototra tsy tafiditra ny hetra. Ny vidiny tena izy dia miankina amin'ny toerana, ny karazana tany, ny fitaovana eo an-toerana ary ny mampiavaka ny tetikasanao. <strong>Tombana maimaimpoana sy tsy misy fanoloran-tena dia atao aorian'ny fitsidihana ny toerana.</strong> Mifandraisa aminay amin'ny <strong>032 82 312 80</strong> na amin'ny mailaka.",
     "tiers": {
-      "construction": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
-      "rehabilitation": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
-      "forage": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" }
+      "construction": { "economic": "Fototra", "standard": "Antonontonony", "premium": "Avokoa" },
+      "rehabilitation": { "economic": "Fototra", "standard": "Antonontonony", "premium": "Avokoa" },
+      "forage": { "economic": "Fototra", "standard": "Antonontonony", "premium": "Avokoa" }
     },
     "badge": { "popular": "Be mpangataka", "recommended": "Soso-kevitra", "allInclusive": "Tafiditra rehetra" },
     "priceNote": "Vidin'ny référence. Tombana manokana aorian'ny fitsidihana.",
@@ -208,12 +208,22 @@
     "sending": "⏳ Mandefa...",
     "sent": "✓ Hafatra nalefa!",
     "sentMessage": "✓ Voaray ny fangatahanao. Hamaly ao anatin'ny 24 ora izahay.",
-    "errorMessage": "✘ Tsy nahomby ny fandefasana. Mifandraisa aminay amin'ny 032 82 312 80."
+    "errorMessage": "✘ Tsy nahomby ny fandefasana. Mifandraisa aminay amin'ny 032 82 312 80.",
+    "quoteIntro": "Liana amin'ny:",
+    "quoteTier": "Fomba:",
+    "quoteRefPrice": "Vidin'ny référence:",
+    "quoteOutro": "Mifandraisa aminay raha te-hahazo tombana antsipirihany.",
+    "quoteFallback": "Amin'ny tombana",
+    "quoteUnit": "Ar/m²",
+    "simuIntro": "Salama, nanao simulation tao amin'ny tranokalanao aho:"
   },
   "footer": {
     "copyright": "© 2026 Nord Invest Madagascar — Trano sy Fananana. Zo rehetra voatokana.",
     "services": "Serivisy",
     "pricing": "Vidiny",
+    "privacy": "Tsiambaratelo",
+    "terms": "Fepetra",
+    "cookies": "Cookies",
     "contact": "Mifandraisa"
   },
   "map": {
@@ -258,7 +268,8 @@
     "share": "Zarao",
     "related": "Lahatsoratra mitovy",
     "showall": "Hijery ny lahatsoratra rehetra",
-    "showless": "Ahena"
+    "showless": "Ahena",
+    "publishedBy": "Navoakan'i Nord Invest Madagascar"
   },
   "newsletter": {
     "title": "Mahazoa vaovao",
@@ -267,7 +278,8 @@
     "sending": "...",
     "success": "✓ Misaotra anao ny fisoratana anarana!",
     "error": "Tsy nahomby. Andramo indray.",
-    "errorGeneric": "Tsy nahomby ny fifandraisana. Andramo indray."
+    "errorGeneric": "Tsy nahomby ny fifandraisana. Andramo indray.",
+    "consent": "Ekenako ny mandray vaovao avy amin'i Nord Invest Madagascar"
   },
   "lang": {
     "fr": "Français",

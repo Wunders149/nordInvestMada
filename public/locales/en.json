@@ -86,9 +86,9 @@
     "cta": "Request a quote",
     "note": "<strong>Important note:</strong> The prices shown are reference prices excluding taxes. The actual cost depends on site access conditions, soil type, available local materials and your project specifics. <strong>A free personalized quote with no obligation is provided after a site visit.</strong> Contact us at <strong>032 82 312 80</strong> or by email.",
     "tiers": {
-      "construction": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
-      "rehabilitation": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
-      "forage": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" }
+      "construction": { "economic": "Economy", "standard": "Standard", "premium": "Premium" },
+      "rehabilitation": { "economic": "Economy", "standard": "Standard", "premium": "Premium" },
+      "forage": { "economic": "Economy", "standard": "Standard", "premium": "Premium" }
     },
     "badge": { "popular": "Most popular", "recommended": "Recommended", "allInclusive": "All inclusive" },
     "priceNote": "Reference price. Custom quote after site visit.",
@@ -208,12 +208,22 @@
     "sending": "⏳ Sending...",
     "sent": "✓ Message sent!",
     "sentMessage": "✓ Your request has been received. We will respond within 24 hours.",
-    "errorMessage": "✘ Error sending. Contact us at 032 82 312 80."
+    "errorMessage": "✘ Error sending. Contact us at 032 82 312 80.",
+    "quoteIntro": "I'm interested in:",
+    "quoteTier": "Package:",
+    "quoteRefPrice": "Reference price:",
+    "quoteOutro": "Please contact me for a detailed quote.",
+    "quoteFallback": "On quote",
+    "quoteUnit": "Ar/m²",
+    "simuIntro": "Hello, I made a simulation on your website:"
   },
   "footer": {
     "copyright": "© 2026 Nord Invest Madagascar — Real Estate & Construction. All rights reserved.",
     "services": "Services",
     "pricing": "Pricing",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
     "contact": "Contact"
   },
   "map": {
@@ -258,7 +268,8 @@
     "share": "Share",
     "related": "Related articles",
     "showall": "See all articles",
-    "showless": "Show less"
+    "showless": "Show less",
+    "publishedBy": "Published by Nord Invest Madagascar"
   },
   "newsletter": {
     "title": "Stay Informed",
@@ -267,7 +278,8 @@
     "sending": "...",
     "success": "✓ Thank you for subscribing!",
     "error": "Error. Try again.",
-    "errorGeneric": "Connection error. Try again."
+    "errorGeneric": "Connection error. Try again.",
+    "consent": "I agree to receive communications from Nord Invest Madagascar"
   },
   "lang": {
     "fr": "Français",

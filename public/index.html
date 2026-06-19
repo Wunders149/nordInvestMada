@@ -289,11 +289,11 @@
     <div class="vision-mission-grid reveal reveal-stagger" id="visionMissionGrid">
       <div class="vm-card">
         <div class="vm-label" data-i18n="vision.title">Notre Vision</div>
-        <div class="vm-text" id="visionText">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
+        <div class="vm-text" id="visionText" data-i18n="vision.text">"Devenir un acteur de référence dans le secteur du bâtiment et de l'immobilier à Madagascar et en Afrique."</div>
       </div>
       <div class="vm-card mission">
         <div class="vm-label" data-i18n="mission.title">Notre Mission</div>
-        <div class="vm-text" id="missionText">"Réaliser des études technique, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
+        <div class="vm-text" id="missionText" data-i18n="mission.text">"Réaliser des études technique, des travaux de construction et des services immobiliers avec professionnalisme, qualité et respect des normes."</div>
       </div>
     </div>
   </div>
@@ -418,9 +418,9 @@
     </div>
 
     <div class="pricing-tabs reveal">
-    <button class="tab-btn active" onclick="switchTab('construction')" data-i18n="pricing.tab1">Construction Neuve</button>
-    <button class="tab-btn" onclick="switchTab('rehab')" data-i18n="pricing.tab2">Études et Conception</button>
-    <button class="tab-btn" onclick="switchTab('forage')" data-i18n="pricing.tab3">Forage d'Eau</button>
+    <button class="tab-btn active" data-tab="construction" onclick="switchTab('construction')" data-i18n="pricing.tab1">Construction Neuve</button>
+    <button class="tab-btn" data-tab="rehab" onclick="switchTab('rehab')" data-i18n="pricing.tab2">Études et Conception</button>
+    <button class="tab-btn" data-tab="forage" onclick="switchTab('forage')" data-i18n="pricing.tab3">Forage d'Eau</button>
   </div>
 
   <!-- Construction -->
@@ -785,9 +785,9 @@
     <div class="pdf-modal-header">
       <div class="pdf-modal-title" id="pdfModalTitle" data-i18n="pdf.title">Document</div>
       <div class="pdf-modal-actions">
-        <button onclick="downloadCurrentPdf()" title="Télécharger" data-i18n="pdf.download">
+        <button onclick="downloadCurrentPdf()" title="Télécharger">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Télécharger
+          <span data-i18n="pdf.download">Télécharger</span>
         </button>
         <button class="pdf-modal-close" onclick="closePdfViewer()" title="Fermer">&times;</button>
       </div>

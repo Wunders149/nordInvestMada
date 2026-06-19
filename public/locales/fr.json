@@ -131,6 +131,9 @@
     "copyright": "© 2026 Nord Invest Madagascar — Immobilier & Construction. Tous droits réservés.",
     "services": "Services",
     "pricing": "Tarifs",
+    "privacy": "Confidentialité",
+    "terms": "CGU",
+    "cookies": "Cookies",
     "contact": "Contact"
   },
   "map": {
@@ -175,7 +178,8 @@
     "share": "Partager",
     "related": "Articles similaires",
     "showall": "Voir tous les articles",
-    "showless": "Voir moins"
+    "showless": "Voir moins",
+    "publishedBy": "Publié par Nord Invest Madagascar"
   },
   "newsletter": {
     "title": "Restez informé",
@@ -184,7 +188,8 @@
     "sending": "...",
     "success": "✓ Merci pour votre inscription !",
     "error": "Erreur. Réessayez.",
-    "errorGeneric": "Erreur de connexion. Réessayez."
+    "errorGeneric": "Erreur de connexion. Réessayez.",
+    "consent": "J'accepte de recevoir les communications de Nord Invest Madagascar"
   },
   "lang": {
     "fr": "Français",
@@ -287,7 +292,14 @@
     "optForage": "Forage d'Eau",
     "optImmobilier": "Vente & Achat Immobilier",
     "optSuivi": "Suivi & Contrôle Qualité",
-    "optAutre": "Autre"
+    "optAutre": "Autre",
+    "quoteIntro": "Je suis intéressé par :",
+    "quoteTier": "Formule :",
+    "quoteRefPrice": "Tarif référence :",
+    "quoteOutro": "Merci de me contacter pour un devis détaillé.",
+    "quoteFallback": "Sur devis",
+    "quoteUnit": "Ar/m²",
+    "simuIntro": "Bonjour, j'ai effectué une simulation sur votre site :"
   },
   "pdf": {
     "title": "Document",
