@@ -1957,29 +1957,36 @@ let projectMap = null;
 function initOfficeMap() {
   const el = document.getElementById('officeMap');
   if (!el || officeMap) return;
-  officeMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-18.0, 47.5], 5);
+  officeMap = L.map(el, { zoomControl: true, scrollWheelZoom: false });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap'
   }).addTo(officeMap);
 
-  L.marker([-12.2833, 49.2833]).addTo(officeMap)
-    .bindPopup('<strong>Antsiranana (Siège)</strong><br>Tanambao 1, face Madahoufi');
-  L.marker([-13.3167, 48.2667]).addTo(officeMap)
-    .bindPopup('<strong>Nosy Be (Antenne)</strong><br>Mahatsinjo');
+  const markers = [
+    L.marker([-12.2833, 49.2833]).addTo(officeMap)
+      .bindPopup('<strong>Antsiranana (Siège)</strong><br>Tanambao 1, face Madahoufi'),
+    L.marker([-13.3167, 48.2667]).addTo(officeMap)
+      .bindPopup('<strong>Nosy Be (Antenne)</strong><br>Mahatsinjo')
+  ];
 
-  setTimeout(() => officeMap.invalidateSize(), 500);
+  setTimeout(() => {
+    officeMap.invalidateSize();
+    const group = L.featureGroup(markers);
+    officeMap.fitBounds(group.getBounds().pad(0.3));
+  }, 500);
 }
 
 function initProjectMap() {
   const el = document.getElementById('projectMap');
   if (!el || projectMap) return;
-  projectMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([-19.5, 47.0], 6);
+  projectMap = L.map(el, { zoomControl: true, scrollWheelZoom: false });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap'
   }).addTo(projectMap);
 
+  let markers = [];
   Promise.all([
     fetch(`${API_BASE}/api/projects`).then(r => r.json()),
     fetch('/api/images/slots').then(r => r.json()).catch(() => [])
@@ -1997,11 +2004,26 @@ function initProjectMap() {
         <strong>${escapeHtml(p.title)}</strong><br>
         <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
       </div>`;
-      L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
+      const marker = L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
+      markers.push(marker);
     });
+    if (markers.length > 0) {
+      try {
+        const group = L.featureGroup(markers);
+        projectMap.fitBounds(group.getBounds().pad(0.3));
+      } catch (e) {}
+    }
   }).catch(() => {});
 
-  setTimeout(() => projectMap.invalidateSize(), 500);
+  setTimeout(() => {
+    projectMap.invalidateSize();
+    if (markers.length > 0) {
+      try {
+        const group = L.featureGroup(markers);
+        projectMap.fitBounds(group.getBounds().pad(0.3));
+      } catch (e) {}
+    }
+  }, 500);
 }
 
 function initMaps() {
