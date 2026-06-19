@@ -728,17 +728,28 @@
 <!-- NEWSLETTER -->
 <section id="newsletter">
   <div class="newsletter-container reveal">
+    <div class="newsletter-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="M22 6l-10 7L2 6"/>
+      </svg>
+    </div>
     <div class="newsletter-title" data-i18n="newsletter.title">Restez informé</div>
-    <p class="newsletter-desc" data-i18n="newsletter.desc">Recevez nos actualités, conseils techniques et offres spéciales par email. Pas de spam, désabonnement à tout moment.</p>
+    <p class="newsletter-desc" data-i18n="newsletter.desc">Recevez nos actualités, conseils techniques et offres spéciales. Pas de spam, désabonnement à tout moment.</p>
     <form class="newsletter-form" id="newsletterForm" onsubmit="handleNewsletter(event)" novalidate>
-      <input type="email" id="newsletterEmail" class="newsletter-input" placeholder="votre@email.com" required aria-label="Adresse email">
+      <div class="newsletter-input-wrap">
+        <input type="email" id="newsletterEmail" class="newsletter-input" placeholder="votre@email.com" required autocomplete="email" aria-label="Adresse email">
+      </div>
       <div class="newsletter-consent">
         <input type="checkbox" id="newsletterConsent" required aria-label="Consentement">
         <label for="newsletterConsent" data-i18n="newsletter.consent">J'accepte de recevoir les communications de Nord Invest Madagascar</label>
       </div>
-      <button type="submit" class="newsletter-btn" data-i18n="newsletter.btn">S'abonner</button>
+      <button type="submit" class="newsletter-btn" id="newsletterBtn" data-i18n="newsletter.btn">
+        <span class="newsletter-btn-text" data-i18n="newsletter.btn">S'abonner</span>
+        <span class="newsletter-btn-spinner"></span>
+      </button>
     </form>
-    <div class="newsletter-msg" id="newsletterMsg"></div>
+    <div class="newsletter-msg" id="newsletterMsg" aria-live="polite"></div>
   </div>
 </section>
 

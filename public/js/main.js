@@ -740,13 +740,15 @@ async function handleNewsletter(e) {
   const email = document.getElementById('newsletterEmail').value;
   const consent = document.getElementById('newsletterConsent');
   const msg = document.getElementById('newsletterMsg');
+  const btn = document.getElementById('newsletterBtn');
   if (!email) return;
   if (consent && !consent.checked) {
     msg.textContent = getNestedTranslation('newsletter.consentRequired') || 'Veuillez accepter de recevoir nos communications';
-    msg.className = 'newsletter-msg error';
+    msg.className = 'newsletter-msg error show';
     return;
   }
-  msg.textContent = getNestedTranslation('newsletter.sending');
+  btn.classList.add('sending');
+  btn.disabled = true;
   msg.className = 'newsletter-msg';
   const API_BASE = window.location.origin;
   try {
@@ -756,17 +758,21 @@ async function handleNewsletter(e) {
       body: JSON.stringify({ email, consent: true })
     });
     const data = await res.json();
+    btn.classList.remove('sending');
+    btn.disabled = false;
     if (data.success) {
       msg.textContent = getNestedTranslation('newsletter.success');
-      msg.className = 'newsletter-msg success';
+      msg.className = 'newsletter-msg success show';
       document.getElementById('newsletterForm').reset();
     } else {
       msg.textContent = data.error || getNestedTranslation('newsletter.error') || 'Erreur';
-      msg.className = 'newsletter-msg error';
+      msg.className = 'newsletter-msg error show';
     }
   } catch {
+    btn.classList.remove('sending');
+    btn.disabled = false;
     msg.textContent = getNestedTranslation('newsletter.errorGeneric');
-    msg.className = 'newsletter-msg error';
+    msg.className = 'newsletter-msg error show';
   }
 }
 
