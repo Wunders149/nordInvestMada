@@ -798,4 +798,4 @@ router.put('/sections', requireAuth, async (req, res) => {
   }
 });
 
-export { router as adminRouter };
+export { router as adminRouter, mergeSectionsWithDefaults };

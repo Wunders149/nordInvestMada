@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
-import { adminRouter } from './admin.js';
+import { adminRouter, mergeSectionsWithDefaults } from './admin.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig, getSetting } from './supabase.js';
 import { addClient, broadcast as _broadcast, heartbeat as sseHeartbeat } from './events.js';
@@ -411,7 +411,8 @@ app.get('/api/config', async (req, res) => {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     const siteCfg = await loadSiteConfig();
     const rates = await getExchangeRates();
-    const sections = await getSetting('sections_content');
+    const rawSections = await getSetting('sections_content');
+    const sections = mergeSectionsWithDefaults(rawSections || {});
     res.json({
       ...staticConfig,
       pricing: siteCfg.pricing || staticConfig.pricing || {},
@@ -424,7 +425,7 @@ app.get('/api/config', async (req, res) => {
       mission: siteCfg.mission || staticConfig.mission || '',
       vision: siteCfg.vision || staticConfig.vision || '',
       team_stats: siteCfg.team_stats || staticConfig.team || {},
-      sections: sections || {}
+      sections
     });
   } catch {
     res.json(staticConfig);

@@ -60,6 +60,7 @@ async function loadTranslations(lang) {
 
 async function setLanguage(lang) {
   await loadTranslations(lang);
+  await loadConfigData();
   if (typeof gtag !== 'undefined') {
     gtag('event', 'language_switch', { 'language': lang });
   }
@@ -2046,9 +2047,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadDossiers();
   loadBlog();
   loadPricingData();
-  // Load config first, then apply translations on top so they aren't overridden
-  await loadConfigData();
+  // Load translations first, then apply admin section content on top so admin edits override i18n
   await loadTranslations(currentLang);
+  await loadConfigData();
   initImageReveal();
   initMaps();
   initBudgetCurrencyConversion();
