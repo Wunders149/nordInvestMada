@@ -873,7 +873,7 @@ function initImageReveal() {
 
 async function loadImageSlots() {
   try {
-    const res = await fetch('/api/images/slots');
+    const res = await fetch('/api/images/slots', { cache: 'no-store' });
     if (!res.ok) return;
     const slots = await res.json();
     slots.forEach(slot => {
@@ -1024,7 +1024,7 @@ async function loadServices() {
 
 async function loadProjects() {
   try {
-    const res = await fetch(`${API_BASE}/api/projects`);
+    const res = await fetch(`${API_BASE}/api/projects`, { cache: 'no-store' });
     const projects = await res.json();
     const grid = document.getElementById('projectsGrid');
     if (!grid) return;
@@ -2068,8 +2068,8 @@ async function refreshProjectMap() {
   if (!projectMap) return;
   try {
     const [projects, slots] = await Promise.all([
-      fetch(`${API_BASE}/api/projects`).then(r => r.json()),
-      fetch(`${API_BASE}/api/images/slots`).then(r => r.json()).catch(() => [])
+      fetch(`${API_BASE}/api/projects`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(`${API_BASE}/api/images/slots`, { cache: 'no-store' }).then(r => r.json()).catch(() => [])
     ]);
     const slotMap = {};
     slots.forEach(s => { slotMap[s.id] = s; });
@@ -2150,8 +2150,8 @@ function initProjectMap() {
 
   projectMarkers = [];
   Promise.all([
-    fetch(`${API_BASE}/api/projects`).then(r => r.json()),
-    fetch('/api/images/slots').then(r => r.json()).catch(() => [])
+    fetch(`${API_BASE}/api/projects`, { cache: 'no-store' }).then(r => r.json()),
+    fetch('/api/images/slots', { cache: 'no-store' }).then(r => r.json()).catch(() => [])
   ]).then(([projects, slots]) => {
     const slotMap = {};
     slots.forEach(s => { slotMap[s.id] = s; });
