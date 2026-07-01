@@ -42,6 +42,9 @@ function camelizeKeys(obj) {
     const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
     result[camelKey] = value;
   }
+  if (Array.isArray(result.images) && result.images.length > 0 && !result.image) {
+    result.image = result.images[0];
+  }
   return result;
 }
 
@@ -294,6 +297,10 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
         ...mapFields(req.body),
         created_at: new Date().toISOString()
       };
+      if (tableName === 'projects' && newItem.image && typeof newItem.image === 'string') {
+        newItem.images = [newItem.image];
+        delete newItem.image;
+      }
       const result = await create(tableName, newItem);
       logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${result.name || result.title || result.id}`, req.admin.username);
       if (callbacks.onCreate) callbacks.onCreate(result, req);
@@ -307,10 +314,15 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
 
   router.patch(`/${entityName}/:id`, requireAuth, async (req, res) => {
     try {
-      const item = await update(tableName, req.params.id, {
+      const data = {
         ...mapFields(req.body),
         updated_at: new Date().toISOString()
-      });
+      };
+      if (tableName === 'projects' && data.image && typeof data.image === 'string') {
+        data.images = [data.image];
+        delete data.image;
+      }
+      const item = await update(tableName, req.params.id, data);
       logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${item.name || item.title || req.params.id}`, req.admin.username);
       if (callbacks.onUpdate) callbacks.onUpdate(item, req);
       broadcast(entityName, { action: 'update', id: req.params.id });

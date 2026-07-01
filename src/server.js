@@ -455,8 +455,23 @@ app.get('/api/services', (req, res) => {
   publicList(req, res, 'services', 'visible', 'order');
 });
 
-app.get('/api/projects', (req, res) => {
-  publicList(req, res, 'projects', 'visible', 'order');
+app.get('/api/projects', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('visible', true)
+      .order('order', { ascending: true });
+    if (error) throw error;
+    const processed = (data || []).map(p => ({
+      ...p,
+      image: (p.images && p.images.length > 0) ? p.images[0] : null
+    }));
+    res.json(processed);
+  } catch (err) {
+    console.error('projects public list error:', err);
+    res.status(500).json({ error: 'Failed to load projects' });
+  }
 });
 
 app.get('/api/blog', async (req, res) => {
