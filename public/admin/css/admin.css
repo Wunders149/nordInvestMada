@@ -112,6 +112,26 @@ body.dark .table-scroll::-webkit-scrollbar-thumb:hover { background: var(--gray-
 body.dark tr.unread td:first-child::before { background: var(--primary); }
 body.dark .sidebar-user .user-info .user-name { color: var(--text-primary); }
 body.dark .sidebar-user .user-info .user-role { color: var(--text-muted); }
+body.dark .btn-ghost { color: var(--text-secondary); }
+body.dark .btn-icon { color: var(--text-muted); }
+body.dark .detail-date { color: var(--text-muted); }
+body.dark .modal-close { color: var(--text-muted); }
+body.dark .modal-close:hover { color: var(--text-secondary); background: var(--gray-800); }
+body.dark .detail-label { color: var(--text-muted); }
+body.dark .pagination-info { color: var(--text-muted); }
+body.dark .empty-state { color: var(--text-muted); }
+body.dark .empty-state .empty-title { color: var(--text-secondary); }
+body.dark .responsive-table td::before { color: var(--text-muted); }
+body.dark .upload-status.loading { color: var(--text-muted); }
+body.dark .nav-btn.active { color: var(--primary-light); }
+body.dark .nav-btn.active .nav-icon { color: var(--primary-light); }
+body.dark .widget-link { color: var(--primary-light); }
+body.dark .filter-btn:hover { color: var(--primary-light); border-color: var(--primary-light); }
+body.dark td a { color: var(--primary-light); }
+body.dark .detail-value a { color: var(--primary-light); }
+body.dark .admin-card-cat { color: var(--primary-light); }
+body.dark .bulk-count { color: var(--primary-light); }
+body.dark .section-slots-empty-text a { color: var(--primary-light); }
 
 /* ─── RESET & BASE ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
