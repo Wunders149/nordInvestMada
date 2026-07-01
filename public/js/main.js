@@ -1354,7 +1354,7 @@ async function loadPricingData() {
 
 async function loadConfigData() {
   try {
-    const res = await fetch(`${API_BASE}/api/config`);
+    const res = await fetch(`${API_BASE}/api/config`, { cache: 'no-store' });
     const cfg = await res.json();
 
     // Hero stats
@@ -1365,10 +1365,10 @@ async function loadConfigData() {
     const heroEng = document.getElementById('heroEngineers');
     if (cfg.team_stats?.civil_engineers && heroEng) heroEng.textContent = cfg.team_stats.civil_engineers;
 
-    // Vision & Mission (skip override when viewing a translation)
+    // Vision & Mission: use admin-edited content when provided, otherwise fall back to translations
     const visionEl = document.getElementById('visionText');
     if (visionEl) {
-      if (cfg.vision && (currentLang === 'fr' || !visionEl.hasAttribute('data-i18n'))) {
+      if (cfg.vision) {
         visionEl.textContent = `"${cfg.vision}"`;
       } else {
         const fb = getNestedTranslation('vision.text');
@@ -1377,7 +1377,7 @@ async function loadConfigData() {
     }
     const missionEl = document.getElementById('missionText');
     if (missionEl) {
-      if (cfg.mission && (currentLang === 'fr' || !missionEl.hasAttribute('data-i18n'))) {
+      if (cfg.mission) {
         missionEl.textContent = `"${cfg.mission}"`;
       } else {
         const fb = getNestedTranslation('mission.text');
@@ -1472,26 +1472,26 @@ function applySectionContent(cfg) {
     setElText('.standards-grid > .standard-item:nth-child(4) p', s.standards.item4Desc);
   }
 
-  // Values (skip override when viewing a translation)
+  // Values: admin content overrides translations when present
   if (s.values) {
     const valueCards = document.querySelectorAll('#values .vm-card');
     if (valueCards.length >= 3) {
       const titles = valueCards[0].querySelector('.vm-label');
       const descs = valueCards[0].querySelector('.vm-text');
-      if (titles && s.values.title1 && (currentLang === 'fr' || !titles.hasAttribute('data-i18n'))) titles.textContent = s.values.title1;
-      if (descs && s.values.desc1 && (currentLang === 'fr' || !descs.hasAttribute('data-i18n'))) descs.textContent = s.values.desc1;
+      if (titles && s.values.title1) titles.textContent = s.values.title1;
+      if (descs && s.values.desc1) descs.textContent = s.values.desc1;
     }
     if (valueCards.length >= 3) {
       const titles = valueCards[1].querySelector('.vm-label');
       const descs = valueCards[1].querySelector('.vm-text');
-      if (titles && s.values.title2 && (currentLang === 'fr' || !titles.hasAttribute('data-i18n'))) titles.textContent = s.values.title2;
-      if (descs && s.values.desc2 && (currentLang === 'fr' || !descs.hasAttribute('data-i18n'))) descs.textContent = s.values.desc2;
+      if (titles && s.values.title2) titles.textContent = s.values.title2;
+      if (descs && s.values.desc2) descs.textContent = s.values.desc2;
     }
     if (valueCards.length >= 3) {
       const titles = valueCards[2].querySelector('.vm-label');
       const descs = valueCards[2].querySelector('.vm-text');
-      if (titles && s.values.title3 && (currentLang === 'fr' || !titles.hasAttribute('data-i18n'))) titles.textContent = s.values.title3;
-      if (descs && s.values.desc3 && (currentLang === 'fr' || !descs.hasAttribute('data-i18n'))) descs.textContent = s.values.desc3;
+      if (titles && s.values.title3) titles.textContent = s.values.title3;
+      if (descs && s.values.desc3) descs.textContent = s.values.desc3;
     }
   }
 
@@ -1564,14 +1564,14 @@ function applySectionContent(cfg) {
     setElText('.project-map-title', s.contact.mapProjectsTitle);
   }
 
-  // Numbers (skip override when viewing a translation)
+  // Numbers: admin content overrides translations when present
   if (s.numbers) {
     const numLabels = document.querySelectorAll('#numbers .num-label');
     if (numLabels.length >= 4) {
-      if (s.numbers.exp && (currentLang === 'fr' || !numLabels[0].hasAttribute('data-i18n'))) numLabels[0].textContent = s.numbers.exp;
-      if (s.numbers.tech && (currentLang === 'fr' || !numLabels[1].hasAttribute('data-i18n'))) numLabels[1].textContent = s.numbers.tech;
-      if (s.numbers.engineers && (currentLang === 'fr' || !numLabels[2].hasAttribute('data-i18n'))) numLabels[2].textContent = s.numbers.engineers;
-      if (s.numbers.sites && (currentLang === 'fr' || !numLabels[3].hasAttribute('data-i18n'))) numLabels[3].textContent = s.numbers.sites;
+      if (s.numbers.exp) numLabels[0].textContent = s.numbers.exp;
+      if (s.numbers.tech) numLabels[1].textContent = s.numbers.tech;
+      if (s.numbers.engineers) numLabels[2].textContent = s.numbers.engineers;
+      if (s.numbers.sites) numLabels[3].textContent = s.numbers.sites;
     }
   }
 
@@ -1595,8 +1595,6 @@ function setElText(selector, text) {
   if (!text) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  // Only skip data-i18n elements when viewing a translation (not French default)
-  if (currentLang !== 'fr' && (el.hasAttribute('data-i18n') || el.hasAttribute('data-i18n-html'))) return;
   el.textContent = text;
 }
 
@@ -1604,8 +1602,6 @@ function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  // Only skip data-i18n elements when viewing a translation (not French default)
-  if (currentLang !== 'fr' && (el.hasAttribute('data-i18n') || el.hasAttribute('data-i18n-html'))) return;
   el.innerHTML = html;
 }
 
