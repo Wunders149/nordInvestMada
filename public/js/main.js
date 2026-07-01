@@ -1354,6 +1354,7 @@ async function loadPricingData() {
         rehabilitation: { unit: 'm²' },
         forage: { unit: 'ml' }
       };
+      const isFlat = tierKeys.length <= 1;
       container.innerHTML = tierKeys.map((tier, ti) => {
         const t = tiers[tier];
         const price = t.pricePerM2 || t.pricePerML || t.price || 0;
@@ -1381,10 +1382,10 @@ async function loadPricingData() {
             </div>
           </div>` : '';
         return `
-        <div class="price-card${isFeatured ? ' featured' : ''}" data-service="${cat}" data-tier="${tier}" data-tier-name="${escapeHtml(t.name)}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
-          ${badge ? `<div class="price-badge" data-i18n="pricing.badge.${badgeKey}">${badge}</div>` : ''}
-          <div class="price-tier">${escapeHtml(t.name)}</div>
-          <div class="price-type" data-i18n="pricing.tiers.${cat}.${tier}">${escapeHtml(type)}</div>
+        <div class="price-card${isFeatured ? ' featured' : ''}${isFlat ? ' price-card--flat' : ''}" data-service="${cat}" data-tier="${tier}" data-tier-name="${escapeHtml(t.name)}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
+          ${!isFlat && badge ? `<div class="price-badge" data-i18n="pricing.badge.${badgeKey}">${badge}</div>` : ''}
+          ${!isFlat ? `<div class="price-tier">${escapeHtml(t.name)}</div>` : ''}
+          ${!isFlat ? `<div class="price-type" data-i18n="pricing.tiers.${cat}.${tier}">${escapeHtml(type)}</div>` : ''}
           <div class="price-val">
             <div class="price-main">
               <span class="price-num">${priceStr}</span>

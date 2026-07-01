@@ -473,14 +473,13 @@ router.put('/pricing', requireAuth, async (req, res) => {
             return res.status(400).json({ error: `Le champ "name" est requis pour ${cat}/${tier}` });
           }
           if (cat === 'forage') {
-            if (tier === 'standard' && (typeof t.pricePerML !== 'number' || t.pricePerML <= 0)) {
-              return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
-            }
-            if (tier !== 'standard' && (typeof t.price !== 'number' || t.price <= 0)) {
+            const foragePrice = t.pricePerML || t.price || 0;
+            if (typeof foragePrice !== 'number' || foragePrice <= 0) {
               return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
             }
           } else {
-            if (typeof t.pricePerM2 !== 'number' || t.pricePerM2 <= 0) {
+            const flatPrice = t.pricePerM2 || t.price || 0;
+            if (typeof flatPrice !== 'number' || flatPrice <= 0) {
               return res.status(400).json({ error: `Prix invalide pour ${cat}/${tier}` });
             }
           }

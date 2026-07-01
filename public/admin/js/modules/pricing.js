@@ -23,13 +23,15 @@ function renderPricingEditor() {
     const tiers = pricingData[cat] || {};
     const catLabels = { construction: 'Construction Neuve', rehabilitation: 'Études et Conception', forage: 'Forage d\'Eau' };
     html += `<div class="pricing-cat"><h4>${catLabels[cat]}</h4>`;
-    Object.keys(tiers).forEach(tier => {
+    const tierKeys = Object.keys(tiers);
+    tierKeys.forEach((tier, ti) => {
       const t = tiers[tier];
       html += `<div class="pricing-tier" data-cat="${cat}" data-tier="${tier}">
         <div class="pricing-tier-header">
           <input class="search-input pricing-name" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom" oninput="markDirty()">
           <input class="search-input pricing-price" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix" oninput="markDirty()">
           <input class="search-input pricing-unit" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité" oninput="markDirty()">
+          ${tierKeys.length > 1 ? `<button class="btn-ghost pricing-delete-tier" onclick="deletePricingTier('${cat}','${tier}')" title="Supprimer ce palier">&times;</button>` : ''}
         </div>
         <div class="pricing-tier-features">
           ${(t.features || []).map((f, fi) => `<input class="search-input pricing-feature" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}" oninput="markDirty()">`).join('')}
@@ -37,6 +39,7 @@ function renderPricingEditor() {
         </div>
       </div>`;
     });
+    html += `<button class="btn-ghost pricing-add-tier" onclick="addPricingTier('${cat}')">+ Ajouter un palier</button>`;
     html += '</div>';
   });
 
@@ -49,6 +52,35 @@ function renderPricingEditor() {
 
   html += '</div>';
   container.innerHTML = html;
+}
+
+export function deletePricingTier(cat, tier) {
+  const els = document.querySelectorAll(`[data-cat="${cat}"][data-tier="${tier}"]`);
+  const tierEl = els[0]?.closest('.pricing-tier');
+  if (tierEl) tierEl.remove();
+  markDirty();
+}
+
+export function addPricingTier(cat) {
+  const catEl = document.querySelector(`[data-cat="${cat}"]`)?.closest('.pricing-cat');
+  const addBtn = catEl?.querySelector('.pricing-add-tier');
+  const existing = catEl?.querySelectorAll('.pricing-tier') || [];
+  const newTier = `tier_${existing.length}`;
+  const div = document.createElement('div');
+  div.className = 'pricing-tier';
+  div.dataset.cat = cat;
+  div.dataset.tier = newTier;
+  div.innerHTML = `<div class="pricing-tier-header">
+    <input class="search-input pricing-name" value="" data-cat="${cat}" data-tier="${newTier}" data-field="name" placeholder="Nom" oninput="markDirty()">
+    <input class="search-input pricing-price" type="number" value="" data-cat="${cat}" data-tier="${newTier}" data-field="price" placeholder="Prix" oninput="markDirty()">
+    <input class="search-input pricing-unit" value="m²" data-cat="${cat}" data-tier="${newTier}" data-field="unit" placeholder="Unité" oninput="markDirty()">
+    <button class="btn-ghost pricing-delete-tier" onclick="deletePricingTier('${cat}','${newTier}')" title="Supprimer ce palier">&times;</button>
+  </div>
+  <div class="pricing-tier-features">
+    <button class="btn-ghost" style="font-size:0.7rem;padding:0.25rem" onclick="addPricingFeature('${cat}','${newTier}')">+ Ajouter option</button>
+  </div>`;
+  if (addBtn) addBtn.before(div);
+  markDirty();
 }
 
 export function addPricingFeature(cat, tier) {

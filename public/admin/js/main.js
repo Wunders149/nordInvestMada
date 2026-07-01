@@ -20,7 +20,7 @@ import {
   previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
   exportEntity
 } from './modules/content.js';
-import { loadPricingEditor, addPricingFeature, savePricing } from './modules/pricing.js';
+import { loadPricingEditor, addPricingFeature, deletePricingTier, addPricingTier, savePricing } from './modules/pricing.js';
 import { loadSettings, saveSettings, testEmail } from './modules/settings.js';
 import { loadActivityLog } from './modules/activity.js';
 import { loadSectionsEditor, saveAllSections as _saveAllSections } from './modules/sections.js';
@@ -105,7 +105,7 @@ Object.assign(window, {
   loadEntity, renderEntity, openCrudForm, closeCrudForm, saveCrudItem, confirmDeleteItem,
   previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
   exportEntity,
-  loadSectionsEditor, loadPricingEditor, addPricingFeature, savePricing,
+  loadSectionsEditor, loadPricingEditor, addPricingFeature, deletePricingTier, addPricingTier, savePricing,
   loadSettings, saveSettings, testEmail,
   loadActivityLog,
   loadDossiers, closeDossierRename, confirmDossierRename, filterDossiers,

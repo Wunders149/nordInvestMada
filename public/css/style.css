@@ -988,6 +988,10 @@ h2 {
   background: var(--rust); color: white; border-color: var(--rust);
 }
 .price-card.featured .price-cta:hover { background: var(--rust-light); border-color: var(--rust-light); }
+.price-card--flat { grid-column: 1 / -1; max-width: 480px; margin: 0 auto; }
+.price-card--flat .price-type { display: none; }
+.price-card--flat .price-tier { display: none; }
+
 .pricing-footer {
   margin-top: 40px; padding: 28px 32px;
   background: var(--bg-secondary); border-left: 3px solid var(--rust);
