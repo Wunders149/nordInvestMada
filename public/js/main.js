@@ -2069,27 +2069,51 @@ async function refreshProjectMap() {
   try {
     const [projects, slots] = await Promise.all([
       fetch(`${API_BASE}/api/projects`).then(r => r.json()),
-      fetch('/api/images/slots').then(r => r.json()).catch(() => [])
+      fetch(`${API_BASE}/api/images/slots`).then(r => r.json()).catch(() => [])
     ]);
     const slotMap = {};
     slots.forEach(s => { slotMap[s.id] = s; });
-    projectMarkers.forEach(m => projectMap.removeLayer(m));
-    projectMarkers = [];
+
+    // Build marker map by project id
+    const markerMap = {};
+    projectMarkers.forEach(m => { if (m._projectId) markerMap[m._projectId] = m; });
+
+    const seen = new Set();
+    const updated = [];
+
     projects.forEach(p => {
       const coords = getCityCoords(p.location);
       if (!coords) return;
+      seen.add(p.id);
       const slotId = p.image_slot || `project-${p.id}`;
       const slot = slotMap[slotId];
-      const imgUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : null;
+      const slotUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : null;
+      const ownImg = p.image && (p.image.startsWith('http') || p.image.startsWith('/')) ? p.image : null;
+      const imgUrl = ownImg || slotUrl;
       const popupHtml = `<div style="min-width:160px">
         ${imgUrl ? `<img src="${imgUrl}" alt="${escapeHtml(p.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:3px;margin-bottom:6px;">` : ''}
         <strong>${escapeHtml(p.title)}</strong><br>
         <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
       </div>`;
-      const marker = L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
-      projectMarkers.push(marker);
+
+      let marker = markerMap[p.id];
+      if (marker) {
+        marker.setLatLng(coords);
+        marker.setPopupContent(popupHtml);
+      } else {
+        marker = L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
+        marker._projectId = p.id;
+      }
+      updated.push(marker);
     });
-  } catch (_e) {}
+
+    // Remove markers for deleted projects
+    projectMarkers.forEach(m => {
+      if (m._projectId && !seen.has(m._projectId)) projectMap.removeLayer(m);
+    });
+
+    projectMarkers = updated;
+  } catch (_e) { console.warn('refreshProjectMap error:', _e); }
 }
 
 function initOfficeMap() {
@@ -2136,13 +2160,16 @@ function initProjectMap() {
       if (!coords) return;
       const slotId = p.image_slot || `project-${p.id}`;
       const slot = slotMap[slotId];
-      const imgUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : null;
+      const slotUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : null;
+      const ownImg = p.image && (p.image.startsWith('http') || p.image.startsWith('/')) ? p.image : null;
+      const imgUrl = ownImg || slotUrl;
       const popupHtml = `<div style="min-width:160px">
         ${imgUrl ? `<img src="${imgUrl}" alt="${escapeHtml(p.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:3px;margin-bottom:6px;">` : ''}
         <strong>${escapeHtml(p.title)}</strong><br>
         <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
       </div>`;
       const marker = L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
+      marker._projectId = p.id;
       projectMarkers.push(marker);
     });
     if (projectMarkers.length > 0) {
@@ -2258,7 +2285,7 @@ function initCookieConsent() {
 const EVENT_MAP = {
   'team': loadTeam,
   'services': loadServices,
-  'projects': loadProjects,
+  'projects': () => { loadProjects(); refreshProjectMap(); },
   'blog': loadBlog,
   'blog-categories': loadBlogCategories,
   'pricing': loadPricingData,
