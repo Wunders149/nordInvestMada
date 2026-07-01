@@ -1421,7 +1421,7 @@ async function loadConfigData() {
     // Vision & Mission: use admin-edited content when provided, otherwise fall back to translations
     const visionEl = document.getElementById('visionText');
     if (visionEl) {
-      if (cfg.vision) {
+      if (cfg.vision && (currentLang === 'fr' || !visionEl.closest('[data-i18n]'))) {
         visionEl.textContent = `"${cfg.vision}"`;
       } else {
         const fb = getNestedTranslation('vision.text');
@@ -1430,7 +1430,7 @@ async function loadConfigData() {
     }
     const missionEl = document.getElementById('missionText');
     if (missionEl) {
-      if (cfg.mission) {
+      if (cfg.mission && (currentLang === 'fr' || !missionEl.closest('[data-i18n]'))) {
         missionEl.textContent = `"${cfg.mission}"`;
       } else {
         const fb = getNestedTranslation('mission.text');
@@ -1531,20 +1531,20 @@ function applySectionContent(cfg) {
     if (valueCards.length >= 3) {
       const titles = valueCards[0].querySelector('.vm-label');
       const descs = valueCards[0].querySelector('.vm-text');
-      if (titles && s.values.title1) titles.textContent = s.values.title1;
-      if (descs && s.values.desc1) descs.textContent = s.values.desc1;
+      if (titles && s.values.title1 && (currentLang === 'fr' || !titles.closest('[data-i18n]'))) titles.textContent = s.values.title1;
+      if (descs && s.values.desc1 && (currentLang === 'fr' || !descs.closest('[data-i18n]'))) descs.textContent = s.values.desc1;
     }
     if (valueCards.length >= 3) {
       const titles = valueCards[1].querySelector('.vm-label');
       const descs = valueCards[1].querySelector('.vm-text');
-      if (titles && s.values.title2) titles.textContent = s.values.title2;
-      if (descs && s.values.desc2) descs.textContent = s.values.desc2;
+      if (titles && s.values.title2 && (currentLang === 'fr' || !titles.closest('[data-i18n]'))) titles.textContent = s.values.title2;
+      if (descs && s.values.desc2 && (currentLang === 'fr' || !descs.closest('[data-i18n]'))) descs.textContent = s.values.desc2;
     }
     if (valueCards.length >= 3) {
       const titles = valueCards[2].querySelector('.vm-label');
       const descs = valueCards[2].querySelector('.vm-text');
-      if (titles && s.values.title3) titles.textContent = s.values.title3;
-      if (descs && s.values.desc3) descs.textContent = s.values.desc3;
+      if (titles && s.values.title3 && (currentLang === 'fr' || !titles.closest('[data-i18n]'))) titles.textContent = s.values.title3;
+      if (descs && s.values.desc3 && (currentLang === 'fr' || !descs.closest('[data-i18n]'))) descs.textContent = s.values.desc3;
     }
   }
 
@@ -1572,7 +1572,7 @@ function applySectionContent(cfg) {
     setElText('.pricing-tabs > .tab-btn:nth-child(3)', s.pricing.tab3);
     if (s.pricing.note) {
       const note = document.querySelector('.pricing-footer');
-      if (note) note.innerHTML = s.pricing.note;
+      if (note && (currentLang === 'fr' || !note.closest('[data-i18n-html]'))) note.innerHTML = s.pricing.note;
     }
   }
 
@@ -1621,10 +1621,10 @@ function applySectionContent(cfg) {
   if (s.numbers) {
     const numLabels = document.querySelectorAll('#numbers .num-label');
     if (numLabels.length >= 4) {
-      if (s.numbers.exp) numLabels[0].textContent = s.numbers.exp;
-      if (s.numbers.tech) numLabels[1].textContent = s.numbers.tech;
-      if (s.numbers.engineers) numLabels[2].textContent = s.numbers.engineers;
-      if (s.numbers.sites) numLabels[3].textContent = s.numbers.sites;
+      if (s.numbers.exp && (currentLang === 'fr' || !numLabels[0].closest('[data-i18n]'))) numLabels[0].textContent = s.numbers.exp;
+      if (s.numbers.tech && (currentLang === 'fr' || !numLabels[1].closest('[data-i18n]'))) numLabels[1].textContent = s.numbers.tech;
+      if (s.numbers.engineers && (currentLang === 'fr' || !numLabels[2].closest('[data-i18n]'))) numLabels[2].textContent = s.numbers.engineers;
+      if (s.numbers.sites && (currentLang === 'fr' || !numLabels[3].closest('[data-i18n]'))) numLabels[3].textContent = s.numbers.sites;
     }
   }
 
@@ -1648,6 +1648,7 @@ function setElText(selector, text) {
   if (!text) return;
   const el = document.querySelector(selector);
   if (!el) return;
+  if (currentLang !== 'fr' && el.closest('[data-i18n]')) return;
   el.textContent = text;
 }
 
@@ -1655,6 +1656,7 @@ function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
   if (!el) return;
+  if (currentLang !== 'fr' && el.closest('[data-i18n-html]')) return;
   el.innerHTML = html;
 }
 
