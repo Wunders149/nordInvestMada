@@ -39,30 +39,83 @@ function initTheme() {
 // I18N — Traductions multilingue
 // ═══════════════════════════════════════════════════════
 
-let currentLang = localStorage.getItem('nim_lang') || 'fr';
+const SUPPORTED_LANGS = ['fr', 'en', 'mg'];
+
+function normalizeLanguage(lang) {
+  if (typeof lang !== 'string') return 'fr';
+  const value = lang.trim().toLowerCase();
+  return SUPPORTED_LANGS.includes(value) ? value : 'fr';
+}
+
+function getStoredLanguage() {
+  try {
+    const saved = localStorage.getItem('nim_lang');
+    if (saved) return normalizeLanguage(saved);
+  } catch (_e) {}
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = normalizeLanguage(params.get('lang'));
+    if (fromQuery !== 'fr') return fromQuery;
+  } catch (_e) {}
+
+  try {
+    const pathLang = window.location.pathname.split('/').filter(Boolean)[0];
+    if (SUPPORTED_LANGS.includes(pathLang)) return pathLang;
+  } catch (_e) {}
+
+  return 'fr';
+}
+
+function persistLanguage(lang) {
+  const normalizedLang = normalizeLanguage(lang);
+  currentLang = normalizedLang;
+  try {
+    localStorage.setItem('nim_lang', normalizedLang);
+  } catch (_e) {}
+
+  try {
+    const url = new URL(window.location.href);
+    if (normalizedLang === 'fr') {
+      url.searchParams.delete('lang');
+    } else {
+      url.searchParams.set('lang', normalizedLang);
+    }
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  } catch (_e) {}
+}
+
+let currentLang = getStoredLanguage();
 let translations = {};
 
 async function loadTranslations(lang) {
+  const normalizedLang = normalizeLanguage(lang);
+
   try {
-    const res = await fetch(`/locales/${lang}.json`);
+    const res = await fetch(`/locales/${normalizedLang}.json`);
     if (!res.ok) throw new Error('Translation not found');
     translations = await res.json();
-    currentLang = lang;
-    localStorage.setItem('nim_lang', lang);
+    persistLanguage(normalizedLang);
     applyTranslations();
     updateLangButtons();
-    document.documentElement.lang = lang === 'en' ? 'en' : lang === 'mg' ? 'mg' : 'fr';
+    document.documentElement.lang = normalizedLang;
+    document.documentElement.setAttribute('data-lang', normalizedLang);
   } catch (_e) {
-    console.warn('Failed to load translations for', lang, '- falling back to fr');
-    if (lang !== 'fr') loadTranslations('fr');
+    console.warn('Failed to load translations for', normalizedLang, '- falling back to fr');
+    if (normalizedLang !== 'fr') {
+      await loadTranslations('fr');
+      return;
+    }
+    persistLanguage('fr');
   }
 }
 
 async function setLanguage(lang) {
-  await loadTranslations(lang);
+  const normalizedLang = normalizeLanguage(lang);
+  await loadTranslations(normalizedLang);
   await loadConfigData();
   if (typeof gtag !== 'undefined') {
-    gtag('event', 'language_switch', { 'language': lang });
+    gtag('event', 'language_switch', { 'language': normalizedLang });
   }
 }
 
@@ -2025,6 +2078,7 @@ function initBlogReveal() {
 const CITY_COORDS = {
   'antsiranana': [-12.2833, 49.2833],
   'diego': [-12.2833, 49.2833],
+  'diegosuarez': [-12.2833, 49.2833],
   'nosybe': [-13.3167, 48.2667],
   'sambava': [-14.2667, 50.1667],
   'antalaha': [-14.8833, 50.2667],
@@ -2047,11 +2101,21 @@ const CITY_COORDS = {
   'manakara': [-22.15, 48.0]
 };
 
+function normalizeLocationText(value) {
+  if (!value) return '';
+  return String(value)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 function getCityCoords(location) {
   if (!location) return null;
-  const loc = location.toLowerCase().replace(/\s/g, '');
+  const normalizedLocation = normalizeLocationText(location);
+  if (!normalizedLocation) return null;
   for (const [key, coords] of Object.entries(CITY_COORDS)) {
-    if (loc.includes(key)) return coords;
+    if (normalizedLocation.includes(normalizeLocationText(key))) return coords;
   }
   return null;
 }
