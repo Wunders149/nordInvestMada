@@ -1365,10 +1365,10 @@ async function loadConfigData() {
     const heroEng = document.getElementById('heroEngineers');
     if (cfg.team_stats?.civil_engineers && heroEng) heroEng.textContent = cfg.team_stats.civil_engineers;
 
-    // Vision & Mission
+    // Vision & Mission (skip override when viewing a translation)
     const visionEl = document.getElementById('visionText');
     if (visionEl) {
-      if (cfg.vision) {
+      if (cfg.vision && (currentLang === 'fr' || !visionEl.hasAttribute('data-i18n'))) {
         visionEl.textContent = `"${cfg.vision}"`;
       } else {
         const fb = getNestedTranslation('vision.text');
@@ -1377,7 +1377,7 @@ async function loadConfigData() {
     }
     const missionEl = document.getElementById('missionText');
     if (missionEl) {
-      if (cfg.mission) {
+      if (cfg.mission && (currentLang === 'fr' || !missionEl.hasAttribute('data-i18n'))) {
         missionEl.textContent = `"${cfg.mission}"`;
       } else {
         const fb = getNestedTranslation('mission.text');
@@ -1472,26 +1472,26 @@ function applySectionContent(cfg) {
     setElText('.standards-grid > .standard-item:nth-child(4) p', s.standards.item4Desc);
   }
 
-  // Values
+  // Values (skip override when viewing a translation)
   if (s.values) {
     const valueCards = document.querySelectorAll('#values .vm-card');
     if (valueCards.length >= 3) {
       const titles = valueCards[0].querySelector('.vm-label');
       const descs = valueCards[0].querySelector('.vm-text');
-      if (titles && s.values.title1) titles.textContent = s.values.title1;
-      if (descs && s.values.desc1) descs.textContent = s.values.desc1;
+      if (titles && s.values.title1 && (currentLang === 'fr' || !titles.hasAttribute('data-i18n'))) titles.textContent = s.values.title1;
+      if (descs && s.values.desc1 && (currentLang === 'fr' || !descs.hasAttribute('data-i18n'))) descs.textContent = s.values.desc1;
     }
     if (valueCards.length >= 3) {
       const titles = valueCards[1].querySelector('.vm-label');
       const descs = valueCards[1].querySelector('.vm-text');
-      if (titles && s.values.title2) titles.textContent = s.values.title2;
-      if (descs && s.values.desc2) descs.textContent = s.values.desc2;
+      if (titles && s.values.title2 && (currentLang === 'fr' || !titles.hasAttribute('data-i18n'))) titles.textContent = s.values.title2;
+      if (descs && s.values.desc2 && (currentLang === 'fr' || !descs.hasAttribute('data-i18n'))) descs.textContent = s.values.desc2;
     }
     if (valueCards.length >= 3) {
       const titles = valueCards[2].querySelector('.vm-label');
       const descs = valueCards[2].querySelector('.vm-text');
-      if (titles && s.values.title3) titles.textContent = s.values.title3;
-      if (descs && s.values.desc3) descs.textContent = s.values.desc3;
+      if (titles && s.values.title3 && (currentLang === 'fr' || !titles.hasAttribute('data-i18n'))) titles.textContent = s.values.title3;
+      if (descs && s.values.desc3 && (currentLang === 'fr' || !descs.hasAttribute('data-i18n'))) descs.textContent = s.values.desc3;
     }
   }
 
@@ -1564,14 +1564,14 @@ function applySectionContent(cfg) {
     setElText('.project-map-title', s.contact.mapProjectsTitle);
   }
 
-  // Numbers
+  // Numbers (skip override when viewing a translation)
   if (s.numbers) {
     const numLabels = document.querySelectorAll('#numbers .num-label');
     if (numLabels.length >= 4) {
-      if (s.numbers.exp) numLabels[0].textContent = s.numbers.exp;
-      if (s.numbers.tech) numLabels[1].textContent = s.numbers.tech;
-      if (s.numbers.engineers) numLabels[2].textContent = s.numbers.engineers;
-      if (s.numbers.sites) numLabels[3].textContent = s.numbers.sites;
+      if (s.numbers.exp && (currentLang === 'fr' || !numLabels[0].hasAttribute('data-i18n'))) numLabels[0].textContent = s.numbers.exp;
+      if (s.numbers.tech && (currentLang === 'fr' || !numLabels[1].hasAttribute('data-i18n'))) numLabels[1].textContent = s.numbers.tech;
+      if (s.numbers.engineers && (currentLang === 'fr' || !numLabels[2].hasAttribute('data-i18n'))) numLabels[2].textContent = s.numbers.engineers;
+      if (s.numbers.sites && (currentLang === 'fr' || !numLabels[3].hasAttribute('data-i18n'))) numLabels[3].textContent = s.numbers.sites;
     }
   }
 
@@ -1594,13 +1594,19 @@ function applySectionContent(cfg) {
 function setElText(selector, text) {
   if (!text) return;
   const el = document.querySelector(selector);
-  if (el) el.textContent = text;
+  if (!el) return;
+  // Only skip data-i18n elements when viewing a translation (not French default)
+  if (currentLang !== 'fr' && (el.hasAttribute('data-i18n') || el.hasAttribute('data-i18n-html'))) return;
+  el.textContent = text;
 }
 
 function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
-  if (el) el.innerHTML = html;
+  if (!el) return;
+  // Only skip data-i18n elements when viewing a translation (not French default)
+  if (currentLang !== 'fr' && (el.hasAttribute('data-i18n') || el.hasAttribute('data-i18n-html'))) return;
+  el.innerHTML = html;
 }
 
 function showSectionError(containerId, message) {
@@ -1660,21 +1666,39 @@ function openPdfViewer(id, name, url) {
   const viewer = document.getElementById('pdfViewer');
   const title = document.getElementById('pdfModalTitle');
   const loading = document.getElementById('pdfLoading');
+  const errorEl = document.getElementById('pdfError');
   if (!modal || !viewer) return;
   title.textContent = name || '';
   if (loading) loading.classList.remove('hidden');
+  if (errorEl) errorEl.classList.remove('active');
   viewer.src = url;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => { if (loading) loading.classList.add('hidden'); }, 2000);
+
+  viewer.onload = () => {
+    if (loading) loading.classList.add('hidden');
+  };
+
+  viewer.onerror = () => {
+    if (loading) loading.classList.add('hidden');
+    if (errorEl) errorEl.classList.add('active');
+  };
+
+  setTimeout(() => {
+    if (loading && !loading.classList.contains('hidden')) {
+      if (errorEl) errorEl.classList.add('active');
+    }
+  }, 15000);
 }
 
 function closePdfViewer(e) {
   if (e && e.target !== e.currentTarget) return;
   const modal = document.getElementById('pdfModal');
   const viewer = document.getElementById('pdfViewer');
+  const errorEl = document.getElementById('pdfError');
   if (modal) modal.classList.remove('active');
-  if (viewer) viewer.src = '';
+  if (viewer) { viewer.onload = null; viewer.onerror = null; viewer.src = ''; }
+  if (errorEl) errorEl.classList.remove('active');
   document.body.style.overflow = '';
   if (lastFocusedEl) { lastFocusedEl.focus(); lastFocusedEl = null; }
 }
@@ -1703,6 +1727,54 @@ function downloadCurrentPdf() {
   }
 }
 
+function openPdfInTab() {
+  if (currentPdfUrl) window.open(currentPdfUrl, '_blank');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('pdfModal');
+    if (modal && modal.classList.contains('active')) closePdfViewer();
+  }
+});
+
+/* ── Mobile swipe-to-close ── */
+let pdfTouchStartY = 0;
+let pdfTouchDelta = 0;
+let pdfIsDragging = false;
+
+document.addEventListener('touchstart', (e) => {
+  const content = document.getElementById('pdfModalContent');
+  if (!content || !content.closest('.pdf-modal.active')) return;
+  const touch = e.touches[0];
+  pdfTouchStartY = touch.clientY;
+  pdfTouchDelta = 0;
+  pdfIsDragging = false;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  const content = document.getElementById('pdfModalContent');
+  if (!content || !content.closest('.pdf-modal.active')) return;
+  const touch = e.touches[0];
+  const delta = touch.clientY - pdfTouchStartY;
+  if (delta < 5) { pdfTouchStartY = touch.clientY; return; }
+  pdfTouchDelta = delta;
+  pdfIsDragging = true;
+  content.classList.add('is-dragging');
+  const translate = Math.min(delta * 0.6, 200);
+  content.style.transform = 'translateY(' + translate + 'px)';
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  const content = document.getElementById('pdfModalContent');
+  if (!content || !pdfIsDragging) return;
+  content.classList.remove('is-dragging');
+  content.style.transform = '';
+  if (pdfTouchDelta > 80) closePdfViewer();
+  pdfIsDragging = false;
+  pdfTouchDelta = 0;
+}, { passive: true });
+
 async function loadDossiers() {
   const grid = document.getElementById('dossiersGrid');
   if (!grid) return;
@@ -1718,8 +1790,20 @@ async function loadDossiers() {
     }
     function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
     function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function formatDate(iso) {
+      if (!iso) return '';
+      try { return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }
+      catch { return ''; }
+    }
+    function getDownloadUrl(url) {
+      if (url && url.includes('/upload/')) return url.replace('/upload/', '/upload/fl_attachment/');
+      return url;
+    }
+    const downloadSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     grid.innerHTML = dossiers.map(d => {
       const thumbUrl = d.thumbnail_url || '';
+      const dateStr = formatDate(d.created_at);
+      const dlUrl = getDownloadUrl(d.cloudinary_url || '');
       return `
       <div class="dossier-card" data-id="${escAttr(d.id)}" data-name="${escAttr(d.name)}" data-url="${escAttr(d.cloudinary_url || '')}">
         <div class="dossier-thumb">
@@ -1732,16 +1816,39 @@ async function loadDossiers() {
               <line x1="16" y1="17" x2="8" y2="17"/>
             </svg>
           </div>
+          <button class="dossier-download-btn" title="${getNestedTranslation('pdf.download') || 'Télécharger'}" data-dl-url="${escAttr(dlUrl)}">${downloadSvg}</button>
         </div>
-        <div class="dossier-name">${escHtml(d.name)}</div>
-        <div class="dossier-meta">${formatFileSize(d.size)} — PDF</div>
-        <span class="dossier-badge">${getNestedTranslation('dossiers.badge') || 'Nouveau'}</span>
+        <div class="dossier-name">${escHtml(d.name.replace(/\.pdf$/i, ''))}</div>
+        <div class="dossier-meta">
+          <span class="dossier-size">${formatFileSize(d.size)}</span>
+          ${dateStr ? `<span class="dossier-date">${escHtml(dateStr)}</span>` : ''}
+        </div>
+        <span class="dossier-badge">PDF</span>
       </div>`;
     }).join('');
     grid.querySelectorAll('.dossier-card').forEach(card => {
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.dossier-download-btn')) return;
         openPdfViewer(card.dataset.id, card.dataset.name, card.dataset.url);
       });
+    });
+    grid.querySelectorAll('.dossier-download-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const url = btn.dataset.dlUrl;
+        if (!url) return;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
+    });
+    // Staggered reveal animation
+    const cards = grid.querySelectorAll('.dossier-card');
+    cards.forEach((card, i) => {
+      setTimeout(() => card.classList.add('revealed'), 80 * (i + 1));
     });
     initImageReveal();
   } catch (err) {
@@ -1754,6 +1861,7 @@ async function loadDossiers() {
 }
 
 function initDossiersCarousel() {
+  if (window.innerWidth >= 1024) return;
   const grid = document.getElementById('dossiersGrid');
   const nav = document.querySelector('.dossiers-carousel-nav');
   if (!grid || !nav) return;
@@ -1954,6 +2062,35 @@ function getCityCoords(location) {
 
 let officeMap = null;
 let projectMap = null;
+let projectMarkers = [];
+
+async function refreshProjectMap() {
+  if (!projectMap) return;
+  try {
+    const [projects, slots] = await Promise.all([
+      fetch(`${API_BASE}/api/projects`).then(r => r.json()),
+      fetch('/api/images/slots').then(r => r.json()).catch(() => [])
+    ]);
+    const slotMap = {};
+    slots.forEach(s => { slotMap[s.id] = s; });
+    projectMarkers.forEach(m => projectMap.removeLayer(m));
+    projectMarkers = [];
+    projects.forEach(p => {
+      const coords = getCityCoords(p.location);
+      if (!coords) return;
+      const slotId = p.image_slot || `project-${p.id}`;
+      const slot = slotMap[slotId];
+      const imgUrl = (slot && slot.currentUrl && !slot.currentUrl.endsWith('placeholder.svg')) ? slot.currentUrl : null;
+      const popupHtml = `<div style="min-width:160px">
+        ${imgUrl ? `<img src="${imgUrl}" alt="${escapeHtml(p.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:3px;margin-bottom:6px;">` : ''}
+        <strong>${escapeHtml(p.title)}</strong><br>
+        <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
+      </div>`;
+      const marker = L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
+      projectMarkers.push(marker);
+    });
+  } catch (_e) {}
+}
 
 function initOfficeMap() {
   const el = document.getElementById('officeMap');
@@ -1987,7 +2124,7 @@ function initProjectMap() {
     attribution: '&copy; OpenStreetMap'
   }).addTo(projectMap);
 
-  let markers = [];
+  projectMarkers = [];
   Promise.all([
     fetch(`${API_BASE}/api/projects`).then(r => r.json()),
     fetch('/api/images/slots').then(r => r.json()).catch(() => [])
@@ -2006,11 +2143,11 @@ function initProjectMap() {
         <span style="font-size:0.85rem;color:#666">${escapeHtml(p.location || '')}</span>
       </div>`;
       const marker = L.marker(coords).addTo(projectMap).bindPopup(popupHtml);
-      markers.push(marker);
+      projectMarkers.push(marker);
     });
-    if (markers.length > 0) {
+    if (projectMarkers.length > 0) {
       try {
-        const group = L.featureGroup(markers);
+        const group = L.featureGroup(projectMarkers);
         projectMap.fitBounds(group.getBounds().pad(0.3));
       } catch (e) {}
     }
@@ -2018,9 +2155,9 @@ function initProjectMap() {
 
   setTimeout(() => {
     projectMap.invalidateSize();
-    if (markers.length > 0) {
+    if (projectMarkers.length > 0) {
       try {
-        const group = L.featureGroup(markers);
+        const group = L.featureGroup(projectMarkers);
         projectMap.fitBounds(group.getBounds().pad(0.3));
       } catch (e) {}
     }
@@ -2127,7 +2264,7 @@ const EVENT_MAP = {
   'pricing': loadPricingData,
   'config': loadConfigData,
   'dossiers': loadDossiers,
-  'images': loadImageSlots
+  'images': () => { loadImageSlots(); refreshProjectMap(); }
 };
 
 let sseReconnectTimer = null;
