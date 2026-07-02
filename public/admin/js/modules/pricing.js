@@ -31,7 +31,7 @@ function renderPricingEditor() {
           <input class="search-input pricing-name" value="${escapeHtml(t.name || '')}" data-cat="${cat}" data-tier="${tier}" data-field="name" placeholder="Nom" oninput="markDirty()">
           <input class="search-input pricing-price" type="number" value="${t.pricePerM2 || t.pricePerML || t.price || ''}" data-cat="${cat}" data-tier="${tier}" data-field="price" placeholder="Prix" oninput="markDirty()">
           <input class="search-input pricing-unit" value="${t.unit || 'm²'}" data-cat="${cat}" data-tier="${tier}" data-field="unit" placeholder="Unité" oninput="markDirty()">
-          ${tierKeys.length > 1 ? `<button class="btn-ghost pricing-delete-tier" onclick="deletePricingTier('${cat}','${tier}')" title="Supprimer ce palier">&times;</button>` : ''}
+          ${tierKeys.length > 1 ? `<button class="btn-ghost pricing-delete-tier" type="button" onclick="deletePricingTier('${cat}','${tier}')" title="Supprimer ce palier">&times;</button>` : ''}
         </div>
         <div class="pricing-tier-features">
           ${(t.features || []).map((f, fi) => `<input class="search-input pricing-feature" value="${escapeHtml(f)}" data-cat="${cat}" data-tier="${tier}" data-field="feature_${fi}" placeholder="Option ${fi + 1}" oninput="markDirty()">`).join('')}
@@ -109,7 +109,7 @@ export async function savePricing() {
       document.querySelectorAll(`[data-cat="${cat}"]`).forEach(el => {
         const tier = el.dataset.tier;
         const field = el.dataset.field;
-        if (!tier) return;
+        if (!tier || !field) return;
         if (!pricing[cat][tier]) pricing[cat][tier] = { features: [] };
         if (field === 'name') pricing[cat][tier].name = el.value;
         else if (field === 'price') {
