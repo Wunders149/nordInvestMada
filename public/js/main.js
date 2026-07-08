@@ -1472,7 +1472,7 @@ async function loadConfigData() {
     }
 
     // Apply dynamic section content (overrides i18n defaults)
-    applySectionContent(cfg);
+    if (currentLang === 'fr') applySectionContent(cfg);
   } catch (err) { console.warn('Config load error:', err); }
 }
 
@@ -1651,7 +1651,7 @@ function setElText(selector, text) {
   if (!text) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  if (currentLang !== 'fr' && el.closest('[data-i18n]')) return;
+  if (currentLang !== 'fr' && el.closest('[data-i18n], [data-i18n-html]')) return;
   el.textContent = text;
 }
 
@@ -1659,7 +1659,7 @@ function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  if (currentLang !== 'fr' && el.closest('[data-i18n-html]')) return;
+  if (currentLang !== 'fr' && el.closest('[data-i18n], [data-i18n-html]')) return;
   el.innerHTML = html;
 }
 
