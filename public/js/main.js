@@ -1422,7 +1422,7 @@ async function loadConfigData() {
     // Vision & Mission: use admin-edited content when provided, otherwise fall back to translations
     const visionEl = document.getElementById('visionText');
     if (visionEl) {
-      if (cfg.vision) {
+      if (cfg.vision && currentLang === 'fr') {
         visionEl.textContent = `"${cfg.vision}"`;
       } else {
         const fb = getNestedTranslation('vision.text');
@@ -1431,7 +1431,7 @@ async function loadConfigData() {
     }
     const missionEl = document.getElementById('missionText');
     if (missionEl) {
-      if (cfg.mission) {
+      if (cfg.mission && currentLang === 'fr') {
         missionEl.textContent = `"${cfg.mission}"`;
       } else {
         const fb = getNestedTranslation('mission.text');
@@ -1528,24 +1528,26 @@ function applySectionContent(cfg) {
 
   // Values: admin content overrides translations when present
   if (s.values) {
-    const valueCards = document.querySelectorAll('#values .vm-card');
-    if (valueCards.length >= 3) {
-      const titles = valueCards[0].querySelector('.vm-label');
-      const descs = valueCards[0].querySelector('.vm-text');
-      if (titles && s.values.title1) titles.textContent = s.values.title1;
-      if (descs && s.values.desc1) descs.textContent = s.values.desc1;
-    }
-    if (valueCards.length >= 3) {
-      const titles = valueCards[1].querySelector('.vm-label');
-      const descs = valueCards[1].querySelector('.vm-text');
-      if (titles && s.values.title2) titles.textContent = s.values.title2;
-      if (descs && s.values.desc2) descs.textContent = s.values.desc2;
-    }
-    if (valueCards.length >= 3) {
-      const titles = valueCards[2].querySelector('.vm-label');
-      const descs = valueCards[2].querySelector('.vm-text');
-      if (titles && s.values.title3) titles.textContent = s.values.title3;
-      if (descs && s.values.desc3) descs.textContent = s.values.desc3;
+    if (currentLang === 'fr') {
+      const valueCards = document.querySelectorAll('#values .vm-card');
+      if (valueCards.length >= 3) {
+        const titles = valueCards[0].querySelector('.vm-label');
+        const descs = valueCards[0].querySelector('.vm-text');
+        if (titles && s.values.title1) titles.textContent = s.values.title1;
+        if (descs && s.values.desc1) descs.textContent = s.values.desc1;
+      }
+      if (valueCards.length >= 3) {
+        const titles = valueCards[1].querySelector('.vm-label');
+        const descs = valueCards[1].querySelector('.vm-text');
+        if (titles && s.values.title2) titles.textContent = s.values.title2;
+        if (descs && s.values.desc2) descs.textContent = s.values.desc2;
+      }
+      if (valueCards.length >= 3) {
+        const titles = valueCards[2].querySelector('.vm-label');
+        const descs = valueCards[2].querySelector('.vm-text');
+        if (titles && s.values.title3) titles.textContent = s.values.title3;
+        if (descs && s.values.desc3) descs.textContent = s.values.desc3;
+      }
     }
   }
 
@@ -1571,7 +1573,7 @@ function applySectionContent(cfg) {
     setElText('.pricing-tabs > .tab-btn:nth-child(1)', s.pricing.tab1);
     setElText('.pricing-tabs > .tab-btn:nth-child(2)', s.pricing.tab2);
     setElText('.pricing-tabs > .tab-btn:nth-child(3)', s.pricing.tab3);
-    if (s.pricing.note) {
+    if (s.pricing.note && currentLang === 'fr') {
       const note = document.querySelector('.pricing-footer');
       if (note) note.innerHTML = s.pricing.note;
     }
@@ -1618,8 +1620,8 @@ function applySectionContent(cfg) {
     setElText('.project-map-title', s.contact.mapProjectsTitle);
   }
 
-  // Numbers: admin content overrides translations when present
-  if (s.numbers) {
+  // Numbers: admin content overrides translations when present (French only)
+  if (s.numbers && currentLang === 'fr') {
     const numLabels = document.querySelectorAll('#numbers .num-label');
     if (numLabels.length >= 4) {
       if (s.numbers.exp) numLabels[0].textContent = s.numbers.exp;
@@ -1649,6 +1651,7 @@ function setElText(selector, text) {
   if (!text) return;
   const el = document.querySelector(selector);
   if (!el) return;
+  if (currentLang !== 'fr' && el.closest('[data-i18n]')) return;
   el.textContent = text;
 }
 
@@ -1656,6 +1659,7 @@ function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
   if (!el) return;
+  if (currentLang !== 'fr' && el.closest('[data-i18n-html]')) return;
   el.innerHTML = html;
 }
 
