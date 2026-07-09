@@ -181,6 +181,13 @@ const SECTIONS_CONFIG = {
 let sectionsData = {};
 let isSaving = false;
 let allSlots = [];
+let currentSectionLang = 'fr';
+let sectionLoadSeq = 0;
+const SUPPORTED_LANGS = [
+  { code: 'fr', label: '🇫🇷 Français' },
+  { code: 'en', label: '🇬🇧 English' },
+  { code: 'mg', label: '🇲🇬 Malagasy' }
+];
 
 async function loadImageSlots() {
   try {
@@ -190,7 +197,9 @@ async function loadImageSlots() {
   } catch { return []; }
 }
 
-export async function loadSectionsEditor() {
+async function loadSectionsForLang(lang) {
+  const loadId = ++sectionLoadSeq;
+  currentSectionLang = lang;
   const container = document.getElementById('sectionsEditor');
   if (!container) return;
 
@@ -198,29 +207,46 @@ export async function loadSectionsEditor() {
 
   try {
     const [sectionsRes, slots] = await Promise.all([
-      fetch(`${API_BASE}/sections`, { headers: getHeaders() }),
+      fetch(`${API_BASE}/sections?lang=${lang}`, { headers: getHeaders() }),
       loadImageSlots()
     ]);
+    if (loadId !== sectionLoadSeq) return;
     if (sectionsRes.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
     if (!sectionsRes.ok) throw new Error('Failed to load sections');
     sectionsData = await sectionsRes.json();
+    console.log(`[sections] loaded lang=${lang}:`, JSON.stringify(sectionsData.visionMission));
     allSlots = slots;
     renderSectionsEditor(container);
   } catch (err) {
+    if (loadId !== sectionLoadSeq) return;
     console.error('Sections editor load error:', err);
-    showToast('Erreur lors du chargement du contenu des sections', 'error');
+    showToast('Erreur lors du chargement', 'error');
     container.innerHTML = '<p class="empty-row">Erreur de chargement</p>';
   }
 }
 
+export async function loadSectionsEditor() {
+  await loadSectionsForLang('fr');
+}
+
+window.switchSectionLang = async function(lang) {
+  document.querySelectorAll('.section-lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  await loadSectionsForLang(lang);
+};
+
 function renderSectionsEditor(container) {
   const entries = Object.entries(SECTIONS_CONFIG);
 
+  const langTabs = SUPPORTED_LANGS.map(l =>
+    `<button class="section-lang-btn${l.code === currentSectionLang ? ' active' : ''}" data-lang="${l.code}" onclick="window.switchSectionLang('${l.code}')">${l.label}</button>`
+  ).join('');
+
   let html = `
+    <div class="section-lang-tabs">${langTabs}</div>
     <div class="sections-toolbar">
       <p class="sections-info">Modifiez les textes d'en-tête et de présentation de chaque section. Les champs sont pré-remplis avec le contenu actuel du site. <strong>Les champs laissés vides utiliseront le texte par défaut du site.</strong></p>
       <button class="btn-primary" id="saveAllSectionsBtn" onclick="window.saveAllSections()">
-        💾 Enregistrer toutes les sections
+        💾 Enregistrer toutes les sections (${currentSectionLang.toUpperCase()})
       </button>
     </div>
     <div class="sections-accordion">`;
@@ -239,7 +265,7 @@ function renderSectionsEditor(container) {
           <div class="section-accordion-fields">`;
 
     for (const field of config.fields) {
-      const val = data[field.key] !== undefined ? data[field.key] : '';
+      const val = data[field.key] != null ? data[field.key] : '';
       const fieldId = `section_${sectionKey}_${field.key}`;
       if (field.type === 'textarea') {
         html += `
@@ -302,7 +328,7 @@ function renderSectionsEditor(container) {
     </div>
     <div class="sections-footer">
       <button class="btn-primary" id="saveAllSectionsBtn2" onclick="window.saveAllSections()">
-        💾 Enregistrer toutes les sections
+        💾 Enregistrer toutes les sections (${currentSectionLang.toUpperCase()})
       </button>
     </div>`;
 
@@ -339,13 +365,13 @@ export async function saveAllSections() {
     const res = await fetch(`${API_BASE}/sections`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(data)
+      body: JSON.stringify({ ...data, lang: currentSectionLang })
     });
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
     if (!res.ok) throw new Error('Save failed');
     sectionsData = data;
     markClean();
-    showToast('Contenu des sections enregistré avec succès', 'success');
+    showToast(`Contenu des sections (${currentSectionLang.toUpperCase()}) enregistré avec succès`, 'success');
   } catch (err) {
     console.error('Sections save error:', err);
     showToast('Erreur lors de l\'enregistrement', 'error');
@@ -377,7 +403,7 @@ window.uploadToSectionSlot = async function(slotId) {
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Upload failed'); }
       showToast('Image uploadée avec succès', 'success');
-      loadSectionsEditor();
+      loadSectionsForLang(currentSectionLang);
     } catch (err) {
       showToast('Erreur: ' + err.message, 'error');
     }
@@ -396,7 +422,7 @@ window.createSectionSlot = async function(section) {
     });
     if (!res.ok) throw new Error('Échec création');
     showToast('Slot créé', 'success');
-    loadSectionsEditor();
+    loadSectionsForLang(currentSectionLang);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -412,7 +438,7 @@ window.deleteSectionSlot = async function(slotId) {
     });
     if (!res.ok) throw new Error('Échec');
     showToast('Slot vidé', 'success');
-    loadSectionsEditor();
+    loadSectionsForLang(currentSectionLang);
   } catch (err) {
     showToast(err.message, 'error');
   }

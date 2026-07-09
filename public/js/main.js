@@ -149,7 +149,7 @@ function applyTranslations() {
 }
 
 function getNestedTranslation(key) {
-  return key.split('.').reduce((obj, i) => (obj && obj[i] !== undefined) ? obj[i] : null, translations);
+  return key.split('.').reduce((obj, i) => (obj && obj[i] !== undefined) ? obj[i] : null, translations) || key;
 }
 
 function updateLangButtons() {
@@ -412,7 +412,7 @@ function handleSubmit(e) {
   const messageDiv = document.getElementById('formMessage');
   const form = document.getElementById('contactForm');
 
-  btn.textContent = getNestedTranslation('contact.sending');
+  btn.textContent = getNestedTranslation('contact.sending') || '⏳ Envoi en cours...';
   btn.disabled = true;
   messageDiv.style.display = 'none';
 
@@ -437,9 +437,9 @@ function handleSubmit(e) {
   })
   .then(response => response.json())
   .then(_result => {
-    btn.textContent = getNestedTranslation('contact.sent');
+    btn.textContent = getNestedTranslation('contact.sent') || '✓ Message envoyé !';
     btn.style.background = '#2a7a4a';
-    messageDiv.textContent = getNestedTranslation('contact.sentMessage');
+    messageDiv.textContent = getNestedTranslation('contact.sentMessage') || '✓ Votre demande a été reçue.';
     messageDiv.style.display = 'block';
     messageDiv.style.color = '#2a7a4a';
     form.reset();
@@ -452,7 +452,7 @@ function handleSubmit(e) {
     }
 
     setTimeout(() => {
-      btn.textContent = getNestedTranslation('contact.formSubmit');
+      btn.textContent = getNestedTranslation('contact.formSubmit') || 'Envoyer ma Demande';
       btn.style.background = '';
       btn.disabled = false;
       messageDiv.style.display = 'none';
@@ -460,10 +460,10 @@ function handleSubmit(e) {
   })
   .catch(error => {
     console.error('Error:', error);
-    messageDiv.textContent = getNestedTranslation('contact.errorMessage');
+    messageDiv.textContent = getNestedTranslation('contact.errorMessage') || '✘ Erreur lors de l\'envoi.';
     messageDiv.style.display = 'block';
     messageDiv.style.color = '#E8614A';
-    btn.textContent = getNestedTranslation('contact.formSubmit');
+    btn.textContent = getNestedTranslation('contact.formSubmit') || 'Envoyer ma Demande';
     btn.disabled = false;
   });
 }
@@ -797,7 +797,7 @@ async function handleNewsletter(e) {
   const btn = document.getElementById('newsletterBtn');
   if (!email) return;
   if (consent && !consent.checked) {
-    msg.textContent = getNestedTranslation('newsletter.consentRequired') || 'Veuillez accepter de recevoir nos communications';
+    msg.textContent = getNestedTranslation('newsletter.consentRequired');
     msg.className = 'newsletter-msg error show';
     return;
   }
@@ -815,7 +815,7 @@ async function handleNewsletter(e) {
     btn.classList.remove('sending');
     btn.disabled = false;
     if (data.success) {
-      msg.textContent = getNestedTranslation('newsletter.success');
+      msg.textContent = getNestedTranslation('newsletter.success') || '✓ Merci pour votre inscription !';
       msg.className = 'newsletter-msg success show';
       document.getElementById('newsletterForm').reset();
     } else {
@@ -825,7 +825,7 @@ async function handleNewsletter(e) {
   } catch {
     btn.classList.remove('sending');
     btn.disabled = false;
-    msg.textContent = getNestedTranslation('newsletter.errorGeneric');
+    msg.textContent = getNestedTranslation('newsletter.errorGeneric') || 'Erreur de connexion. Réessayez.';
     msg.className = 'newsletter-msg error show';
   }
 }
@@ -1408,7 +1408,7 @@ async function loadPricingData() {
 
 async function loadConfigData() {
   try {
-    const res = await fetch(`${API_BASE}/api/config`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/api/config?lang=${currentLang}`, { cache: 'no-store' });
     const cfg = await res.json();
 
     // Hero stats
@@ -1471,8 +1471,8 @@ async function loadConfigData() {
       if (html) socialContainer.innerHTML = html;
     }
 
-    // Apply dynamic section content (overrides i18n defaults)
-    if (currentLang === 'fr') applySectionContent(cfg);
+    // Apply dynamic section content (overrides i18n defaults for current language)
+    applySectionContent(cfg);
   } catch (err) { console.warn('Config load error:', err); }
 }
 
@@ -1528,26 +1528,24 @@ function applySectionContent(cfg) {
 
   // Values: admin content overrides translations when present
   if (s.values) {
-    if (currentLang === 'fr') {
-      const valueCards = document.querySelectorAll('#values .vm-card');
-      if (valueCards.length >= 3) {
-        const titles = valueCards[0].querySelector('.vm-label');
-        const descs = valueCards[0].querySelector('.vm-text');
-        if (titles && s.values.title1) titles.textContent = s.values.title1;
-        if (descs && s.values.desc1) descs.textContent = s.values.desc1;
-      }
-      if (valueCards.length >= 3) {
-        const titles = valueCards[1].querySelector('.vm-label');
-        const descs = valueCards[1].querySelector('.vm-text');
-        if (titles && s.values.title2) titles.textContent = s.values.title2;
-        if (descs && s.values.desc2) descs.textContent = s.values.desc2;
-      }
-      if (valueCards.length >= 3) {
-        const titles = valueCards[2].querySelector('.vm-label');
-        const descs = valueCards[2].querySelector('.vm-text');
-        if (titles && s.values.title3) titles.textContent = s.values.title3;
-        if (descs && s.values.desc3) descs.textContent = s.values.desc3;
-      }
+    const valueCards = document.querySelectorAll('#values .vm-card');
+    if (valueCards.length >= 3) {
+      const t1 = valueCards[0].querySelector('.vm-label');
+      const d1 = valueCards[0].querySelector('.vm-text');
+      if (t1 && s.values.title1) t1.textContent = s.values.title1;
+      if (d1 && s.values.desc1) d1.textContent = s.values.desc1;
+    }
+    if (valueCards.length >= 3) {
+      const t2 = valueCards[1].querySelector('.vm-label');
+      const d2 = valueCards[1].querySelector('.vm-text');
+      if (t2 && s.values.title2) t2.textContent = s.values.title2;
+      if (d2 && s.values.desc2) d2.textContent = s.values.desc2;
+    }
+    if (valueCards.length >= 3) {
+      const t3 = valueCards[2].querySelector('.vm-label');
+      const d3 = valueCards[2].querySelector('.vm-text');
+      if (t3 && s.values.title3) t3.textContent = s.values.title3;
+      if (d3 && s.values.desc3) d3.textContent = s.values.desc3;
     }
   }
 
@@ -1573,7 +1571,7 @@ function applySectionContent(cfg) {
     setElText('.pricing-tabs > .tab-btn:nth-child(1)', s.pricing.tab1);
     setElText('.pricing-tabs > .tab-btn:nth-child(2)', s.pricing.tab2);
     setElText('.pricing-tabs > .tab-btn:nth-child(3)', s.pricing.tab3);
-    if (s.pricing.note && currentLang === 'fr') {
+    if (s.pricing.note) {
       const note = document.querySelector('.pricing-footer');
       if (note) note.innerHTML = s.pricing.note;
     }
@@ -1620,8 +1618,8 @@ function applySectionContent(cfg) {
     setElText('.project-map-title', s.contact.mapProjectsTitle);
   }
 
-  // Numbers: admin content overrides translations when present (French only)
-  if (s.numbers && currentLang === 'fr') {
+  // Numbers: admin content overrides translations when present
+  if (s.numbers) {
     const numLabels = document.querySelectorAll('#numbers .num-label');
     if (numLabels.length >= 4) {
       if (s.numbers.exp) numLabels[0].textContent = s.numbers.exp;
@@ -1651,7 +1649,6 @@ function setElText(selector, text) {
   if (!text) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  if (currentLang !== 'fr' && el.closest('[data-i18n], [data-i18n-html]')) return;
   el.textContent = text;
 }
 
@@ -1659,7 +1656,6 @@ function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  if (currentLang !== 'fr' && el.closest('[data-i18n], [data-i18n-html]')) return;
   el.innerHTML = html;
 }
 

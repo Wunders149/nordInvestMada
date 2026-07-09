@@ -190,7 +190,8 @@
     "success": "✓ Merci pour votre inscription !",
     "error": "Erreur. Réessayez.",
     "errorGeneric": "Erreur de connexion. Réessayez.",
-    "consent": "J'accepte de recevoir les communications de Nord Invest Madagascar"
+    "consent": "J'accepte de recevoir les communications de Nord Invest Madagascar",
+    "consentRequired": "Veuillez accepter de recevoir nos communications"
   },
   "lang": {
     "fr": "Français",

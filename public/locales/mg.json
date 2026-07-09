@@ -280,7 +280,8 @@
     "success": "✓ Misaotra anao ny fisoratana anarana!",
     "error": "Tsy nahomby. Andramo indray.",
     "errorGeneric": "Tsy nahomby ny fifandraisana. Andramo indray.",
-    "consent": "Ekenako ny mandray vaovao avy amin'i Nord Invest Madagascar"
+    "consent": "Ekenako ny mandray vaovao avy amin'i Nord Invest Madagascar",
+    "consentRequired": "Ekeno ny mandray ny vaovaonay azafady"
   },
   "lang": {
     "fr": "Français",

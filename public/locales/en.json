@@ -280,7 +280,8 @@
     "success": "✓ Thank you for subscribing!",
     "error": "Error. Try again.",
     "errorGeneric": "Connection error. Try again.",
-    "consent": "I agree to receive communications from Nord Invest Madagascar"
+    "consent": "I agree to receive communications from Nord Invest Madagascar",
+    "consentRequired": "Please accept to receive our communications"
   },
   "lang": {
     "fr": "Français",

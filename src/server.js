@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
-import { adminRouter, mergeSectionsWithDefaults } from './admin.js';
+import { adminRouter, mergeSectionsWithDefaults, fillSectionsFromLocale } from './admin.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig, getSetting } from './supabase.js';
 import { addClient, broadcast as _broadcast, heartbeat as sseHeartbeat } from './events.js';
@@ -411,8 +411,14 @@ app.get('/api/config', async (req, res) => {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     const siteCfg = await loadSiteConfig();
     const rates = await getExchangeRates();
-    const rawSections = await getSetting('sections_content');
+    const lang = req.query.lang || 'fr';
+    const key = `sections_content_${lang}`;
+    let rawSections = await getSetting(key);
+    if (!rawSections && lang === 'fr') {
+      rawSections = await getSetting('sections_content');
+    }
     const sections = mergeSectionsWithDefaults(rawSections || {});
+    fillSectionsFromLocale(sections, lang, 'fr');
     res.json({
       ...staticConfig,
       pricing: siteCfg.pricing || staticConfig.pricing || {},

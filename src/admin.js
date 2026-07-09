@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { requireAuth, loginLimiter, createSession, destroySession, loginUser, logActivity, getTokenFromRequest } from './auth.js';
@@ -10,6 +11,7 @@ import { validate, loginSchema } from './validation.js';
 import nodemailer from 'nodemailer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, '..');
 
 const router = Router();
 
@@ -770,7 +772,7 @@ function mergeSectionsWithDefaults(dbSections) {
     const dbEntry = dbSections?.[key] || {};
     const filtered = {};
     for (const [fk, fv] of Object.entries(dbEntry)) {
-      if (fv !== '' && fv != null) {
+      if (fv !== '' && fv != null && fv !== 'null') {
         filtered[fk] = fv;
       }
     }
@@ -779,13 +781,66 @@ function mergeSectionsWithDefaults(dbSections) {
   return merged;
 }
 
+function fillSectionsFromLocale(sections, lang, fallbackLang) {
+  const locales = {};
+  for (const l of [lang, fallbackLang].filter(Boolean)) {
+    const localePath = path.join(projectRoot, 'public', 'locales', `${l}.json`);
+    try {
+      locales[l] = JSON.parse(fs.readFileSync(localePath, 'utf8'));
+    } catch { locales[l] = {}; }
+  }
+
+  const overrides = {
+    'contact.phone': 'contact.phoneVal',
+    'contact.email': 'contact.emailVal',
+    'contact.address': 'contact.addressVal',
+    'contact.office': 'contact.officeVal',
+    'contact.mapTitle': 'map.title',
+    'contact.mapProjectsTitle': 'map.projects',
+    'visionMission.visionTitle': 'vision.title',
+    'visionMission.visionText': 'vision.text',
+    'visionMission.missionTitle': 'mission.title',
+    'visionMission.missionText': 'mission.text'
+  };
+
+  function getNested(obj, key) {
+    return key.split('.').reduce((o, k) => o?.[k], obj);
+  }
+
+  for (const [section, fields] of Object.entries(sections)) {
+    for (const [field, val] of Object.entries(fields)) {
+      if (val === null || val === '') {
+        const localeKey = overrides[`${section}.${field}`] || `${section}.${field}`;
+        // try target language first, then fallback to French
+        const fallbacks = lang === fallbackLang ? [lang] : [lang, fallbackLang].filter(Boolean);
+        for (const l of fallbacks) {
+          const localeVal = getNested(locales[l], localeKey);
+          if (localeVal !== null && localeVal !== undefined) {
+            sections[section][field] = localeVal;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return sections;
+}
+
 router.get('/sections', requireAuth, async (req, res) => {
   try {
-    let dbSections = await getSetting('sections_content');
+    const lang = req.query.lang || 'fr';
+    const key = `sections_content_${lang}`;
+    let dbSections = await getSetting(key);
+    // backward compat: fr falls back to bare sections_content
+    if (!dbSections && lang === 'fr') {
+      dbSections = await getSetting('sections_content');
+    }
     if (!dbSections || typeof dbSections !== 'object') {
       dbSections = {};
     }
     const merged = mergeSectionsWithDefaults(dbSections);
+    fillSectionsFromLocale(merged, lang, 'fr');
+    console.log(`[sections] lang=${lang} visionMission:`, JSON.stringify(merged.visionMission));
     res.json(merged);
   } catch (err) {
     console.error('Sections get error:', err);
@@ -795,12 +850,14 @@ router.get('/sections', requireAuth, async (req, res) => {
 
 router.put('/sections', requireAuth, async (req, res) => {
   try {
-    const sections = req.body;
+    const { lang, ...sections } = req.body;
     if (typeof sections !== 'object' || sections === null) {
       return res.status(400).json({ error: 'Invalid sections data' });
     }
-    await setSetting('sections_content', sections);
-    logActivity('sections_update', 'Contenu des sections mis à jour', req.admin.username);
+    const settingLang = lang || 'fr';
+    const key = `sections_content_${settingLang}`;
+    await setSetting(key, sections);
+    logActivity('sections_update', `Contenu des sections mis à jour (${settingLang})`, req.admin.username);
     broadcast('config');
     res.json({ success: true });
   } catch (err) {
@@ -809,4 +866,4 @@ router.put('/sections', requireAuth, async (req, res) => {
   }
 });
 
-export { router as adminRouter, mergeSectionsWithDefaults };
+export { router as adminRouter, mergeSectionsWithDefaults, fillSectionsFromLocale };
