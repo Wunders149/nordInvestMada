@@ -1385,7 +1385,6 @@ async function loadPricingData() {
         <div class="price-card${isFeatured ? ' featured' : ''}${isFlat ? ' price-card--flat' : ''}" data-service="${cat}" data-tier="${tier}" data-tier-name="${escapeHtml(t.name)}" data-type="${escapeHtml(type)}" data-price="${price}" data-budget="${budget}">
           ${!isFlat && badge ? `<div class="price-badge" data-i18n="pricing.badge.${badgeKey}">${badge}</div>` : ''}
           ${!isFlat ? `<div class="price-tier">${escapeHtml(t.name)}</div>` : ''}
-          ${!isFlat ? `<div class="price-type" data-i18n="pricing.tiers.${cat}.${tier}">${escapeHtml(type)}</div>` : ''}
           <div class="price-val">
             <div class="price-main">
               <span class="price-num">${priceStr}</span>

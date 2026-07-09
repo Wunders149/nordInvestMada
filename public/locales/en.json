@@ -86,9 +86,9 @@
     "cta": "Request a quote",
     "note": "<strong>Important note:</strong> The prices shown are reference prices excluding taxes. The actual cost depends on site access conditions, soil type, available local materials and your project specifics. <strong>A free personalized quote with no obligation is provided after a site visit.</strong> Contact us at <strong>032 82 312 80</strong> or by email.",
     "tiers": {
-      "construction": { "economic": "Economy", "standard": "Standard", "premium": "Premium" },
-      "rehabilitation": { "economic": "Economy", "standard": "Standard", "premium": "Premium" },
-      "forage": { "economic": "Economy", "standard": "Standard", "premium": "Premium" }
+      "construction": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
+      "rehabilitation": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
+      "forage": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" }
     },
     "badge": { "popular": "Most popular", "recommended": "Recommended", "allInclusive": "All inclusive" },
     "priceNote": "Reference price. Custom quote after site visit.",

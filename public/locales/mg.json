@@ -86,9 +86,9 @@
     "cta": "Mangataka tombana",
     "note": "<strong>Fanamarihana manan-danja:</strong> Ny vidiny aseho dia vidiny fototra tsy tafiditra ny hetra. Ny vidiny tena izy dia miankina amin'ny toerana, ny karazana tany, ny fitaovana eo an-toerana ary ny mampiavaka ny tetikasanao. <strong>Tombana maimaimpoana sy tsy misy fanoloran-tena dia atao aorian'ny fitsidihana ny toerana.</strong> Mifandraisa aminay amin'ny <strong>032 82 312 80</strong> na amin'ny mailaka.",
     "tiers": {
-      "construction": { "economic": "Fototra", "standard": "Antonontonony", "premium": "Avokoa" },
-      "rehabilitation": { "economic": "Fototra", "standard": "Antonontonony", "premium": "Avokoa" },
-      "forage": { "economic": "Fototra", "standard": "Antonontonony", "premium": "Avokoa" }
+      "construction": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
+      "rehabilitation": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" },
+      "forage": { "economic": "Bas Standing", "standard": "Moyen Standing", "premium": "Haut Standing" }
     },
     "badge": { "popular": "Be mpangataka", "recommended": "Soso-kevitra", "allInclusive": "Tafiditra rehetra" },
     "priceNote": "Vidin'ny référence. Tombana manokana aorian'ny fitsidihana.",
