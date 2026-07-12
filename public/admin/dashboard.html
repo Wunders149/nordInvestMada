@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/images/favicon_io/apple-touch-icon.png">
 </head>
 <body class="dashboard-page">
-  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">Menu</button>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <!-- ═══ SIDEBAR ═══ -->
@@ -26,69 +26,69 @@
       <div class="nav-section">
         <div class="nav-section-title">Vue d'ensemble</div>
         <button class="nav-btn active" data-tab="dashboard">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon">DB</span>
           Tableau de bord
         </button>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Gestion</div>
         <button class="nav-btn" data-tab="contacts">
-          <span class="nav-icon">✉</span>
+          <span class="nav-icon">Msg</span>
           Messages
           <span class="nav-badge" id="navBadgeUnread" style="display:none">0</span>
         </button>
         <button class="nav-btn" data-tab="quotes">
-          <span class="nav-icon">📋</span>
+          <span class="nav-icon">Dev</span>
           Devis
         </button>
         <button class="nav-btn" data-tab="subscribers">
-          <span class="nav-icon">📧</span>
+          <span class="nav-icon">Nl</span>
           Newsletter
         </button>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Contenu</div>
         <button class="nav-btn" data-tab="sections">
-          <span class="nav-icon">📄</span>
+          <span class="nav-icon">Sec</span>
           Sections
         </button>
         <button class="nav-btn" data-tab="team">
-          <span class="nav-icon">👥</span>
+          <span class="nav-icon">Eq</span>
           Équipe
         </button>
         <button class="nav-btn" data-tab="services">
-          <span class="nav-icon">🔧</span>
+          <span class="nav-icon">Srv</span>
           Services
         </button>
         <button class="nav-btn" data-tab="projects">
-          <span class="nav-icon">🏗️</span>
+          <span class="nav-icon">Prj</span>
           Projets
         </button>
         <button class="nav-btn" data-tab="blog">
-          <span class="nav-icon">📝</span>
+          <span class="nav-icon">Blog</span>
           Blog
         </button>
         <button class="nav-btn" data-tab="images">
-          <span class="nav-icon">🖼</span>
+          <span class="nav-icon">Img</span>
           Galerie
         </button>
         <button class="nav-btn" data-tab="dossiers">
-          <span class="nav-icon">📁</span>
+          <span class="nav-icon">Doc</span>
           Dossiers
         </button>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Configuration</div>
         <button class="nav-btn" data-tab="pricing">
-          <span class="nav-icon">💰</span>
+          <span class="nav-icon">Ar</span>
           Tarifs
         </button>
         <button class="nav-btn" data-tab="settings">
-          <span class="nav-icon">⚙️</span>
+          <span class="nav-icon">Set</span>
           Paramètres
         </button>
         <button class="nav-btn" data-tab="activity">
-          <span class="nav-icon">📋</span>
+          <span class="nav-icon">Log</span>
           Journal
         </button>
       </div>
@@ -101,7 +101,7 @@
           <div class="user-role">Super Admin</div>
         </div>
       </div>
-      <button class="sidebar-dark-btn" id="darkModeBtn">🌙 Mode sombre</button>
+      <button class="sidebar-dark-btn" id="darkModeBtn">Mode sombre</button>
       <button class="sidebar-logout" id="logoutBtn">← Se déconnecter</button>
     </div>
   </aside>
@@ -112,7 +112,7 @@
       <h1 id="pageTitle">Tableau de bord <small>Vue d'ensemble</small></h1>
       <div class="top-header-actions" id="topHeaderActions"></div>
       <div class="top-header-right">
-        <a href="/" target="_blank" class="btn-ghost" style="font-size:0.75rem;padding:0.35rem 0.75rem;text-decoration:none" title="Voir le site public">🌐 Site public</a>
+        <a href="/" target="_blank" class="btn-ghost" style="font-size:0.75rem;padding:0.35rem 0.75rem;text-decoration:none" title="Voir le site public">Site public</a>
         <span style="font-size:0.75rem;color:var(--gray-400)" id="lastUpdate"></span>
         <button class="btn-ghost" onclick="document.getElementById('shortcutsModal').classList.add('open')" title="Raccourcis clavier (?)" style="font-size:0.9rem;padding:0.25rem 0.5rem">⌨</button>
       </div>
@@ -122,7 +122,7 @@
       <!-- ─── STATS ─── -->
       <div class="stats-bar" id="statsBar">
         <div class="stat-card contacts-card">
-          <div class="stat-icon contacts">✉</div>
+          <div class="stat-icon contacts">Msg</div>
           <div class="stat-body">
             <span class="stat-value" id="statContacts">0</span>
             <span class="stat-label">Messages</span>
@@ -136,7 +136,7 @@
           </div>
         </div>
         <div class="stat-card quotes-card">
-          <div class="stat-icon quotes">📋</div>
+          <div class="stat-icon quotes">Dev</div>
           <div class="stat-body">
             <span class="stat-value" id="statQuotes">0</span>
             <span class="stat-label">Devis</span>
@@ -150,7 +150,7 @@
           </div>
         </div>
         <div class="stat-card subscribers-card">
-          <div class="stat-icon subscribers">📧</div>
+          <div class="stat-icon subscribers">Nl</div>
           <div class="stat-body">
             <span class="stat-value" id="statSubscribers">0</span>
             <span class="stat-label">Newsletter</span>
@@ -183,7 +183,7 @@
         <div class="dashboard-widgets">
           <div class="widget-card" id="dashRecentContacts">
             <div class="widget-header">
-              <h3>✉ Derniers messages</h3>
+              <h3>Derniers messages</h3>
               <a href="#" class="widget-link" onclick="switchTab('contacts'); return false">Voir tout</a>
             </div>
             <div class="widget-body" id="dashContactsBody">
@@ -192,7 +192,7 @@
           </div>
           <div class="widget-card" id="dashRecentQuotes">
             <div class="widget-header">
-              <h3>📋 Devis en attente</h3>
+              <h3>Devis en attente</h3>
               <a href="#" class="widget-link" onclick="switchTab('quotes'); return false">Voir tout</a>
             </div>
             <div class="widget-body" id="dashQuotesBody">
@@ -206,12 +206,12 @@
       <section id="tab-contacts" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="contactSearch" class="search-input" placeholder="Rechercher par nom, email...">
           </div>
           <div class="tab-toolbar-actions">
-            <button class="btn-secondary" id="markAllReadBtn" style="font-size:0.75rem;padding:0.4rem 0.75rem">✓ Tout marquer lu</button>
-            <button class="btn-secondary" id="exportContactsBtn">📥 Export CSV</button>
+            <button class="btn-secondary" id="markAllReadBtn" style="font-size:0.75rem;padding:0.4rem 0.75rem">Tout marquer lu</button>
+            <button class="btn-secondary" id="exportContactsBtn">Export CSV</button>
           </div>
         </div>
         <div class="filter-bar" id="contactFilterBar">
@@ -222,8 +222,8 @@
         </div>
         <div class="bulk-bar hidden" id="contactBulkBar">
           <span class="bulk-count" id="contactBulkCount">0 sélectionné(s)</span>
-          <button class="btn-secondary" onclick="bulkMarkRead()" style="font-size:0.75rem;padding:0.35rem 0.75rem">✓ Marquer lu</button>
-          <button class="btn-secondary" onclick="bulkDeleteContacts()" style="font-size:0.75rem;padding:0.35rem 0.75rem;color:var(--danger)">✕ Supprimer</button>
+          <button class="btn-secondary" onclick="bulkMarkRead()" style="font-size:0.75rem;padding:0.35rem 0.75rem">Marquer lu</button>
+          <button class="btn-secondary" onclick="bulkDeleteContacts()" style="font-size:0.75rem;padding:0.35rem 0.75rem;color:var(--danger)">Supprimer</button>
           <button class="btn-ghost" onclick="clearContactSelection()" style="font-size:0.75rem">Annuler</button>
         </div>
         <div class="table-wrapper responsive-table">
@@ -252,10 +252,10 @@
       <section id="tab-quotes" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="quoteSearch" class="search-input" placeholder="Rechercher par nom, email...">
           </div>
-          <button class="btn-secondary" id="exportQuotesBtn">📥 Export CSV</button>
+          <button class="btn-secondary" id="exportQuotesBtn">Export CSV</button>
         </div>
         <div class="filter-bar" id="quoteFilterBar">
           <button class="filter-btn active" data-filter="all" onclick="setQuoteFilter('all')">Tous</button>
@@ -266,7 +266,7 @@
         </div>
         <div class="bulk-bar hidden" id="quoteBulkBar">
           <span class="bulk-count" id="quoteBulkCount">0 sélectionné(s)</span>
-          <button class="btn-secondary" onclick="bulkDeleteQuotes()" style="font-size:0.75rem;padding:0.35rem 0.75rem;color:var(--danger)">✕ Supprimer</button>
+          <button class="btn-secondary" onclick="bulkDeleteQuotes()" style="font-size:0.75rem;padding:0.35rem 0.75rem;color:var(--danger)">Supprimer</button>
           <button class="btn-ghost" onclick="clearQuoteSelection()" style="font-size:0.75rem">Annuler</button>
         </div>
         <div class="table-wrapper responsive-table">
@@ -296,10 +296,10 @@
       <section id="tab-subscribers" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="subSearch" class="search-input" placeholder="Rechercher par email...">
           </div>
-          <button class="btn-secondary" id="exportSubsBtn">📥 Export CSV</button>
+          <button class="btn-secondary" id="exportSubsBtn">Export CSV</button>
         </div>
         <div class="table-wrapper responsive-table">
           <div class="table-scroll">
@@ -347,7 +347,7 @@
               </div>
             </div>
             <div class="drop-zone" id="dropZone">
-              <span class="drop-icon">📁</span>
+              <span class="drop-icon">Fichier</span>
               <span class="drop-text">Cliquez ou glissez-déposez une image ici</span>
             </div>
             <input type="file" id="uploadFile" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" required>
@@ -403,11 +403,11 @@
       <section id="tab-dossiers" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="dossierSearch" class="search-input" placeholder="Rechercher un dossier..." oninput="filterDossiers()">
           </div>
           <div class="tab-toolbar-actions">
-            <button class="btn-secondary" onclick="document.getElementById('dossierUploadInput').click()">📄 Upload PDF</button>
+            <button class="btn-secondary" onclick="document.getElementById('dossierUploadInput').click()">Upload PDF</button>
             <input type="file" id="dossierUploadInput" accept=".pdf" style="display:none">
           </div>
         </div>
@@ -430,12 +430,12 @@
       <section id="tab-team" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="teamSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('team')">
           </div>
           <div class="tab-toolbar-actions">
-            <button class="btn-secondary" onclick="openPositionManager()">👔 Postes</button>
-            <button class="btn-secondary" id="teamExport" onclick="exportEntity('team')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" onclick="openPositionManager()">Postes</button>
+            <button class="btn-secondary" id="teamExport" onclick="exportEntity('team')" style="display:none">Export CSV</button>
             <button class="btn-secondary" onclick="openTeamForm()">+ Ajouter</button>
           </div>
         </div>
@@ -446,11 +446,11 @@
       <section id="tab-services" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="servicesSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('services')">
           </div>
           <div class="tab-toolbar-actions">
-            <button class="btn-secondary" id="servicesExport" onclick="exportEntity('services')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" id="servicesExport" onclick="exportEntity('services')" style="display:none">Export CSV</button>
             <button class="btn-secondary" onclick="openServiceForm()">+ Ajouter</button>
           </div>
         </div>
@@ -461,11 +461,11 @@
       <section id="tab-projects" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="projectsSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('projects')">
           </div>
           <div class="tab-toolbar-actions">
-            <button class="btn-secondary" id="projectsExport" onclick="exportEntity('projects')" style="display:none">📥 Export CSV</button>
+            <button class="btn-secondary" id="projectsExport" onclick="exportEntity('projects')" style="display:none">Export CSV</button>
             <button class="btn-secondary" onclick="openProjectForm()">+ Ajouter</button>
           </div>
         </div>
@@ -476,12 +476,12 @@
       <section id="tab-blog" class="tab-content">
         <div class="tab-toolbar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">Rech.</span>
             <input type="text" id="blogSearch" class="search-input" placeholder="Rechercher..." oninput="renderEntity('blog')">
           </div>
           <div class="tab-toolbar-actions">
-            <button class="btn-secondary" id="blogExport" onclick="exportEntity('blog')" style="display:none">📥 Export CSV</button>
-            <button class="btn-secondary" onclick="openCategoryManager()">🏷 Catégories</button>
+            <button class="btn-secondary" id="blogExport" onclick="exportEntity('blog')" style="display:none">Export CSV</button>
+            <button class="btn-secondary" onclick="openCategoryManager()">Catégories</button>
             <button class="btn-secondary" onclick="openBlogForm()">+ Ajouter</button>
           </div>
         </div>
@@ -492,7 +492,7 @@
       <section id="tab-pricing" class="tab-content">
         <div class="tab-toolbar">
           <h3 class="tab-title">Grille tarifaire</h3>
-          <button class="btn-secondary" onclick="savePricing()" id="savePricingBtn">💾 Enregistrer</button>
+          <button class="btn-secondary" onclick="savePricing()" id="savePricingBtn">Enregistrer</button>
         </div>
         <div id="pricingEditor"></div>
       </section>
@@ -501,7 +501,7 @@
       <section id="tab-settings" class="tab-content">
         <div class="tab-toolbar">
           <h3 class="tab-title">Paramètres du site</h3>
-          <button class="btn-secondary" onclick="saveSettings()" id="saveSettingsBtn">💾 Enregistrer</button>
+          <button class="btn-secondary" onclick="saveSettings()" id="saveSettingsBtn">Enregistrer</button>
         </div>
         <div id="settingsEditor"></div>
       </section>
@@ -515,7 +515,7 @@
       <section id="tab-activity" class="tab-content">
         <div class="tab-toolbar">
           <h3 class="tab-title">Journal d'activité</h3>
-          <button class="btn-secondary" onclick="loadActivityLog()">🔄 Actualiser</button>
+          <button class="btn-secondary" onclick="loadActivityLog()">Actualiser</button>
         </div>
         <div class="table-wrapper responsive-table">
           <div class="table-scroll">
@@ -539,7 +539,7 @@
 
   <!-- ─── LIGHTBOX ─── -->
   <div class="lightbox" id="lightbox">
-    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <button class="lightbox-close" id="lightboxClose">x</button>
     <img id="lightboxImg" src="" alt="Preview">
   </div>
 
@@ -577,7 +577,7 @@
   <!-- ─── CONFIRM MODAL ─── -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
-      <div class="modal-icon danger">⚠</div>
+      <div class="modal-icon danger">!</div>
       <h3 id="confirmTitle">Confirmer</h3>
       <p id="confirmMsg">Voulez-vous vraiment effectuer cette action ?</p>
       <div class="modal-actions">
@@ -593,7 +593,7 @@
       <div class="detail-header">
         <h3 id="detailName"></h3>
         <span id="detailDate" class="detail-date"></span>
-        <button class="modal-close" id="detailClose">✕</button>
+        <button class="modal-close" id="detailClose">x</button>
       </div>
       <div class="detail-body">
         <div class="detail-grid">
@@ -629,7 +629,7 @@
         <div class="detail-section">
           <div class="detail-notes-header">
             <span class="detail-label">Notes internes</span>
-            <button class="btn-ghost" id="detailNotesEdit" style="font-size:0.7rem;padding:0.25rem 0.5rem">✏ Modifier</button>
+            <button class="btn-ghost" id="detailNotesEdit" style="font-size:0.7rem;padding:0.25rem 0.5rem">Modifier</button>
           </div>
           <p id="detailNotes" class="detail-notes">Aucune note</p>
           <div id="detailNotesEditor" class="detail-notes-editor hidden">
@@ -642,9 +642,9 @@
         </div>
       </div>
       <div class="detail-footer">
-        <button class="btn-primary detail-btn" id="detailMarkRead">✓ Marquer lu</button>
-        <button class="btn-secondary detail-btn" id="detailMarkResolved">✓ Résoudre</button>
-        <button class="btn-secondary danger-hover detail-btn" id="detailDelete">✕ Supprimer</button>
+        <button class="btn-primary detail-btn" id="detailMarkRead">Marquer lu</button>
+        <button class="btn-secondary detail-btn" id="detailMarkResolved">Résoudre</button>
+        <button class="btn-secondary danger-hover detail-btn" id="detailDelete">Supprimer</button>
       </div>
     </div>
   </div>
@@ -654,7 +654,7 @@
     <div class="modal-box crud-modal">
       <div class="crud-modal-header">
         <h3 id="crudModalTitle"></h3>
-        <button class="modal-close" onclick="closeCrudForm()">✕</button>
+        <button class="modal-close" onclick="closeCrudForm()">x</button>
       </div>
       <div id="crudFormBody"></div>
       <div class="modal-actions crud-modal-actions">
@@ -669,7 +669,7 @@
     <div class="modal-box detail-box" style="max-width:560px">
       <div class="detail-header">
         <h3 id="imageEditTitle">Modifier l'image</h3>
-        <button class="modal-close" id="imageEditClose">✕</button>
+        <button class="modal-close" id="imageEditClose">x</button>
       </div>
       <div class="detail-body">
         <div class="image-edit-preview" style="text-align:center;margin-bottom:1rem">
@@ -700,7 +700,7 @@
         <div id="imageEditError" class="error-msg hidden"></div>
       </div>
       <div class="detail-footer">
-        <button class="btn-primary" id="imageEditSave">💾 Enregistrer</button>
+        <button class="btn-primary" id="imageEditSave">Enregistrer</button>
         <button class="btn-secondary" id="imageEditCloseBtn">Annuler</button>
       </div>
     </div>
@@ -711,7 +711,7 @@
     <div class="modal-box detail-box" style="max-width:700px">
       <div class="detail-header">
         <h3>Gérer les catégories du blog</h3>
-        <button class="modal-close" onclick="closeCategoryManager()">✕</button>
+        <button class="modal-close" onclick="closeCategoryManager()">x</button>
       </div>
       <div class="detail-body">
         <p style="color:var(--gray-500);font-size:0.8125rem;margin-bottom:1rem">
@@ -722,7 +722,7 @@
         <button class="btn-secondary" onclick="addCategoryRow()" style="margin-top:0.75rem;font-size:0.8125rem">+ Ajouter une catégorie</button>
       </div>
       <div class="detail-footer">
-        <button class="btn-primary" onclick="saveCategoryManager()">💾 Enregistrer</button>
+        <button class="btn-primary" onclick="saveCategoryManager()">Enregistrer</button>
         <button class="btn-secondary" onclick="closeCategoryManager()">Annuler</button>
       </div>
     </div>
@@ -733,7 +733,7 @@
     <div class="modal-box detail-box" style="max-width:600px">
       <div class="detail-header">
         <h3>Gérer les postes de l'équipe</h3>
-        <button class="modal-close" onclick="closePositionManager()">✕</button>
+        <button class="modal-close" onclick="closePositionManager()">x</button>
       </div>
       <div class="detail-body">
         <p style="color:var(--gray-500);font-size:0.8125rem;margin-bottom:1rem">
@@ -745,7 +745,7 @@
         <button class="btn-secondary" onclick="addPositionRow()" style="margin-top:0.75rem;font-size:0.8125rem">+ Ajouter un poste</button>
       </div>
       <div class="detail-footer">
-        <button class="btn-primary" onclick="savePositionManager()">💾 Enregistrer</button>
+        <button class="btn-primary" onclick="savePositionManager()">Enregistrer</button>
         <button class="btn-secondary" onclick="closePositionManager()">Annuler</button>
       </div>
     </div>

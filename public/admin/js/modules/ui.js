@@ -5,13 +5,13 @@ export let confirmCallback = null;
 
 export function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
-  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  const icons = { success: 'OK', error: 'Err', info: 'Info' };
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `
     <span class="toast-icon">${icons[type] || 'ℹ'}</span>
     <span class="toast-msg">${escapeHtml(message)}</span>
-    <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+    <button class="toast-close" onclick="this.parentElement.remove()">x</button>
   `;
   container.appendChild(toast);
   setTimeout(() => {
@@ -114,7 +114,7 @@ export function updateDarkBtn() {
   const btn = document.getElementById('darkModeBtn');
   if (!btn) return;
   const isDark = document.body.classList.contains('dark');
-  btn.innerHTML = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
+  btn.innerHTML = isDark ? 'Mode clair' : 'Mode sombre';
 }
 
 export function confirmNavigation(callback) {

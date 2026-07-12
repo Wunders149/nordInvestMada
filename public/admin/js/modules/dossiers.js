@@ -44,9 +44,9 @@ function renderDossiersList() {
         <div class="dossier-meta">${humanSize(d.size)} · ${d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : ''}</div>
       </div>
       <div class="dossier-actions">
-        <button class="btn-icon" title="Voir" data-action="view">👁️</button>
-        <button class="btn-icon" title="Renommer" data-action="rename">✏️</button>
-        <button class="btn-icon danger" title="Supprimer" data-action="delete">🗑️</button>
+        <button class="btn-icon" title="Voir" data-action="view">Voir</button>
+        <button class="btn-icon" title="Renommer" data-action="rename">Nom</button>
+        <button class="btn-icon danger" title="Supprimer" data-action="delete">Sup</button>
       </div>
     </div>`;
   }).join('');

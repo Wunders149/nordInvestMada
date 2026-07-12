@@ -28,7 +28,7 @@ const ENTITY_CONFIG = {
     fields: [
       { key: 'title', label: 'Titre', type: 'text', required: true },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
-      { key: 'icon', label: 'Icône (emoji)', type: 'text', default: '🔧' },
+      { key: 'icon', label: 'Marque courte', type: 'text', default: '' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
@@ -116,7 +116,7 @@ export function renderEntity(entity) {
   }
 
   if (!items || items.length === 0) {
-    container.innerHTML = emptyStateGrid('📂', searchTerm ? 'Aucun résultat' : `Aucun ${cfg.label.toLowerCase()}`, searchTerm ? 'Essayez d\'autres termes de recherche.' : `Cliquez sur "Ajouter" pour créer le premier ${cfg.label.toLowerCase()}.`);
+    container.innerHTML = emptyStateGrid('', searchTerm ? 'Aucun résultat' : `Aucun ${cfg.label.toLowerCase()}`, searchTerm ? 'Essayez d\'autres termes de recherche.' : `Cliquez sur "Ajouter" pour créer le premier ${cfg.label.toLowerCase()}.`);
     return;
   }
 
@@ -143,10 +143,10 @@ export function renderEntity(entity) {
       if (slot && slot.currentUrl) thumbUrl = slot.currentUrl;
     }
     if (!thumbUrl) {
-      if (entity === 'services') thumbIcon = item.icon || '🔧';
-      else if (entity === 'team') thumbIcon = '👤';
-      else if (entity === 'projects') thumbIcon = '🏗️';
-      else if (entity === 'blog') thumbIcon = '📝';
+      if (entity === 'services') thumbIcon = 'Srv';
+      else if (entity === 'team') thumbIcon = 'Eq';
+      else if (entity === 'projects') thumbIcon = 'Prj';
+      else if (entity === 'blog') thumbIcon = 'Blog';
     }
 
     let metaHtml = '';
@@ -175,8 +175,8 @@ export function renderEntity(entity) {
       </div>
       <div class="admin-card-actions">
         <span class="badge ${item.visible !== false ? 'badge-success' : 'badge-warning'}">${item.visible !== false ? 'Visible' : 'Masqué'}</span>
-        <button class="admin-card-btn" onclick="openCrudForm('${entity}', '${item.id}')" title="Modifier">✏ Modifier</button>
-        <button class="admin-card-btn admin-card-btn--danger" onclick="confirmDeleteItem('${entity}', '${item.id}')" title="Supprimer">✕</button>
+        <button class="admin-card-btn" onclick="openCrudForm('${entity}', '${item.id}')" title="Modifier">Modifier</button>
+        <button class="admin-card-btn admin-card-btn--danger" onclick="confirmDeleteItem('${entity}', '${item.id}')" title="Supprimer">Supprimer</button>
       </div>
     </div>`;
   }).join('');
@@ -269,7 +269,7 @@ export async function openCrudForm(entity, editId) {
       const imgSrc = val && (val.startsWith('http') || val.startsWith('/')) ? val : val ? `/images/blog/${val}` : '';
       html += `<input type="hidden" id="crud_${field.key}" value="${escapeHtml(String(val))}">`;
       html += '<div class="blog-img-upload">';
-      html += `<div class="blog-img-preview" id="crud_image_preview">${imgSrc ? `<img src="${imgSrc}" alt="">` : '<span class="blog-img-placeholder">🖼</span>'}</div>`;
+      html += `<div class="blog-img-preview" id="crud_image_preview">${imgSrc ? `<img src="${imgSrc}" alt="">` : '<span class="blog-img-placeholder">Image</span>'}</div>`;
       html += '<div class="blog-img-actions">';
       html += '<input type="file" id="crud_image_file" accept="image/*">';
       html += '<button type="button" class="btn-secondary" onclick="uploadBlogImage()">Upload</button>';
@@ -310,7 +310,7 @@ export function previewSlotImage(sel) {
   const url = opt ? opt.dataset.url : '';
   preview.innerHTML = url
     ? `<img src="${url}" alt="aperçu" style="width:100%;height:100%;object-fit:cover">`
-    : '<span style="opacity:0.3;font-size:1.5rem">🖼</span>';
+    : '<span style="opacity:0.45;font-size:0.75rem">Image</span>';
 }
 
 export async function uploadSlotImage(fieldKey, section) {
@@ -346,7 +346,7 @@ export async function uploadSlotImage(fieldKey, section) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
 
-    status.textContent = '✓ Uploadé';
+    status.textContent = 'Uploadé';
     status.style.color = 'var(--success)';
 
     const sr = await fetch(`${API_IMAGES_BASE}/images/slots`);
@@ -364,7 +364,7 @@ export async function uploadSlotImage(fieldKey, section) {
       select.innerHTML = '<option value="">— Aucune —</option>';
       for (const s of slots) {
         if (s.section !== section) continue;
-        const hasImg = s.uploadedFile ? ' 📷' : '';
+        const hasImg = s.uploadedFile ? ' (image)' : '';
         const sel = s.id === slotId ? 'selected' : '';
         select.innerHTML += `<option value="${s.id}" data-url="${escapeHtml(s.currentUrl || '')}" ${sel}>${escapeHtml(s.label)}${hasImg}</option>`;
       }
@@ -372,7 +372,7 @@ export async function uploadSlotImage(fieldKey, section) {
     }
     fileInput.value = '';
   } catch (_err) {
-    status.textContent = '✗ ' + _err.message;
+    status.textContent = 'Erreur : ' + _err.message;
     status.style.color = 'var(--danger)';
   }
 }
@@ -499,10 +499,10 @@ export async function uploadBlogImage() {
 
     if (hiddenInput) hiddenInput.value = data.url;
     if (preview) preview.innerHTML = `<img src="${data.url}" alt="">`;
-    if (status) { status.textContent = '✓'; status.className = 'upload-status success'; }
+    if (status) { status.textContent = 'OK'; status.className = 'upload-status success'; }
     fileInput.value = '';
   } catch (_err) {
-    if (status) { status.textContent = '✗ ' + _err.message; status.className = 'upload-status error'; }
+    if (status) { status.textContent = 'Erreur : ' + _err.message; status.className = 'upload-status error'; }
   }
 }
 

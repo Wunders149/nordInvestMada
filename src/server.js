@@ -22,8 +22,11 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const uploadsDir = process.env.UPLOADS_DIR || path.join(projectRoot, 'uploads');
+const dataDir = path.join(projectRoot, 'data');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DB_TIMEOUT_MS = Number.parseInt(process.env.PUBLIC_DB_TIMEOUT_MS || '12000', 10) || 12000;
+const PUBLIC_MEDIA_TIMEOUT_MS = Number.parseInt(process.env.PUBLIC_MEDIA_TIMEOUT_MS || process.env.PUBLIC_DB_TIMEOUT_MS || '30000', 10) || 30000;
 
 app.set('trust proxy', 1);
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -125,6 +128,74 @@ async function loadSiteConfig() {
   } catch {
     return {};
   }
+}
+
+function readDataFile(fileName, fallback = []) {
+  try {
+    const filePath = path.join(dataDir, fileName);
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    console.warn(`Local data fallback unavailable for ${fileName}:`, err.message);
+    return fallback;
+  }
+}
+
+function withTimeout(promise, ms, label) {
+  let timer;
+  return Promise.race([
+    Promise.resolve(promise).finally(() => clearTimeout(timer)),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    })
+  ]);
+}
+
+function orderPublicItems(items, visibilityKey = 'visible', orderKey = 'order') {
+  return (Array.isArray(items) ? items : [])
+    .filter(item => visibilityKey ? item?.[visibilityKey] !== false : true)
+    .sort((a, b) => {
+      const left = Number.isFinite(a?.[orderKey]) ? a[orderKey] : 99;
+      const right = Number.isFinite(b?.[orderKey]) ? b[orderKey] : 99;
+      return left - right;
+    });
+}
+
+function withImageSlot(item, fallbackSlot = '') {
+  return {
+    ...item,
+    image_slot: item?.image_slot || item?.imageSlot || fallbackSlot
+  };
+}
+
+function asLocalImageUrl(section, fileName) {
+  if (!fileName) return null;
+  if (/^(https?:)?\/\//.test(fileName) || fileName.startsWith('/')) return fileName;
+  return `/images/${section}/${fileName}`;
+}
+
+function getLocalPublicList(tableName) {
+  const fallbacks = {
+    team_members: () => orderPublicItems(readDataFile('team.json'))
+      .map(item => withImageSlot(item)),
+    services: () => orderPublicItems(readDataFile('services.json')),
+    projects: () => orderPublicItems(readDataFile('projects.json'))
+      .map(item => {
+        const image = item.image || (Array.isArray(item.images) ? item.images[0] : null);
+        return withImageSlot({
+          ...item,
+          image: asLocalImageUrl('projects', image)
+        }, `project-${item.id}`);
+      }),
+    blog_posts: () => {
+      const items = readDataFile('blog.json');
+      return (Array.isArray(items) ? items : [])
+        .filter(item => item?.published !== false)
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+        .map(item => withImageSlot(item));
+    },
+    dossiers: () => []
+  };
+  return fallbacks[tableName] ? fallbacks[tableName]() : [];
 }
 
 // ─── Live Exchange Rates (cached, 1h TTL) ───
@@ -293,8 +364,8 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
           <li>Budget: ${escapeHtml(budget || 'Non spécifié')}</li>
         </ul>
         <p>En attendant, n'hésitez pas à nous contacter directement:</p>
-        <p>📞 <strong>032 82 312 80</strong></p>
-        <p>📧 contact@nordinvest.mg</p>
+        <p>Tél. <strong>032 82 312 80</strong></p>
+        <p>Email contact@nordinvest.mg</p>
         <p>Cordialement,<br>L'équipe Nord Invest Madagascar</p>
       `
     });
@@ -388,7 +459,7 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
           <li>Présentation et discussion</li>
         </ol>
         <p>Notre équipe vous contactera sous 24 heures pour programmer une visite.</p>
-        <p>📞 032 82 312 80 | 📧 contact@nordinvest.mg</p>
+        <p>Tél. 032 82 312 80 | Email contact@nordinvest.mg</p>
       `
     });
     emailSent = true;
@@ -440,16 +511,16 @@ app.get('/api/config', async (req, res) => {
 
 async function publicList(req, res, tableName, filterKey, orderBy) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await withTimeout(supabase
       .from(tableName)
       .select('*')
       .eq(filterKey, true)
-      .order(orderBy || 'order', { ascending: true });
+      .order(orderBy || 'order', { ascending: true }), PUBLIC_DB_TIMEOUT_MS, `${tableName} public list`);
     if (error) throw error;
     res.json(data || []);
   } catch (err) {
     console.error(`${tableName} public list error:`, err);
-    res.status(500).json({ error: `Failed to load ${tableName}` });
+    res.json(getLocalPublicList(tableName));
   }
 }
 
@@ -463,11 +534,11 @@ app.get('/api/services', (req, res) => {
 
 app.get('/api/projects', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await withTimeout(supabase
       .from('projects')
       .select('*')
       .eq('visible', true)
-      .order('order', { ascending: true });
+      .order('order', { ascending: true }), PUBLIC_DB_TIMEOUT_MS, 'projects public list');
     if (error) throw error;
     const processed = (data || []).map(p => ({
       ...p,
@@ -476,22 +547,22 @@ app.get('/api/projects', async (req, res) => {
     res.json(processed);
   } catch (err) {
     console.error('projects public list error:', err);
-    res.status(500).json({ error: 'Failed to load projects' });
+    res.json(getLocalPublicList('projects'));
   }
 });
 
 app.get('/api/blog', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await withTimeout(supabase
       .from('blog_posts')
       .select('*')
       .eq('published', true)
-      .order('date', { ascending: false });
+      .order('date', { ascending: false }), PUBLIC_DB_TIMEOUT_MS, 'blog public list');
     if (error) throw error;
     res.json(data || []);
   } catch (err) {
     console.error('Blog public list error:', err);
-    res.status(500).json({ error: 'Failed to load blog posts' });
+    res.json(getLocalPublicList('blog_posts'));
   }
 });
 
@@ -517,10 +588,10 @@ app.use('/api', imageRouter);
 // ─── DOSSIERS (PDF documents hosted on Cloudinary) ───
 app.get('/api/dossiers', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await withTimeout(supabase
       .from('dossiers')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }), PUBLIC_MEDIA_TIMEOUT_MS, 'dossier public list');
     if (error) throw error;
     const dossiers = (data || []).map(d => ({
       id: d.id,
@@ -535,7 +606,7 @@ app.get('/api/dossiers', async (req, res) => {
     res.json(dossiers);
   } catch (err) {
     console.error('Dossier list error:', err);
-    res.status(500).json({ error: 'Failed to list dossiers' });
+    res.status(503).json({ error: 'Failed to list dossiers' });
   }
 });
 
@@ -580,31 +651,35 @@ app.get('/api/dossiers/:id/thumbnail', async (req, res) => {
 
 app.get('/api/blog-categories', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await withTimeout(supabase
       .from('settings')
       .select('value')
       .eq('key', 'blog_categories')
-      .single();
+      .single(), PUBLIC_DB_TIMEOUT_MS, 'blog categories');
     if (error && error.code !== 'PGRST116') throw error;
     const categories = data?.value || [
-      { id: 'blog-construction', label: 'Construction', icon: '🏗️', color: 'var(--rust)', svg: 'construction.svg', image: '' },
-      { id: 'blog-forage', label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', svg: 'forage.svg', image: '' },
-      { id: 'blog-immobilier', label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', svg: 'immobilier.svg', image: '' }
+      { id: 'blog-construction', label: 'Construction', icon: '', color: 'var(--rust)', svg: 'construction.svg', image: '' },
+      { id: 'blog-forage', label: 'Forage', icon: '', color: 'var(--blue, #2563eb)', image: '', svg: 'forage.svg' },
+      { id: 'blog-immobilier', label: 'Immobilier', icon: '', color: 'var(--green, #16a34a)', svg: 'immobilier.svg', image: '' }
     ];
     res.json(categories);
   } catch (err) {
     console.error('Blog categories error:', err);
-    res.status(500).json({ error: 'Failed to load blog categories' });
+    res.json([
+      { id: 'blog-construction', label: 'Construction', icon: '', color: 'var(--rust)', svg: 'construction.svg', image: '' },
+      { id: 'blog-forage', label: 'Forage', icon: '', color: 'var(--blue, #2563eb)', image: '', svg: 'forage.svg' },
+      { id: 'blog-immobilier', label: 'Immobilier', icon: '', color: 'var(--green, #16a34a)', svg: 'immobilier.svg', image: '' }
+    ]);
   }
 });
 
 app.get('/api/team-positions', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await withTimeout(supabase
       .from('settings')
       .select('value')
       .eq('key', 'team_positions')
-      .single();
+      .single(), PUBLIC_DB_TIMEOUT_MS, 'team positions');
     if (error && error.code !== 'PGRST116') throw error;
     const positions = data?.value || [
       { id: 'Directeur Général', label: 'Directeur Général' },
@@ -616,7 +691,13 @@ app.get('/api/team-positions', async (req, res) => {
     res.json(positions);
   } catch (err) {
     console.error('Team positions error:', err);
-    res.status(500).json({ error: 'Failed to load team positions' });
+    res.json([
+      { id: 'Directeur General', label: 'Directeur General' },
+      { id: 'Ingenieur', label: 'Ingenieur' },
+      { id: 'Chef de chantier', label: 'Chef de chantier' },
+      { id: 'Technicien', label: 'Technicien' },
+      { id: 'Comptable', label: 'Comptable' }
+    ]);
   }
 });
 

@@ -11,11 +11,13 @@ import { broadcast } from './events.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const imagesDir = path.join(projectRoot, 'public', 'images');
+const dataDir = path.join(projectRoot, 'data');
 
 const router = Router();
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 const MAX_SIZE = 10 * 1024 * 1024;
+const MEDIA_DB_TIMEOUT_MS = Number.parseInt(process.env.MEDIA_DB_TIMEOUT_MS || process.env.PUBLIC_MEDIA_TIMEOUT_MS || process.env.PUBLIC_DB_TIMEOUT_MS || '30000', 10) || 30000;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -37,13 +39,47 @@ function sanitizeName(name) {
     .replace(/^-|-$/g, '');
 }
 
+function withTimeout(promise, ms, label) {
+  let timer;
+  return Promise.race([
+    Promise.resolve(promise).finally(() => clearTimeout(timer)),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    })
+  ]);
+}
+
 async function getImageSlots() {
-  const { data, error } = await supabase.from('image_slots').select('*').order('created_at', { ascending: true });
-  if (error) {
-    console.error('Failed to load image slots:', error);
+  try {
+    const { data, error } = await withTimeout(
+      supabase.from('image_slots').select('*').order('created_at', { ascending: true }),
+      MEDIA_DB_TIMEOUT_MS,
+      'image slots'
+    );
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Failed to load image slots:', err);
+    return getLocalImageSlots();
+  }
+}
+
+function getLocalImageSlots() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(dataDir, 'image-slots.json'), 'utf8'));
+    return (raw.slots || []).map(slot => ({
+      id: slot.id,
+      section: slot.section,
+      label: slot.label,
+      original_file: slot.original_file || slot.originalFile || null,
+      uploaded_file: slot.uploaded_file || slot.uploadedFile || null,
+      created_at: slot.created_at || slot.createdAt || null,
+      updated_at: slot.updated_at || slot.updatedAt || null
+    }));
+  } catch (err) {
+    console.warn('Local image slot fallback unavailable:', err.message);
     return [];
   }
-  return data || [];
 }
 
 async function getImageSlotById(id) {
@@ -97,12 +133,20 @@ function getLocalUrl(s, filename) {
   return `/images/${s.section}/${filename}`;
 }
 
+function getExistingLocalUrl(s, filename) {
+  if (!filename) return null;
+  const localPath = path.join(imagesDir, s.section, filename);
+  return fs.existsSync(localPath) ? getLocalUrl(s, filename) : null;
+}
+
 function mapSlot(s, cloudinaryEntry) {
   const cld = cloudinaryEntry || {};
   const uploadedFile = s.uploaded_file;
   const originalFile = s.original_file;
-  const currentFile = cld.uploaded_file || uploadedFile || originalFile || 'placeholder.svg';
-  const currentUrl = cld.url || (uploadedFile ? getLocalUrl(s, uploadedFile) : originalFile ? getLocalUrl(s, originalFile) : '/images/placeholder.svg');
+  const uploadedLocalUrl = getExistingLocalUrl(s, uploadedFile);
+  const originalLocalUrl = getExistingLocalUrl(s, originalFile);
+  const currentFile = cld.uploaded_file || (uploadedLocalUrl ? uploadedFile : null) || originalFile || 'placeholder.svg';
+  const currentUrl = cld.url || uploadedLocalUrl || originalLocalUrl || '/images/placeholder.svg';
 
   return {
     id: s.id,
@@ -121,6 +165,15 @@ function mapSlot(s, cloudinaryEntry) {
     currentFile,
     currentUrl
   };
+}
+
+async function getCloudinaryMappingFallback() {
+  try {
+    return await withTimeout(getCloudinaryMapping(), MEDIA_DB_TIMEOUT_MS, 'cloudinary mapping');
+  } catch (err) {
+    console.error('Failed to load cloudinary mapping:', err);
+    return {};
+  }
 }
 
 // ─── UPLOAD IMAGE ───
@@ -471,8 +524,10 @@ router.post('/images/:section/:filename/replace', requireAuth, (req, res) => {
 // ─── GET SLOT ASSIGNMENTS ───
 router.get('/images/slots', async (req, res) => {
   try {
-    const slots = await getImageSlots();
-    const mapping = await getCloudinaryMapping();
+    const [slots, mapping] = await Promise.all([
+      getImageSlots(),
+      getCloudinaryMappingFallback()
+    ]);
     res.json(slots.map(s => mapSlot(s, mapping[s.id])));
   } catch (error) {
     console.error('Slots error:', error);

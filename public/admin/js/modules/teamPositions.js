@@ -45,7 +45,7 @@ export function openPositionManager() {
         <input type="text" class="search-input pos-id" value="${escapeHtml(pos.id)}" placeholder="ID (ex: directeur)" style="flex:1;min-width:120px">
         <input type="text" class="search-input pos-label" value="${escapeHtml(pos.label)}" placeholder="Nom affiché" style="flex:1;min-width:160px">
       </div>
-      <button class="btn-icon danger" onclick="removePositionRow(this)" title="Supprimer">✕</button>
+      <button class="btn-icon danger" onclick="removePositionRow(this)" title="Supprimer">Sup</button>
     </div>
   `).join('');
 
@@ -66,7 +66,7 @@ export function addPositionRow() {
       <input type="text" class="search-input pos-id" placeholder="ID (ex: directeur)" style="flex:1;min-width:120px">
       <input type="text" class="search-input pos-label" placeholder="Nom affiché" style="flex:1;min-width:160px">
     </div>
-    <button class="btn-icon danger" onclick="removePositionRow(this)" title="Supprimer">✕</button>
+    <button class="btn-icon danger" onclick="removePositionRow(this)" title="Supprimer">Sup</button>
   `;
   list.appendChild(div);
 }

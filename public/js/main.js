@@ -187,9 +187,24 @@ sections.forEach(s => navObserver.observe(s));
 
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
-const mobileMQ = window.matchMedia('(max-width: 768px)');
+const mobileMQ = window.matchMedia('(max-width: 900px)');
+const navDropdownLinks = document.querySelectorAll('.nav-dropdown > a');
 
 let lastFocusedEl = null;
+
+navDropdownLinks.forEach(link => {
+  link.setAttribute('aria-haspopup', 'true');
+  link.setAttribute('aria-expanded', 'false');
+});
+
+function syncDropdownAria(dropdown, expanded) {
+  const trigger = dropdown?.querySelector(':scope > a');
+  if (trigger) trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+}
+
+function setMobileNavOpen(open) {
+  document.body.classList.toggle('mobile-nav-open', open);
+}
 
 function closeMobileMenu() {
   if (!navLinks || !hamburger) return;
@@ -197,8 +212,12 @@ function closeMobileMenu() {
   navLinks.classList.remove('active');
   hamburger.classList.remove('active');
   hamburger.setAttribute('aria-expanded', 'false');
+  setMobileNavOpen(false);
   // Reset all open dropdowns
-  document.querySelectorAll('.nav-dropdown.active').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-dropdown.active').forEach(d => {
+    d.classList.remove('active');
+    syncDropdownAria(d, false);
+  });
   setTimeout(() => {
     navLinks.classList.remove('closing');
   }, 300);
@@ -206,7 +225,10 @@ function closeMobileMenu() {
 
 function closeOtherDropdowns(except) {
   document.querySelectorAll('.nav-dropdown.active').forEach(d => {
-    if (d !== except) d.classList.remove('active');
+    if (d !== except) {
+      d.classList.remove('active');
+      syncDropdownAria(d, false);
+    }
   });
 }
 
@@ -219,6 +241,7 @@ if (hamburger) {
       hamburger.classList.add('active');
       navLinks.classList.add('active');
       hamburger.setAttribute('aria-expanded', 'true');
+      setMobileNavOpen(true);
     } else {
       closeMobileMenu();
       hamburger.setAttribute('aria-expanded', 'false');
@@ -230,8 +253,10 @@ if (hamburger) {
       if (parent && a === parent.querySelector(':scope > a')) {
         // Dropdown parent link clicked - toggle submenu
         e.preventDefault();
+        const willOpen = !parent.classList.contains('active');
         closeOtherDropdowns(parent);
-        parent.classList.toggle('active');
+        parent.classList.toggle('active', willOpen);
+        syncDropdownAria(parent, willOpen);
         return;
       }
       if (navLinks.classList.contains('active')) {
@@ -243,6 +268,7 @@ if (hamburger) {
   document.querySelectorAll('.nav-dropdown').forEach(dd => {
     dd.addEventListener('mouseleave', () => {
       dd.classList.remove('active');
+      syncDropdownAria(dd, false);
     });
   });
   // Close on outside click — handles both mobile menu & desktop dropdowns
@@ -255,7 +281,10 @@ if (hamburger) {
     // Close dropdowns if click is outside the dropdown
     const clickedDD = e.target.closest('.nav-dropdown');
     document.querySelectorAll('.nav-dropdown.active').forEach(d => {
-      if (d !== clickedDD) d.classList.remove('active');
+      if (d !== clickedDD) {
+        d.classList.remove('active');
+        syncDropdownAria(d, false);
+      }
     });
   });
   // Close on Escape
@@ -264,13 +293,18 @@ if (hamburger) {
     if (navLinks.classList.contains('active')) {
       closeMobileMenu();
     }
-    document.querySelectorAll('.nav-dropdown.active').forEach(d => d.classList.remove('active'));
+    document.querySelectorAll('.nav-dropdown.active').forEach(d => {
+      d.classList.remove('active');
+      syncDropdownAria(d, false);
+    });
   });
   // Close on resize to desktop
   mobileMQ.addEventListener('change', (e) => {
     if (!e.matches) {
       navLinks.classList.remove('active', 'closing');
       hamburger.classList.remove('active');
+      hamburger.setAttribute('aria-expanded', 'false');
+      setMobileNavOpen(false);
     }
   });
 }
@@ -280,15 +314,28 @@ if (hamburger) {
 // ═══════════════════════════════════════════════════════
 
 const nav = document.querySelector('nav');
-let lastScroll = 0;
-window.addEventListener('scroll', () => {
+const navScrollProgress = document.getElementById('navScrollProgress');
+
+function updateNavState() {
   const y = window.scrollY;
-  nav.classList.toggle('scrolled', y > 50);
+  if (nav) {
+    nav.classList.toggle('scrolled', y > 50);
+    nav.classList.toggle('nav-compact', y > 140);
+  }
+  if (navScrollProgress) {
+    const doc = document.documentElement;
+    const maxScroll = Math.max(doc.scrollHeight - window.innerHeight, 1);
+    const pct = Math.min((y / maxScroll) * 100, 100);
+    navScrollProgress.style.width = `${pct}%`;
+  }
   // Back to top button
   const btn = document.getElementById('backToTop');
   if (btn) btn.classList.toggle('visible', y > 400);
-  lastScroll = y;
-}, { passive: true });
+}
+
+window.addEventListener('scroll', updateNavState, { passive: true });
+window.addEventListener('resize', updateNavState);
+updateNavState();
 
 // Back to top
 document.getElementById('backToTop')?.addEventListener('click', () => {
@@ -329,6 +376,7 @@ document.querySelectorAll('.nav-links a[href^="#"], .footer-links a[href^="#"]')
       e.preventDefault();
       hamburger?.classList.remove('active');
       navLinks?.classList.remove('active');
+      setMobileNavOpen(false);
       showLoader(targetId);
     }
   });
@@ -437,9 +485,9 @@ function handleSubmit(e) {
   })
   .then(response => response.json())
   .then(_result => {
-    btn.textContent = getNestedTranslation('contact.sent') || '✓ Message envoyé !';
+    btn.textContent = getNestedTranslation('contact.sent') || 'Message envoyé';
     btn.style.background = '#2a7a4a';
-    messageDiv.textContent = getNestedTranslation('contact.sentMessage') || '✓ Votre demande a été reçue.';
+    messageDiv.textContent = getNestedTranslation('contact.sentMessage') || 'Votre demande a été reçue.';
     messageDiv.style.display = 'block';
     messageDiv.style.color = '#2a7a4a';
     form.reset();
@@ -460,7 +508,7 @@ function handleSubmit(e) {
   })
   .catch(error => {
     console.error('Error:', error);
-    messageDiv.textContent = getNestedTranslation('contact.errorMessage') || '✘ Erreur lors de l\'envoi.';
+    messageDiv.textContent = getNestedTranslation('contact.errorMessage') || 'Erreur lors de l\'envoi.';
     messageDiv.style.display = 'block';
     messageDiv.style.color = '#E8614A';
     btn.textContent = getNestedTranslation('contact.formSubmit') || 'Envoyer ma Demande';
@@ -815,7 +863,7 @@ async function handleNewsletter(e) {
     btn.classList.remove('sending');
     btn.disabled = false;
     if (data.success) {
-      msg.textContent = getNestedTranslation('newsletter.success') || '✓ Merci pour votre inscription !';
+      msg.textContent = getNestedTranslation('newsletter.success') || 'Merci pour votre inscription !';
       msg.className = 'newsletter-msg success show';
       document.getElementById('newsletterForm').reset();
     } else {
@@ -929,6 +977,7 @@ async function loadImageSlots() {
     const res = await fetch('/api/images/slots', { cache: 'no-store' });
     if (!res.ok) return;
     const slots = await res.json();
+    if (!Array.isArray(slots)) return;
     slots.forEach(slot => {
       if (!slot.uploadedFile && !slot.cloudinaryUrl) return;
       if (!slot.currentUrl || slot.currentUrl.endsWith('placeholder.svg')) return;
@@ -1002,10 +1051,26 @@ function initHeroSwap() {
 
 const API_BASE = window.location.origin;
 
+async function fetchJsonArray(url, options = {}) {
+  const res = await fetch(url, options);
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (_err) {
+    data = null;
+  }
+  if (!res.ok) {
+    throw new Error(data?.error || `HTTP ${res.status}`);
+  }
+  if (!Array.isArray(data)) {
+    throw new Error('Expected an array response');
+  }
+  return data;
+}
+
 async function loadTeam() {
   try {
-    const res = await fetch(`${API_BASE}/api/team`);
-    const team = await res.json();
+    const team = await fetchJsonArray(`${API_BASE}/api/team`);
     const grid = document.getElementById('teamGrid');
     if (!grid) return;
     grid.innerHTML = team.map(m => {
@@ -1019,6 +1084,7 @@ async function loadTeam() {
       </div>
     `;}).join('');
     loadImageSlots();
+    applyGlobalMotionOrder(grid);
     initTeamReveal();
     initTeamTilt();
   } catch (err) { console.warn('Team load error:', err); showSectionError('teamGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
@@ -1057,49 +1123,109 @@ function initTeamTilt() {
   });
 }
 
+function getServiceMark(title, index) {
+  const words = String(title || '')
+    .replace(/&/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  const letters = words
+    .filter(w => w.length > 2)
+    .slice(0, 2)
+    .map(w => w[0])
+    .join('');
+  return (letters || String(index + 1).padStart(2, '0')).toUpperCase();
+}
+
 async function loadServices() {
   try {
-    const res = await fetch(`${API_BASE}/api/services`);
-    const services = await res.json();
+    const services = await fetchJsonArray(`${API_BASE}/api/services`);
     const grid = document.getElementById('servicesGrid');
     if (!grid) return;
     grid.innerHTML = services.map((s, i) => `
       <div class="service-card">
         <div class="service-num">${String(i + 1).padStart(2, '0')}</div>
-        <div class="service-icon">${s.icon || '🔧'}</div>
+        <div class="service-icon">${getServiceMark(s.title, i)}</div>
         <div class="service-title" data-i18n="services.card${i + 1}Title">${escapeHtml(s.title)}</div>
         <p class="service-desc" data-i18n="services.card${i + 1}Desc">${escapeHtml(s.description)}</p>
       </div>
     `).join('');
+    applyGlobalMotionOrder(grid);
     initImageReveal();
   } catch (err) { console.warn('Services load error:', err); showSectionError('servicesGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
 async function loadProjects() {
   try {
-    const res = await fetch(`${API_BASE}/api/projects`, { cache: 'no-store' });
-    const projects = await res.json();
+    const projects = await fetchJsonArray(`${API_BASE}/api/projects`, { cache: 'no-store' });
     const grid = document.getElementById('projectsGrid');
     if (!grid) return;
-    grid.innerHTML = projects.map(p => {
+    grid.innerHTML = projects.map((p, i) => {
       const hasOwnImg = p.image && (p.image.startsWith('http') || p.image.startsWith('/'));
+      const projectTitle = escapeHtml(p.title);
       return `
-      <div class="project-card">
-        <img src="${hasOwnImg ? p.image : '/images/placeholder.svg'}" alt="${escapeHtml(p.title)}" class="project-img img-reveal" loading="lazy"${!hasOwnImg ? ` data-image-slot="${p.image_slot || ''}"` : ''}>
+      <div class="project-card" role="button" tabindex="0" aria-label="Voir le projet ${projectTitle}" style="--project-delay: ${i * 80}ms">
+        <img src="${hasOwnImg ? p.image : '/images/placeholder.svg'}" alt="${projectTitle}" class="project-img img-reveal" loading="lazy"${!hasOwnImg ? ` data-image-slot="${p.image_slot || ''}"` : ''}>
         <div class="project-overlay">
           <div class="project-cat">${escapeHtml(p.category || '')}</div>
-          <div class="project-name">${escapeHtml(p.title)}</div>
-          <div class="project-loc">📍 ${escapeHtml(p.location || '')}</div>
+          <div class="project-name">${projectTitle}</div>
+          <div class="project-loc">${escapeHtml(p.location || '')}</div>
         </div>
       </div>
     `;}).join('');
-    // Re-attach gallery click listeners
-    document.querySelectorAll('.project-card').forEach((card, index) => {
-      card.addEventListener('click', () => openGallery(index));
-    });
+    initProjectCardMotion();
+    applyGlobalMotionOrder(grid);
     loadImageSlots();
     initImageReveal();
   } catch (err) { console.warn('Projects load error:', err); showSectionError('projectsGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
+}
+
+function initProjectCardMotion() {
+  const cards = document.querySelectorAll('.project-card');
+  if (!cards.length) return;
+
+  const canUseFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  cards.forEach((card, index) => {
+    card.addEventListener('click', () => openGallery(index));
+    card.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      openGallery(index);
+    });
+
+    if (!canUseFinePointer || reduceMotion) return;
+
+    let raf = 0;
+    const resetMotion = () => {
+      card.style.setProperty('--pointer-x', '50%');
+      card.style.setProperty('--pointer-y', '50%');
+      card.style.setProperty('--tilt-x', '0deg');
+      card.style.setProperty('--tilt-y', '0deg');
+    };
+
+    card.addEventListener('pointermove', (e) => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const rect = card.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        const clampedX = Math.max(0, Math.min(1, x));
+        const clampedY = Math.max(0, Math.min(1, y));
+
+        card.style.setProperty('--pointer-x', `${(clampedX * 100).toFixed(1)}%`);
+        card.style.setProperty('--pointer-y', `${(clampedY * 100).toFixed(1)}%`);
+        card.style.setProperty('--tilt-x', `${((0.5 - clampedY) * 5).toFixed(2)}deg`);
+        card.style.setProperty('--tilt-y', `${((clampedX - 0.5) * 6).toFixed(2)}deg`);
+      });
+    }, { passive: true });
+
+    card.addEventListener('pointerleave', () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      resetMotion();
+    });
+  });
 }
 
 let BLOG_CATEGORIES = {};
@@ -1107,8 +1233,7 @@ let blogSvgs = {};
 
 async function loadBlogCategories() {
   try {
-    const res = await fetch('/api/blog-categories');
-    const cats = await res.json();
+    const cats = await fetchJsonArray('/api/blog-categories');
     const map = {};
     const svgMap = {};
     cats.forEach(c => {
@@ -1120,9 +1245,9 @@ async function loadBlogCategories() {
   } catch (err) {
     console.warn('Failed to load blog categories:', err);
     BLOG_CATEGORIES = {
-      'blog-construction': { label: 'Construction', icon: '🏗️', color: 'var(--rust)', image: '' },
-      'blog-forage': { label: 'Forage', icon: '💧', color: 'var(--blue, #2563eb)', image: '' },
-      'blog-immobilier': { label: 'Immobilier', icon: '🏡', color: 'var(--green, #16a34a)', image: '' }
+      'blog-construction': { label: 'Construction', icon: '', color: 'var(--rust)', image: '' },
+      'blog-forage': { label: 'Forage', icon: '', color: 'var(--blue, #2563eb)', image: '' },
+      'blog-immobilier': { label: 'Immobilier', icon: '', color: 'var(--green, #16a34a)', image: '' }
     };
     blogSvgs = { 'blog-construction': 'construction.svg', 'blog-forage': 'forage.svg', 'blog-immobilier': 'immobilier.svg' };
   }
@@ -1137,8 +1262,7 @@ function readingTime(html) {
 
 async function loadBlog() {
   try {
-    const res = await fetch(`${API_BASE}/api/blog`);
-    const posts = await res.json();
+    const posts = await fetchJsonArray(`${API_BASE}/api/blog`);
     const container = document.getElementById('blogTimeline');
     if (!container) return;
     window._allPosts = posts;
@@ -1167,7 +1291,7 @@ async function loadBlog() {
         <div class="timeline-card" style="--card-accent: ${cat.color || 'var(--rust)'}">
           <div class="timeline-img-wrap">
             <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy"${slotAttr ? ` data-image-slot="${slotAttr}"` : ''}>
-            ${cat.label ? `<span class="timeline-badge" style="--badge-color: ${cat.color}">${cat.icon} ${cat.label}</span>` : ''}
+            ${cat.label ? `<span class="timeline-badge" style="--badge-color: ${cat.color}">${cat.label}</span>` : ''}
           </div>
           <div class="timeline-body">
             <div class="timeline-meta">
@@ -1181,6 +1305,7 @@ async function loadBlog() {
         </div>
       </div>`;
     }).join('');
+    applyGlobalMotionOrder(container);
     container.querySelectorAll('.timeline-entry').forEach(entry => {
       entry.addEventListener('click', (e) => {
         if (e.target.closest('.timeline-link')) e.preventDefault();
@@ -1241,11 +1366,14 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
   if (contentEl) {
     if (imgUrl) {
       contentEl.style.backgroundImage = `url('${imgUrl}')`;
+      contentEl.classList.add('has-cover');
     } else {
       contentEl.style.backgroundImage = 'none';
+      contentEl.classList.remove('has-cover');
     }
   }
   bodyEl.innerHTML = sanitizeHtml(content);
+  bodyEl.scrollTop = 0;
   const pageUrl = slug ? `${window.location.origin}/blog/${encodeURIComponent(slug)}` : window.location.href;
   const shareText = `${title} — Nord Invest Madagascar`;
   if (shareBtns) {
@@ -1289,15 +1417,18 @@ function openBlogPost(title, date, content, imgUrl, slug, imageSlot, postId) {
     }
   }
   modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
   document.querySelector('nav')?.classList.add('hidden');
   if (progressEl) {
     progressEl.style.width = '0%';
     bodyEl.onscroll = () => {
-      const pct = bodyEl.scrollTop / (bodyEl.scrollHeight - bodyEl.clientHeight) * 100;
+      const maxScroll = Math.max(bodyEl.scrollHeight - bodyEl.clientHeight, 1);
+      const pct = bodyEl.scrollTop / maxScroll * 100;
       progressEl.style.width = Math.min(pct, 100) + '%';
     };
   }
+  contentEl?.focus({ preventScroll: true });
 }
 
 function copyShareLink(encodedUrl) {
@@ -1317,7 +1448,14 @@ function copyShareLink(encodedUrl) {
 function closeBlogPost(e) {
   if (e && e.target !== e.currentTarget) return;
   const modal = document.getElementById('blogModal');
+  const contentEl = document.getElementById('blogModalContent');
+  const bodyEl = document.getElementById('blogModalBody');
+  const progressEl = document.getElementById('blogProgress');
   if (modal) modal.classList.remove('active');
+  if (modal) modal.setAttribute('aria-hidden', 'true');
+  if (contentEl) contentEl.classList.remove('has-cover');
+  if (bodyEl) bodyEl.onscroll = null;
+  if (progressEl) progressEl.style.width = '0%';
   document.body.style.overflow = '';
   document.querySelector('nav')?.classList.remove('hidden');
   if (lastFocusedEl) { lastFocusedEl.focus(); lastFocusedEl = null; }
@@ -1401,6 +1539,7 @@ async function loadPricingData() {
            <a href="#contact" class="price-cta" data-i18n="pricing.cta" onclick="event.preventDefault();fillContactForm(this)">${getNestedTranslation('pricing.cta') || ''}</a>
         </div>`;
       }).join('');
+      applyGlobalMotionOrder(container);
     });
   } catch (err) { console.warn('Pricing load error:', err); ['construction', 'rehabilitation', 'forage'].forEach(cat => showSectionError('pricingGrid-' + cat, getNestedTranslation('dossiers.error') || 'Unable to load.')); }
 }
@@ -1712,17 +1851,17 @@ function openPdfViewer(id, name, url) {
   currentPdfId = id;
   currentPdfUrl = url;
   const modal = document.getElementById('pdfModal');
+  const content = document.getElementById('pdfModalContent');
   const viewer = document.getElementById('pdfViewer');
   const title = document.getElementById('pdfModalTitle');
   const loading = document.getElementById('pdfLoading');
   const errorEl = document.getElementById('pdfError');
   if (!modal || !viewer) return;
-  title.textContent = name || '';
+  const label = name || 'Document PDF';
+  if (title) title.textContent = label;
+  viewer.title = label;
   if (loading) loading.classList.remove('hidden');
   if (errorEl) errorEl.classList.remove('active');
-  viewer.src = url;
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
 
   viewer.onload = () => {
     if (loading) loading.classList.add('hidden');
@@ -1732,6 +1871,13 @@ function openPdfViewer(id, name, url) {
     if (loading) loading.classList.add('hidden');
     if (errorEl) errorEl.classList.add('active');
   };
+
+  viewer.src = url ? `${url}${url.includes('#') ? '' : '#toolbar=1&navpanes=0&view=FitH'}` : '';
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  document.querySelector('nav')?.classList.add('hidden');
+  content?.focus({ preventScroll: true });
 
   setTimeout(() => {
     if (loading && !loading.classList.contains('hidden')) {
@@ -1746,9 +1892,11 @@ function closePdfViewer(e) {
   const viewer = document.getElementById('pdfViewer');
   const errorEl = document.getElementById('pdfError');
   if (modal) modal.classList.remove('active');
+  if (modal) modal.setAttribute('aria-hidden', 'true');
   if (viewer) { viewer.onload = null; viewer.onerror = null; viewer.src = ''; }
   if (errorEl) errorEl.classList.remove('active');
   document.body.style.overflow = '';
+  document.querySelector('nav')?.classList.remove('hidden');
   if (lastFocusedEl) { lastFocusedEl.focus(); lastFocusedEl = null; }
 }
 
@@ -1828,8 +1976,7 @@ async function loadDossiers() {
   const grid = document.getElementById('dossiersGrid');
   if (!grid) return;
   try {
-    const res = await fetch('/api/dossiers');
-    const dossiers = await res.json();
+    const dossiers = await fetchJsonArray('/api/dossiers');
     if (!dossiers.length) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
         <p style="font-size:1.1rem">${getNestedTranslation('dossiers.empty') || 'Aucun document disponible pour le moment.'}</p>
@@ -1875,6 +2022,7 @@ async function loadDossiers() {
         <span class="dossier-badge">PDF</span>
       </div>`;
     }).join('');
+    applyGlobalMotionOrder(grid);
     grid.querySelectorAll('.dossier-card').forEach(card => {
       card.addEventListener('click', (e) => {
         if (e.target.closest('.dossier-download-btn')) return;
@@ -2128,11 +2276,11 @@ async function refreshProjectMap() {
   if (!projectMap) return;
   try {
     const [projects, slots] = await Promise.all([
-      fetch(`${API_BASE}/api/projects`, { cache: 'no-store' }).then(r => r.json()),
+      fetchJsonArray(`${API_BASE}/api/projects`, { cache: 'no-store' }),
       fetch(`${API_BASE}/api/images/slots`, { cache: 'no-store' }).then(r => r.json()).catch(() => [])
     ]);
     const slotMap = {};
-    slots.forEach(s => { slotMap[s.id] = s; });
+    if (Array.isArray(slots)) slots.forEach(s => { slotMap[s.id] = s; });
 
     // Build marker map by project id
     const markerMap = {};
@@ -2210,11 +2358,11 @@ function initProjectMap() {
 
   projectMarkers = [];
   Promise.all([
-    fetch(`${API_BASE}/api/projects`, { cache: 'no-store' }).then(r => r.json()),
+    fetchJsonArray(`${API_BASE}/api/projects`, { cache: 'no-store' }),
     fetch('/api/images/slots', { cache: 'no-store' }).then(r => r.json()).catch(() => [])
   ]).then(([projects, slots]) => {
     const slotMap = {};
-    slots.forEach(s => { slotMap[s.id] = s; });
+    if (Array.isArray(slots)) slots.forEach(s => { slotMap[s.id] = s; });
     projects.forEach(p => {
       const coords = getCityCoords(p.location);
       if (!coords) return;
@@ -2236,7 +2384,7 @@ function initProjectMap() {
       try {
         const group = L.featureGroup(projectMarkers);
         projectMap.fitBounds(group.getBounds().pad(0.3));
-      } catch (e) {}
+      } catch (_e) {}
     }
   }).catch(() => {});
 
@@ -2246,7 +2394,7 @@ function initProjectMap() {
       try {
         const group = L.featureGroup(projectMarkers);
         projectMap.fitBounds(group.getBounds().pad(0.3));
-      } catch (e) {}
+      } catch (_e) {}
     }
   }, 500);
 }
@@ -2257,12 +2405,51 @@ function initMaps() {
   initProjectMap();
 }
 
+function applyGlobalMotionOrder(root = document) {
+  const containers = [
+    '.about-features',
+    '.vision-mission-grid',
+    '.standards-grid',
+    '.services-grid',
+    '.pricing-grid',
+    '.calculator-grid',
+    '#numbers',
+    '.contact-info',
+    '#blogTimeline',
+    '.team-grid',
+    '.dossiers-grid'
+  ];
+
+  containers.forEach(selector => {
+    const matches = [];
+    if (root.matches?.(selector)) matches.push(root);
+    root.querySelectorAll(selector).forEach(container => matches.push(container));
+
+    matches.forEach(container => {
+      Array.from(container.children).forEach((el, index) => {
+        if (container.id === 'numbers' && !el.classList.contains('reveal')) return;
+        el.style.setProperty('--motion-index', index);
+        el.style.setProperty('--motion-delay', `${Math.min(index * 70, 560)}ms`);
+      });
+    });
+  });
+}
+
+function initGlobalMotion() {
+  document.body.classList.add('motion-prep');
+  applyGlobalMotionOrder();
+  requestAnimationFrame(() => {
+    document.body.classList.add('site-ready');
+  });
+}
+
 // ═══════════════════════════════════════════════════════
 // INIT — Load default language
 // ═══════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
+  initGlobalMotion();
   loadBlogCategories();
   loadImageSlots();
   loadTeam();

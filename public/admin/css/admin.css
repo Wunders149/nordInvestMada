@@ -2697,6 +2697,179 @@ input:focus, select:focus, textarea:focus,
   .admin-card-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Human design pass: quieter admin interface */
+:root {
+  --primary: #934331;
+  --primary-light: #AD5B46;
+  --primary-dark: #6F2F22;
+  --primary-50: #f8efeb;
+  --primary-100: #f1ddd6;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --shadow-sm: 0 1px 3px rgba(31, 24, 20, 0.06);
+  --shadow-md: 0 6px 16px rgba(31, 24, 20, 0.08);
+  --shadow-lg: 0 10px 28px rgba(31, 24, 20, 0.1);
+  --shadow-xl: 0 16px 42px rgba(31, 24, 20, 0.12);
+  --shadow-soft: 0 1px 10px rgba(147, 67, 49, 0.06);
+  --bg-page: #f4f1ec;
+  --sidebar-active: #f5e8e2;
+}
+
+body {
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.9rem;
+}
+
+.login-page {
+  background: #f4f1ec;
+}
+
+.login-page::before,
+.login-page::after,
+.login-page .login-glow,
+.login-card::before {
+  display: none;
+}
+
+.login-card {
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(31, 24, 20, 0.1);
+}
+
+.sidebar-brand {
+  background: var(--bg-card);
+}
+
+.nav-btn:hover {
+  padding-left: 0.75rem;
+}
+
+.nav-btn .nav-icon,
+.stat-icon,
+.section-accordion-icon,
+.modal-box .modal-icon {
+  width: auto;
+  min-width: 34px;
+  height: 28px;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+.nav-btn.active .nav-icon,
+.stat-icon.contacts,
+.stat-icon.quotes,
+.stat-icon.subscribers,
+.section-accordion-item.open .section-accordion-icon {
+  background: var(--primary-50);
+  border-color: var(--primary-100);
+  color: var(--primary);
+}
+
+body.dark .nav-btn .nav-icon,
+body.dark .stat-icon,
+body.dark .section-accordion-icon,
+body.dark .modal-box .modal-icon {
+  background: transparent;
+  border-color: var(--border-strong);
+}
+
+.sidebar-toggle {
+  width: auto;
+  min-width: 48px;
+  padding: 0 0.7rem;
+  border-radius: var(--radius-md);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.btn-icon {
+  width: auto;
+  min-width: 34px;
+  padding: 0 0.55rem;
+  border-radius: var(--radius-md);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.btn-icon-sm {
+  width: auto;
+  min-width: 30px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.admin-card,
+.widget-card,
+.stat-card,
+.gallery-manager,
+.upload-area,
+.table-wrapper,
+.modal-box,
+.image-card,
+.section-accordion-item {
+  border-radius: var(--radius-lg);
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.search-input,
+.status-select,
+.form-group input,
+.section-input,
+.section-textarea {
+  border-radius: var(--radius-md);
+}
+
+.admin-card-thumb,
+.blog-img-placeholder,
+.section-slot-placeholder {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-slot-placeholder {
+  opacity: 0.8;
+}
+
+.search-icon {
+  width: auto;
+  min-width: 42px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.drop-zone .drop-icon {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.toast-icon {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* ══════════════════════════════════════════════
    SECTIONS EDITOR
    ══════════════════════════════════════════════ */

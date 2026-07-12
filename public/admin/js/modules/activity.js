@@ -23,7 +23,7 @@ function renderActivityLog() {
   const tbody = document.getElementById('activityBody');
   if (!tbody) return;
   if (!activityLogs || activityLogs.length === 0) {
-    tbody.innerHTML = emptyState('📋', 'Aucune activité', 'Le journal d\'activité apparaîtra ici.');
+    tbody.innerHTML = emptyState('', 'Aucune activité', 'Le journal d\'activité apparaîtra ici.');
     document.getElementById('activityPagination').innerHTML = '';
     return;
   }

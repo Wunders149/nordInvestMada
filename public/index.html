@@ -44,11 +44,8 @@
 <link rel="manifest" href="/images/favicon_io/site.webmanifest">
 
 <!-- Preconnect to external resources -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://res.cloudinary.com">
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 
 <!-- Google Analytics (loaded on consent) -->
@@ -148,7 +145,7 @@
 </div>
 
 <!-- NAV -->
-<nav aria-label="Navigation principale">
+<nav id="siteNav" aria-label="Navigation principale">
   <a href="#hero" class="nav-logo">
     <img src="/images/logo.jpeg" alt="Nord Invest Madagascar" class="nav-logo-img" data-image-slot="logo">
     Nord Invest <span>Madagascar</span>
@@ -192,6 +189,7 @@
     </li>
     <li><a href="#contact" class="nav-cta" data-i18n="nav.contact">Contact</a></li>
   </ul>
+  <div class="nav-scroll-progress" id="navScrollProgress" aria-hidden="true"></div>
 </nav>
 
 <!-- HERO -->
@@ -254,21 +252,21 @@
     <p class="section-lead" data-i18n="about.lead">Fondée en 2015 à Antsiranana, Nord Invest Madagascar est spécialisée dans la construction, le forage d'eau et l'immobilier. Nous mettons en œuvre notre expertise technique pour garantir des infrastructures modernes, durables et économiques.</p>
     <div class="about-features reveal reveal-stagger">
       <div class="feat">
-        <div class="feat-icon">🏛️</div>
+        <div class="feat-icon">01</div>
         <div>
           <div class="feat-title" data-i18n="about.feat1Title">Conformité & Qualité</div>
           <div class="feat-desc" data-i18n="about.feat1Desc">Nous collaborons avec des architectes inscrits à l'Ordre des Architectes pour assurer la conformité réglementaire et la qualité architecturale.</div>
         </div>
       </div>
       <div class="feat">
-        <div class="feat-icon">🛡️</div>
+        <div class="feat-icon">02</div>
         <div>
           <div class="feat-title" data-i18n="about.feat2Title">Sécurité (Safety First)</div>
           <div class="feat-desc" data-i18n="about.feat2Desc">La sécurité est notre priorité absolue. Nous appliquons rigoureusement les normes pour garantir un environnement de travail sûr.</div>
         </div>
       </div>
       <div class="feat">
-        <div class="feat-icon">💻</div>
+        <div class="feat-icon">03</div>
         <div>
           <div class="feat-title" data-i18n="about.feat3Title">Service Technique de Pointe</div>
           <div class="feat-desc" data-i18n="about.feat3Desc">Utilisation de logiciels professionnels (AutoCAD, ArchiCAD, Revit, Robot Structural) pour des études précises et conformes.</div>
@@ -509,7 +507,7 @@
       
       <div class="calc-result" id="calc-result-panel">
         <div class="result-placeholder">
-          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.2;">📊</div>
+          <div class="calc-placeholder-mark">Estimation</div>
           <p class="calc-placeholder-text" data-i18n="calculator.placeholder">Configurez votre projet à gauche pour obtenir un chiffrage prévisionnel.</p>
         </div>
       </div>
@@ -612,28 +610,28 @@
     <p class="section-lead" data-i18n="contact.lead">Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.</p>
     <div class="contact-info" id="contactInfo">
       <div class="contact-item">
-        <div class="contact-icon">📞</div>
+        <div class="contact-icon">Tel</div>
         <div>
         <div class="contact-label" data-i18n="contact.phoneLabel">Téléphone</div>
         <div class="contact-val" id="contactPhone">032 82 312 80 / 037 07 396 07</div>
         </div>
       </div>
       <div class="contact-item">
-        <div class="contact-icon">✉️</div>
+        <div class="contact-icon">Mail</div>
         <div>
         <div class="contact-label" data-i18n="contact.emailLabel">Email</div>
         <div class="contact-val" id="contactEmail">nordinvestmada@gmail.com</div>
         </div>
       </div>
       <div class="contact-item">
-        <div class="contact-icon">📍</div>
+        <div class="contact-icon">Adr</div>
         <div>
         <div class="contact-label" data-i18n="contact.addressLabel">Siège Social</div>
         <div class="contact-val" id="contactAddress">Tanambao 1, en face de Madahoufi, Rue Comores<br>Antsiranana (Diego Suarez)</div>
         </div>
       </div>
       <div class="contact-item">
-        <div class="contact-icon">🏝️</div>
+        <div class="contact-icon">NB</div>
         <div>
         <div class="contact-label" data-i18n="contact.officeLabel">Antenne</div>
         <div class="contact-val" id="contactOffice">Nosy Be</div>
@@ -771,12 +769,12 @@
 </footer>
 
 <!-- BLOG POST MODAL -->
-<div id="blogModal" class="blog-modal" onclick="closeBlogPost(event)">
-    <div class="blog-modal-content" onclick="event.stopPropagation()" id="blogModalContent">
+<div id="blogModal" class="blog-modal" onclick="closeBlogPost(event)" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="blogModalTitle">
+    <div class="blog-modal-content" onclick="event.stopPropagation()" id="blogModalContent" tabindex="-1">
       <div id="blogProgress" class="blog-progress"></div>
-      <button class="blog-modal-close" onclick="closeBlogPost()">&times;</button>
+      <button type="button" class="blog-modal-close" onclick="closeBlogPost()" aria-label="Fermer l'article">&times;</button>
       <div class="blog-modal-header">
-      <div class="blog-modal-title" id="blogModalTitle"></div>
+      <h2 class="blog-modal-title" id="blogModalTitle"></h2>
       <div class="blog-modal-meta">
         <div class="blog-modal-date" id="blogModalDate"></div>
         <div class="blog-modal-author" id="blogModalAuthor"></div>
@@ -791,8 +789,8 @@
 </div>
 
 <!-- PDF VIEWER MODAL -->
-<div id="pdfModal" class="pdf-modal" onclick="closePdfViewer(event)">
-  <div class="pdf-modal-content" id="pdfModalContent" onclick="event.stopPropagation()">
+<div id="pdfModal" class="pdf-modal" onclick="closePdfViewer(event)" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="pdfModalTitle">
+  <div class="pdf-modal-content" id="pdfModalContent" onclick="event.stopPropagation()" tabindex="-1">
     <div class="pdf-modal-drag-handle"><span></span></div>
     <div class="pdf-modal-header">
       <div class="pdf-modal-title-wrap">
@@ -802,15 +800,15 @@
         <div class="pdf-modal-title" id="pdfModalTitle">Document</div>
       </div>
       <div class="pdf-modal-actions">
-        <button onclick="openPdfInTab()" title="Ouvrir dans un nouvel onglet">
+        <button type="button" onclick="openPdfInTab()" title="Ouvrir dans un nouvel onglet" aria-label="Ouvrir le PDF dans un nouvel onglet">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           <span>Ouvrir</span>
         </button>
-        <button onclick="downloadCurrentPdf()" title="Télécharger">
+        <button type="button" onclick="downloadCurrentPdf()" title="Télécharger" aria-label="Télécharger le PDF">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span data-i18n="pdf.download">Télécharger</span>
         </button>
-        <button class="pdf-modal-close" onclick="closePdfViewer()" title="Fermer">&times;</button>
+        <button type="button" class="pdf-modal-close" onclick="closePdfViewer()" title="Fermer" aria-label="Fermer le PDF">&times;</button>
       </div>
     </div>
     <div class="pdf-modal-body">
@@ -823,9 +821,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         </div>
         <p class="pdf-error-text">Impossible d'afficher le document.</p>
-        <button class="pdf-error-btn" onclick="downloadCurrentPdf()">Télécharger le fichier</button>
+        <button type="button" class="pdf-error-btn" onclick="downloadCurrentPdf()">Télécharger le fichier</button>
       </div>
-      <iframe id="pdfViewer" class="pdf-viewer-iframe"></iframe>
+      <iframe id="pdfViewer" class="pdf-viewer-iframe" title="Aperçu du document PDF"></iframe>
     </div>
   </div>
 </div>

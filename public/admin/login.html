@@ -36,7 +36,7 @@
           <span class="btn-loader hidden"></span>
         </button>
       </form>
-      <button class="dark-toggle" id="loginDarkToggle" onclick="toggleLoginDark()" style="margin-top:1.25rem;font-size:0.75rem;padding:0.45rem 0.75rem;background:none;border:1px solid var(--border-strong);border-radius:var(--radius-md);cursor:pointer;color:var(--text-muted);transition:all 0.2s;width:100%">🌙 Mode sombre</button>
+      <button class="dark-toggle" id="loginDarkToggle" onclick="toggleLoginDark()" style="margin-top:1.25rem;font-size:0.75rem;padding:0.45rem 0.75rem;background:none;border:1px solid var(--border-strong);border-radius:var(--radius-md);cursor:pointer;color:var(--text-muted);transition:all 0.2s;width:100%">Mode sombre</button>
     </div>
   </div>
   <script>
@@ -51,7 +51,7 @@
       document.body.classList.toggle('dark');
       const isDark = document.body.classList.contains('dark');
       localStorage.setItem('adminDarkMode', isDark);
-      document.getElementById('loginDarkToggle').textContent = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
+      document.getElementById('loginDarkToggle').textContent = isDark ? 'Mode clair' : 'Mode sombre';
     }
 
     const API_BASE = '/api/admin';

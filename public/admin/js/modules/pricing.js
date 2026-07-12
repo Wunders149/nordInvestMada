@@ -24,7 +24,7 @@ function renderPricingEditor() {
     const catLabels = { construction: 'Construction Neuve', rehabilitation: 'Études et Conception', forage: 'Forage d\'Eau' };
     html += `<div class="pricing-cat"><h4>${catLabels[cat]}</h4>`;
     const tierKeys = Object.keys(tiers);
-    tierKeys.forEach((tier, ti) => {
+    tierKeys.forEach((tier) => {
       const t = tiers[tier];
       html += `<div class="pricing-tier" data-cat="${cat}" data-tier="${tier}">
         <div class="pricing-tier-header">
@@ -150,6 +150,6 @@ export async function savePricing() {
   } catch (err) {
     showToast('Erreur lors de l\'enregistrement: ' + err.message, 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
   }
 }

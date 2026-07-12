@@ -5,7 +5,7 @@ import { escapeHtml } from './helpers.js';
 const SECTIONS_CONFIG = {
   hero: {
     label: 'Hero',
-    icon: '🏠',
+    icon: 'Hero',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -22,7 +22,7 @@ const SECTIONS_CONFIG = {
   },
   about: {
     label: 'À Propos',
-    icon: 'ℹ️',
+    icon: 'Info',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -37,7 +37,7 @@ const SECTIONS_CONFIG = {
   },
   standards: {
     label: 'Normes & Sécurité',
-    icon: '🛡️',
+    icon: 'Norm',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -55,7 +55,7 @@ const SECTIONS_CONFIG = {
   },
   values: {
     label: 'Valeurs',
-    icon: '⭐',
+    icon: 'Val',
     fields: [
       { key: 'title1', label: 'Titre valeur 1', type: 'text' },
       { key: 'desc1', label: 'Description valeur 1', type: 'textarea' },
@@ -67,7 +67,7 @@ const SECTIONS_CONFIG = {
   },
   team: {
     label: 'Équipe',
-    icon: '👥',
+    icon: 'Eq',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -76,7 +76,7 @@ const SECTIONS_CONFIG = {
   },
   services: {
     label: 'Services',
-    icon: '🔧',
+    icon: 'Srv',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -85,7 +85,7 @@ const SECTIONS_CONFIG = {
   },
   pricing: {
     label: 'Tarifs',
-    icon: '💰',
+    icon: 'Ar',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -98,7 +98,7 @@ const SECTIONS_CONFIG = {
   },
   calculator: {
     label: 'Simulateur',
-    icon: '📊',
+    icon: 'Sim',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -107,7 +107,7 @@ const SECTIONS_CONFIG = {
   },
   projects: {
     label: 'Réalisations',
-    icon: '🏗️',
+    icon: 'Prj',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -116,7 +116,7 @@ const SECTIONS_CONFIG = {
   },
   dossiers: {
     label: 'Vente de Terrains',
-    icon: '📁',
+    icon: 'Doc',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -125,7 +125,7 @@ const SECTIONS_CONFIG = {
   },
   blog: {
     label: 'Blog',
-    icon: '📝',
+    icon: 'Blog',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -134,7 +134,7 @@ const SECTIONS_CONFIG = {
   },
   contact: {
     label: 'Contact',
-    icon: '✉️',
+    icon: 'Msg',
     fields: [
       { key: 'tag', label: 'Tag', type: 'text' },
       { key: 'title', label: 'Titre (HTML autorisé)', type: 'textarea' },
@@ -149,7 +149,7 @@ const SECTIONS_CONFIG = {
   },
   numbers: {
     label: 'Chiffres',
-    icon: '🔢',
+    icon: 'Num',
     fields: [
       { key: 'exp', label: 'Étiquette années d\'expérience', type: 'text' },
       { key: 'tech', label: 'Étiquette techniciens', type: 'text' },
@@ -159,7 +159,7 @@ const SECTIONS_CONFIG = {
   },
   visionMission: {
     label: 'Vision & Mission',
-    icon: '👁️',
+    icon: 'VM',
     fields: [
       { key: 'visionTitle', label: 'Vision — Titre', type: 'text' },
       { key: 'visionText', label: 'Vision — Texte', type: 'textarea' },
@@ -169,7 +169,7 @@ const SECTIONS_CONFIG = {
   },
   newsletter: {
     label: 'Newsletter',
-    icon: '📧',
+    icon: 'Nl',
     fields: [
       { key: 'title', label: 'Titre', type: 'text' },
       { key: 'desc', label: 'Description', type: 'textarea' },
@@ -184,9 +184,9 @@ let allSlots = [];
 let currentSectionLang = 'fr';
 let sectionLoadSeq = 0;
 const SUPPORTED_LANGS = [
-  { code: 'fr', label: '🇫🇷 Français' },
-  { code: 'en', label: '🇬🇧 English' },
-  { code: 'mg', label: '🇲🇬 Malagasy' }
+  { code: 'fr', label: 'FR - Français' },
+  { code: 'en', label: 'EN - English' },
+  { code: 'mg', label: 'MG - Malagasy' }
 ];
 
 async function loadImageSlots() {
@@ -246,7 +246,7 @@ function renderSectionsEditor(container) {
     <div class="sections-toolbar">
       <p class="sections-info">Modifiez les textes d'en-tête et de présentation de chaque section. Les champs sont pré-remplis avec le contenu actuel du site. <strong>Les champs laissés vides utiliseront le texte par défaut du site.</strong></p>
       <button class="btn-primary" id="saveAllSectionsBtn" onclick="window.saveAllSections()">
-        💾 Enregistrer toutes les sections (${currentSectionLang.toUpperCase()})
+        Enregistrer toutes les sections (${currentSectionLang.toUpperCase()})
       </button>
     </div>
     <div class="sections-accordion">`;
@@ -287,7 +287,7 @@ function renderSectionsEditor(container) {
       html += `</div>
           <div class="section-image-slots">
             <div class="section-image-slots-header">
-              <span class="section-image-slots-title">🖼 Images de la section</span>
+              <span class="section-image-slots-title">Images de la section</span>
               <button class="btn-icon" onclick="window.createSectionSlot('${sectionKey}')" title="Nouveau slot">＋</button>
             </div>
             <div class="section-slots-grid">`;
@@ -297,7 +297,7 @@ function renderSectionsEditor(container) {
         html += `
               <div class="section-slot-card">
                 <div class="section-slot-thumb"${thumbUrl ? ` style="background-image:url('${escapeHtml(thumbUrl)}')"` : ''}>
-                  ${!hasImage ? '<div class="section-slot-placeholder">📷</div>' : ''}
+                  ${!hasImage ? '<div class="section-slot-placeholder">Image</div>' : ''}
                   <div class="section-slot-status ${hasImage ? 'assigned' : ''}"></div>
                 </div>
                 <div class="section-slot-info">
@@ -306,7 +306,7 @@ function renderSectionsEditor(container) {
                 </div>
                 <div class="section-slot-actions">
                   <button class="btn-icon btn-icon-sm" onclick="window.uploadToSectionSlot('${slot.id}')" title="${hasImage ? 'Remplacer' : 'Uploader'}">⬆</button>
-                  <button class="btn-icon btn-icon-sm danger" onclick="window.deleteSectionSlot('${slot.id}')" title="Supprimer">✕</button>
+                  <button class="btn-icon btn-icon-sm danger" onclick="window.deleteSectionSlot('${slot.id}')" title="Supprimer">Sup</button>
                 </div>
               </div>`;
       }
@@ -328,7 +328,7 @@ function renderSectionsEditor(container) {
     </div>
     <div class="sections-footer">
       <button class="btn-primary" id="saveAllSectionsBtn2" onclick="window.saveAllSections()">
-        💾 Enregistrer toutes les sections (${currentSectionLang.toUpperCase()})
+        Enregistrer toutes les sections (${currentSectionLang.toUpperCase()})
       </button>
     </div>`;
 
@@ -346,7 +346,7 @@ export async function saveAllSections() {
     btns.forEach(b => {
       if (b) {
         b.disabled = saving;
-        b.innerHTML = saving ? '<span class="btn-loader"></span> Enregistrement...' : '💾 Enregistrer toutes les sections';
+        b.innerHTML = saving ? '<span class="btn-loader"></span> Enregistrement...' : 'Enregistrer toutes les sections';
       }
     });
   };

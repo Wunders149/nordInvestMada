@@ -21,7 +21,7 @@ function populateSlotSelect() {
   slots.filter(s => s.section === section).forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.id;
-    opt.textContent = s.label + (s.uploadedFile ? ' ✓' : '');
+    opt.textContent = s.label + (s.uploadedFile ? ' (image)' : '');
     sel.appendChild(opt);
   });
 }
@@ -48,7 +48,7 @@ export function renderImages() {
     (images[section] || []).forEach(f => allFiles.push({ ...f, section }));
   });
   if (allFiles.length === 0) {
-    grid.innerHTML = emptyStateGrid('🖼', 'Aucune image', 'Uploader des images via le formulaire ci-dessus.');
+    grid.innerHTML = emptyStateGrid('', 'Aucune image', 'Uploader des images via le formulaire ci-dessus.');
     return;
   }
   grid.innerHTML = allFiles.map(f => {
@@ -70,10 +70,10 @@ export function renderImages() {
         <div class="img-actions">
           <select class="slot-select" onchange="assignSlot('${escapeHtml(f.section)}', '${escapeHtml(f.name)}', this.value)">
             <option value="">Assigner...</option>
-            ${sectionSlots.map(s => `<option value="${s.id}" ${s.id === f.slotId ? 'selected' : ''}>${escapeHtml(s.label)}${s.id === f.slotId ? ' ✓' : ''}</option>`).join('')}
+            ${sectionSlots.map(s => `<option value="${s.id}" ${s.id === f.slotId ? 'selected' : ''}>${escapeHtml(s.label)}${s.id === f.slotId ? ' (actuel)' : ''}</option>`).join('')}
           </select>
-          <button class="btn-icon info" onclick="openImageEditor('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Modifier">✏</button>
-          <button class="btn-icon danger" onclick="confirmDeleteImage('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Supprimer">✕</button>
+          <button class="btn-icon info" onclick="openImageEditor('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Modifier">Mod</button>
+          <button class="btn-icon danger" onclick="confirmDeleteImage('${escapeHtml(f.section)}', '${escapeHtml(f.name)}')" title="Supprimer">Sup</button>
         </div>
       </div>
     `;
@@ -152,7 +152,7 @@ export function openImageEditor(section, filename) {
   sectionSlots.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.id;
-    opt.textContent = s.label + (s.id === currentSlot?.id ? ' (actuel)' : s.uploadedFile ? ' ✓' : '');
+    opt.textContent = s.label + (s.id === currentSlot?.id ? ' (actuel)' : s.uploadedFile ? ' (image)' : '');
     if (currentSlot && currentSlot.id === s.id) opt.selected = true;
     slotSelect.appendChild(opt);
   });
@@ -225,7 +225,7 @@ export async function saveImageEdit() {
     errorEl.classList.remove('hidden');
   } finally {
     btn.disabled = false;
-    btn.textContent = '💾 Enregistrer';
+    btn.textContent = 'Enregistrer';
   }
 }
 

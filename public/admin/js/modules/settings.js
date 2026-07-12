@@ -101,7 +101,7 @@ function renderSettingsEditor() {
         <h4>Test d'envoi d'email</h4>
         <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
           <input class="search-input" id="testEmailTo" placeholder="Email destinataire" style="flex:1;min-width:200px" value="">
-          <button class="btn-secondary" onclick="testEmail()" style="padding:0.5rem 1rem">📧 Tester</button>
+          <button class="btn-secondary" onclick="testEmail()" style="padding:0.5rem 1rem">Tester</button>
           <span id="testEmailStatus" style="font-size:0.8125rem;color:var(--gray-500)"></span>
         </div>
       </div>
@@ -120,11 +120,11 @@ export async function testEmail() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
-    status.textContent = '✓ Email envoyé avec succès';
+    status.textContent = 'Email envoyé avec succès';
     status.style.color = 'var(--success)';
     showToast('Email test envoyé', 'success');
   } catch (err) {
-    status.textContent = '✗ ' + err.message;
+    status.textContent = 'Erreur : ' + err.message;
     status.style.color = 'var(--danger)';
     showToast('Échec: ' + err.message, 'error');
   }
@@ -174,6 +174,6 @@ export async function saveSettings() {
   } catch (err) {
     showToast('Erreur lors de l\'enregistrement' + (err.message ? ': ' + err.message : ''), 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
   }
 }

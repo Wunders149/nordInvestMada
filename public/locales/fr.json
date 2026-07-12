@@ -187,7 +187,7 @@
     "desc": "Recevez nos actualités, conseils techniques et offres spéciales par email. Pas de spam, désabonnement à tout moment.",
     "btn": "S'abonner",
     "sending": "...",
-    "success": "✓ Merci pour votre inscription !",
+    "success": "Merci pour votre inscription !",
     "error": "Erreur. Réessayez.",
     "errorGeneric": "Erreur de connexion. Réessayez.",
     "consent": "J'accepte de recevoir les communications de Nord Invest Madagascar",
@@ -260,10 +260,10 @@
     "alertInvalidSurface": "Veuillez entrer une surface valide."
   },
   "contact": {
-    "sending": "⏳ Envoi en cours...",
-    "sent": "✓ Message envoyé !",
-    "sentMessage": "✓ Votre demande a été reçue. Nous vous répondrons sous 24h.",
-    "errorMessage": "✘ Erreur lors de l'envoi. Contactez-nous au 032 82 312 80.",
+    "sending": "Envoi en cours...",
+    "sent": "Message envoyé",
+    "sentMessage": "Votre demande a été reçue. Nous vous répondrons sous 24h.",
+    "errorMessage": "Erreur lors de l'envoi. Contactez-nous au 032 82 312 80.",
     "tag": "Contact",
     "title": "Parlons de<br>votre projet.",
     "lead": "Un devis gratuit et sans engagement. Nous vous répondons sous 24h ouvrées.",

@@ -52,11 +52,11 @@ export function openCategoryManager() {
         <input type="hidden" class="cat-image" value="${escapeHtml(cat.image || '')}">
         ${cat.image ? `<img src="${escapeHtml(cat.image)}" alt="" class="cat-img-preview">` : ''}
         <input type="file" class="cat-image-file" accept="image/*" style="display:none" data-index="${i}">
-        <button class="btn-icon" onclick="catUploadClick(${i})" title="Upload image">📷</button>
-        ${cat.image ? `<button class="btn-icon danger" onclick="catRemoveImage(${i})" title="Supprimer">✕</button>` : ''}
+        <button class="btn-icon" onclick="catUploadClick(${i})" title="Upload image">Img</button>
+        ${cat.image ? `<button class="btn-icon danger" onclick="catRemoveImage(${i})" title="Supprimer">x</button>` : ''}
         <span class="cat-image-status" style="font-size:0.7rem;color:var(--gray-500)"></span>
       </div>
-      <button class="btn-icon danger" onclick="removeCategoryRow(this)" title="Supprimer">✕</button>
+      <button class="btn-icon danger" onclick="removeCategoryRow(this)" title="Supprimer">x</button>
     </div>
   `).join('');
 
@@ -87,10 +87,10 @@ export function addCategoryRow() {
     <div class="cat-img-upload">
       <input type="hidden" class="cat-image" value="">
       <input type="file" class="cat-image-file" accept="image/*" style="display:none" data-index="${i}">
-      <button class="btn-icon" onclick="catUploadClick(${i})" title="Upload image">📷</button>
+      <button class="btn-icon" onclick="catUploadClick(${i})" title="Upload image">Img</button>
       <span class="cat-image-status" style="font-size:0.7rem;color:var(--gray-500)"></span>
     </div>
-    <button class="btn-icon danger" onclick="removeCategoryRow(this)" title="Supprimer">✕</button>
+    <button class="btn-icon danger" onclick="removeCategoryRow(this)" title="Supprimer">x</button>
   `;
   list.appendChild(div);
 }
@@ -124,7 +124,7 @@ export async function catUploadClick(index) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Échec');
       row.querySelector('.cat-image').value = data.url;
-      statusEl.textContent = '✓';
+      statusEl.textContent = 'OK';
       // Add preview or remove existing
       const existingImg = row.querySelector('.cat-img-preview');
       if (existingImg) {
@@ -137,7 +137,7 @@ export async function catUploadClick(index) {
         row.querySelector('.cat-img-upload').insertBefore(preview, fileInput);
       }
     } catch (_err) {
-      statusEl.textContent = '✗ ' + _err.message;
+      statusEl.textContent = 'Erreur : ' + _err.message;
     }
   };
 }

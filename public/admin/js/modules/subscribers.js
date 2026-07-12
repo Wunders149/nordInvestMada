@@ -25,7 +25,7 @@ export function renderSubscribers() {
   if (!tbody) return;
   const filtered = subscribers.filter(s => s.email.toLowerCase().includes(search));
   if (filtered.length === 0) {
-    tbody.innerHTML = emptyState('📧', 'Aucun abonné', 'Les inscrits à la newsletter apparaîtront ici.');
+    tbody.innerHTML = emptyState('', 'Aucun abonné', 'Les inscrits à la newsletter apparaîtront ici.');
     document.getElementById('subPagination').innerHTML = '';
     return;
   }
@@ -38,7 +38,7 @@ export function renderSubscribers() {
       <td data-label="Date">${formatDate(s.date)}</td>
       <td data-label="Email"><a href="mailto:${escapeHtml(s.email)}">${escapeHtml(s.email)}</a></td>
       <td class="actions-cell">
-        <button class="btn-icon danger" onclick="confirmDeleteSubscriber('${escapeHtml(s.email)}')" title="Supprimer">✕</button>
+        <button class="btn-icon danger" onclick="confirmDeleteSubscriber('${escapeHtml(s.email)}')" title="Supprimer">Sup</button>
       </td>
     </tr>
   `).join('');

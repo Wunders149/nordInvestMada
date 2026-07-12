@@ -71,9 +71,9 @@ export async function getCloudinaryMapping() {
     if (error) throw error;
     mappingCache = data?.value || {};
     return mappingCache;
-  } catch {
-    mappingCache = {};
-    return mappingCache;
+  } catch (err) {
+    console.warn('Cloudinary mapping unavailable:', err.message);
+    return mappingCache || {};
   }
 }
 

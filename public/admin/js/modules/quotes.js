@@ -96,7 +96,7 @@ export function renderQuotes() {
   if (pendEl) pendEl.textContent = totalPending;
   if (state.quotePage > Math.ceil(filtered.length / PER_PAGE)) state.quotePage = 1;
   if (filtered.length === 0) {
-    tbody.innerHTML = emptyState('📋', 'Aucun devis', state.quoteFilter === 'pending' ? 'Aucun devis en attente.' : 'Les demandes de devis apparaîtront ici.');
+    tbody.innerHTML = emptyState('', 'Aucun devis', state.quoteFilter === 'pending' ? 'Aucun devis en attente.' : 'Les demandes de devis apparaîtront ici.');
     document.getElementById('quotesPagination').innerHTML = '';
     return;
   }
@@ -123,7 +123,7 @@ export function renderQuotes() {
         </select>
       </td>
       <td class="actions-cell">
-        <button class="btn-icon danger" onclick="confirmDeleteQuote('${q.id}')" title="Supprimer">✕</button>
+        <button class="btn-icon danger" onclick="confirmDeleteQuote('${q.id}')" title="Supprimer">Sup</button>
       </td>
     </tr>
   `).join('');

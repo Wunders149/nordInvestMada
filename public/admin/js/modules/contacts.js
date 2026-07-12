@@ -131,7 +131,7 @@ export function renderContacts() {
   if (newEl) newEl.textContent = totalNew;
   if (state.contactPage > Math.ceil(filtered.length / PER_PAGE)) state.contactPage = 1;
   if (filtered.length === 0) {
-    tbody.innerHTML = emptyState('✉', 'Aucun message', state.contactFilter === 'new' ? 'Aucun nouveau message.' : state.contactFilter === 'resolved' ? 'Aucun message résolu.' : 'Les messages de contact apparaîtront ici.');
+    tbody.innerHTML = emptyState('', 'Aucun message', state.contactFilter === 'new' ? 'Aucun nouveau message.' : state.contactFilter === 'resolved' ? 'Aucun message résolu.' : 'Les messages de contact apparaîtront ici.');
     document.getElementById('contactsPagination').innerHTML = '';
     return;
   }
@@ -152,9 +152,9 @@ export function renderContacts() {
         ${c.resolved ? '<span class="badge badge-success">Résolu</span>' : c.read ? '<span class="badge badge-info">Lu</span>' : '<span class="badge badge-warning">Nouveau</span>'}
       </td>
       <td class="actions-cell" onclick="event.stopPropagation()">
-        ${!c.read ? `<button class="btn-icon success" onclick="markRead('${c.id}')" title="Marquer lu">✓</button>` : ''}
-        ${!c.resolved ? `<button class="btn-icon info" onclick="markResolved('${c.id}')" title="Résoudre">✓</button>` : ''}
-        <button class="btn-icon danger" onclick="confirmDeleteContact('${c.id}')" title="Supprimer">✕</button>
+        ${!c.read ? `<button class="btn-icon success" onclick="markRead('${c.id}')" title="Marquer lu">Lu</button>` : ''}
+        ${!c.resolved ? `<button class="btn-icon info" onclick="markResolved('${c.id}')" title="Résoudre">OK</button>` : ''}
+        <button class="btn-icon danger" onclick="confirmDeleteContact('${c.id}')" title="Supprimer">Sup</button>
       </td>
     </tr>
   `).join('');
