@@ -187,7 +187,7 @@ sections.forEach(s => navObserver.observe(s));
 
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
-const mobileMQ = window.matchMedia('(max-width: 900px)');
+const mobileMQ = window.matchMedia('(max-width: 768px)');
 const navDropdownLinks = document.querySelectorAll('.nav-dropdown > a');
 
 let lastFocusedEl = null;
