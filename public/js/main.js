@@ -92,7 +92,7 @@ async function loadTranslations(lang) {
   const normalizedLang = normalizeLanguage(lang);
 
   try {
-    const res = await fetch(`/locales/${normalizedLang}.json`);
+    const res = await fetch(`/locales/${normalizedLang}.json`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Translation not found');
     translations = await res.json();
     persistLanguage(normalizedLang);
@@ -149,7 +149,7 @@ function applyTranslations() {
 }
 
 function getNestedTranslation(key) {
-  return key.split('.').reduce((obj, i) => (obj && obj[i] !== undefined) ? obj[i] : null, translations) || key;
+  return key.split('.').reduce((obj, i) => (obj && obj[i] !== undefined) ? obj[i] : null, translations);
 }
 
 function updateLangButtons() {
@@ -1003,46 +1003,63 @@ async function loadImageSlots() {
 // ═══════════════════════════════════════════════════════
 
 let heroSwapTimer = null;
-let heroSwapInitialized = false;
 
 function initHeroSwap() {
-  const heroLeftBg = document.querySelector('.hero-left-bg');
-  const heroImg = document.querySelector('.hero-img');
-  if (!heroLeftBg || !heroImg) return;
+  const hero = document.getElementById('hero');
+  const heroRight = hero?.querySelector('.hero-right');
+  const slides = heroRight ? Array.from(heroRight.querySelectorAll('.hero-slide')) : [];
+  const nav = heroRight?.querySelector('.hero-slider-nav');
+  if (!heroRight || !nav || slides.length < 2) return;
 
   if (heroSwapTimer) clearInterval(heroSwapTimer);
-  heroSwapInitialized = false;
+  let activeIndex = Math.max(0, slides.findIndex(slide => slide.classList.contains('is-active')));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  nav.innerHTML = '';
+  const controls = slides.map((_, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'hero-slider-dot';
+    button.setAttribute('aria-label', `Afficher l’image ${index + 1}`);
+    nav.appendChild(button);
+    return button;
+  });
 
-  const leftBg = getComputedStyle(heroLeftBg).backgroundImage;
-  const rightSrc = heroImg.src;
-  if (!leftBg || leftBg === 'none' || !rightSrc) return;
-  if (leftBg.includes('placeholder.svg') || rightSrc.includes('placeholder.svg')) return;
+  function showSlide(nextIndex) {
+    activeIndex = (nextIndex + slides.length) % slides.length;
+    slides.forEach((slide, index) => {
+      const isActive = index === activeIndex;
+      slide.classList.toggle('is-active', isActive);
+      slide.setAttribute('aria-hidden', String(!isActive));
+      controls[index].classList.toggle('is-active', isActive);
+      controls[index].setAttribute('aria-current', isActive ? 'true' : 'false');
+    });
+  }
 
-  heroSwapInitialized = true;
+  function stopSlideshow() {
+    if (heroSwapTimer) clearInterval(heroSwapTimer);
+    heroSwapTimer = null;
+  }
 
-  heroSwapTimer = setInterval(() => {
-    const currentLeftBg = heroLeftBg.style.backgroundImage || getComputedStyle(heroLeftBg).backgroundImage;
-    const currentRightSrc = heroImg.src;
+  function startSlideshow() {
+    stopSlideshow();
+    if (reduceMotion || document.hidden) return;
+    heroSwapTimer = setInterval(() => showSlide(activeIndex + 1), 6000);
+  }
 
-    if (!currentLeftBg || currentLeftBg === 'none' || !currentRightSrc) return;
-    if (currentLeftBg.includes('placeholder.svg') || currentRightSrc.includes('placeholder.svg')) return;
+  controls.forEach((button, index) => {
+    button.addEventListener('click', () => {
+      showSlide(index);
+      startSlideshow();
+    });
+  });
 
-    const leftUrl = currentLeftBg.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
-    const rightUrl = currentRightSrc;
+  heroRight.onmouseenter = stopSlideshow;
+  heroRight.onmouseleave = startSlideshow;
+  heroRight.onfocusin = stopSlideshow;
+  heroRight.onfocusout = startSlideshow;
 
-    heroLeftBg.classList.add('swap-out');
-    heroImg.classList.add('swap-out');
-
-    setTimeout(() => {
-      heroLeftBg.style.backgroundImage = `url('${rightUrl}')`;
-      heroImg.src = leftUrl;
-
-      requestAnimationFrame(() => {
-        heroLeftBg.classList.remove('swap-out');
-        heroImg.classList.remove('swap-out');
-      });
-    }, 400);
-  }, 5000);
+  showSlide(activeIndex);
+  startSlideshow();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2450,6 +2467,7 @@ function initGlobalMotion() {
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   initGlobalMotion();
+  initHeroSwap();
   loadBlogCategories();
   loadImageSlots();
   loadTeam();
