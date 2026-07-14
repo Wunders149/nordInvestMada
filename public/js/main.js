@@ -390,14 +390,22 @@ function switchTab(name) {
   const panel = document.getElementById('tab-' + name);
   if (!panel) return;
 
-  document.querySelectorAll('.pricing-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.pricing-panel').forEach(p => {
+    p.classList.remove('active');
+    p.hidden = true;
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
   
   panel.classList.add('active');
+  panel.hidden = false;
   
   document.querySelectorAll('.tab-btn').forEach(b => {
     if (b.dataset.tab === name) {
       b.classList.add('active');
+      b.setAttribute('aria-selected', 'true');
     }
   });
 }
@@ -1723,9 +1731,9 @@ function applySectionContent(cfg) {
     setElText('#pricing .section-tag', s.pricing.tag);
     setElHtml('#pricing h2', s.pricing.title);
     setElText('#pricing .section-lead', s.pricing.lead);
-    setElText('.pricing-tabs > .tab-btn:nth-child(1)', s.pricing.tab1);
-    setElText('.pricing-tabs > .tab-btn:nth-child(2)', s.pricing.tab2);
-    setElText('.pricing-tabs > .tab-btn:nth-child(3)', s.pricing.tab3);
+    setElText('.pricing-tabs > .tab-btn:nth-child(1) .pricing-tab-label', s.pricing.tab1);
+    setElText('.pricing-tabs > .tab-btn:nth-child(2) .pricing-tab-label', s.pricing.tab2);
+    setElText('.pricing-tabs > .tab-btn:nth-child(3) .pricing-tab-label', s.pricing.tab3);
     if (s.pricing.note) {
       const note = document.querySelector('.pricing-footer');
       if (note) note.innerHTML = s.pricing.note;

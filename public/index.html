@@ -130,7 +130,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/style.css?v=20260714-pricing-mobile-1">
 </head>
 <body>
 
@@ -225,8 +225,8 @@
     <div class="hero-media" aria-hidden="true">
       <img src="/images/hero/architecture.svg" alt="" class="hero-img hero-slide is-active" loading="eager" data-image-slot="hero">
       <div class="hero-left-bg hero-slide" data-image-slot="hero-bg-left" style="background-image: url('/images/hero/architecture-left.svg')"></div>
-      <img src="/images/projects/palas-ramena.svg" alt="" class="hero-img hero-slide" loading="eager">
-      <img src="/images/projects/centre-islamique.svg" alt="" class="hero-img hero-slide" loading="eager">
+      <img src="/images/hero/palas-ramena-photo.jpg" alt="" class="hero-img hero-slide" loading="eager" decoding="async">
+      <img src="/images/hero/centre-islamique-photo.jpg" alt="" class="hero-img hero-slide" loading="eager" decoding="async">
     </div>
     <div class="hero-decor"></div>
     <div class="hero-shapes" aria-hidden="true">
@@ -420,24 +420,33 @@
       <p class="section-lead" data-i18n="pricing.lead">Nos prix sont exprimés en Ariary malgache (Ar) par m². Ils varient selon la gamme de finition, la complexité du projet et sa localisation. Devis personnalisé sur demande.</p>
     </div>
 
-    <div class="pricing-tabs reveal">
-    <button class="tab-btn active" data-tab="construction" onclick="switchTab('construction')" data-i18n="pricing.tab1">Construction Neuve</button>
-    <button class="tab-btn" data-tab="rehab" onclick="switchTab('rehab')" data-i18n="pricing.tab2">Études et Conception</button>
-    <button class="tab-btn" data-tab="forage" onclick="switchTab('forage')" data-i18n="pricing.tab3">Forage d'Eau</button>
+    <div class="pricing-tabs reveal" role="tablist" aria-label="Types de prestations">
+    <button class="tab-btn active" id="pricing-tab-construction" role="tab" aria-selected="true" aria-controls="tab-construction" data-tab="construction" onclick="switchTab('construction')">
+      <span class="pricing-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13M8 21v-7h8v7M9 9h.01M15 9h.01"/></svg></span>
+      <span class="pricing-tab-label" data-i18n="pricing.tab1">Construction Neuve</span>
+    </button>
+    <button class="tab-btn" id="pricing-tab-rehab" role="tab" aria-selected="false" aria-controls="tab-rehab" data-tab="rehab" onclick="switchTab('rehab')">
+      <span class="pricing-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 21 3.8-1 12-12a2.1 2.1 0 0 0-3-3l-12 12L3 21ZM14 6l4 4M12 21h9"/></svg></span>
+      <span class="pricing-tab-label" data-i18n="pricing.tab2">Études et Conception</span>
+    </button>
+    <button class="tab-btn" id="pricing-tab-forage" role="tab" aria-selected="false" aria-controls="tab-forage" data-tab="forage" onclick="switchTab('forage')">
+      <span class="pricing-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2S5.5 9.2 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 9.2 12 2 12 2ZM9 16.5c.5 1.2 1.4 1.8 2.7 2"/></svg></span>
+      <span class="pricing-tab-label" data-i18n="pricing.tab3">Forage d'Eau</span>
+    </button>
   </div>
 
   <!-- Construction -->
-  <div class="pricing-panel active" id="tab-construction">
+  <div class="pricing-panel active" id="tab-construction" role="tabpanel" aria-labelledby="pricing-tab-construction">
     <div id="pricingGrid-construction" class="pricing-grid reveal reveal-stagger"><div class="loading-spinner" style="margin:24px auto"></div></div>
   </div>
 
   <!-- Études et Conception -->
-  <div class="pricing-panel" id="tab-rehab">
+  <div class="pricing-panel" id="tab-rehab" role="tabpanel" aria-labelledby="pricing-tab-rehab" hidden>
     <div id="pricingGrid-rehabilitation" class="pricing-grid reveal reveal-stagger"><div class="loading-spinner" style="margin:24px auto"></div></div>
   </div>
 
   <!-- Forage -->
-  <div class="pricing-panel" id="tab-forage">
+  <div class="pricing-panel" id="tab-forage" role="tabpanel" aria-labelledby="pricing-tab-forage" hidden>
     <div id="pricingGrid-forage" class="pricing-grid reveal reveal-stagger"><div class="loading-spinner" style="margin:24px auto"></div></div>
   </div>
 
@@ -866,6 +875,6 @@
 </div>
 
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script defer src="/js/main.js"></script>
+<script defer src="/js/main.js?v=20260714-pricing-mobile-1"></script>
 </body>
 </html>

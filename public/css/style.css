@@ -6853,3 +6853,149 @@ body.site-ready .hero-stats > div:nth-child(4)::after { animation-delay: 1290ms;
   }
 }
 
+/* Mobile pricing service selector */
+.pricing-tab-icon {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  #pricing .pricing-intro {
+    margin-bottom: 30px;
+  }
+
+  #pricing .pricing-tabs {
+    display: grid;
+    width: 100%;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(170px, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+    padding: 2px 0 10px;
+    overflow-x: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    scroll-padding-inline: 2px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+
+  #pricing .tab-btn {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 66px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    box-shadow: 0 8px 24px rgba(24, 16, 12, 0.06);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+    line-height: 1.25;
+    text-align: left;
+    white-space: normal;
+    scroll-snap-align: start;
+  }
+
+  #pricing .pricing-tab-icon {
+    display: inline-grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+    border: 1px solid rgba(192, 64, 42, 0.18);
+    border-radius: 50%;
+    color: var(--rust);
+    background: rgba(192, 64, 42, 0.09);
+  }
+
+  #pricing .pricing-tab-icon svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #pricing .pricing-tab-label {
+    display: block;
+    min-width: 0;
+    text-wrap: balance;
+  }
+
+  #pricing .tab-btn.active {
+    border-color: var(--rust);
+    color: #fff;
+    background: linear-gradient(120deg, var(--rust-dark), var(--rust));
+    box-shadow: 0 10px 26px rgba(139, 45, 26, 0.24);
+  }
+
+  #pricing .tab-btn.active::after {
+    content: "✓";
+    display: grid;
+    width: 20px;
+    height: 20px;
+    margin-left: auto;
+    flex: 0 0 20px;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--rust-dark);
+    background: #fff;
+    font-size: 0.72rem;
+    line-height: 1;
+  }
+
+  #pricing .tab-btn.active .pricing-tab-icon {
+    border-color: rgba(255, 255, 255, 0.28);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+@media (max-width: 600px) {
+  #pricing .pricing-tabs {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    padding-bottom: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  #pricing .tab-btn {
+    width: 100%;
+    min-height: 62px;
+    padding: 10px 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  #pricing .tab-btn {
+    min-height: 58px;
+    gap: 9px;
+    padding: 8px 10px;
+    font-size: 0.69rem;
+  }
+
+  #pricing .pricing-tab-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  #pricing .pricing-tab-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+}
+
