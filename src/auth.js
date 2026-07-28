@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { supabase, logActivity as dbLogActivity } from './supabase.js';
