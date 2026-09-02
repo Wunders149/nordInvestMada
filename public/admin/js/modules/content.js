@@ -16,8 +16,12 @@ const ENTITY_CONFIG = {
     fields: [
       { key: 'name', label: 'Nom', type: 'text', required: true },
       { key: 'role', label: 'Rôle/Poste', type: 'select', options: 'dynamic_team_positions', required: true },
+      { key: 'groupType', label: 'Type d’équipe', type: 'select', options: [
+        { value: 'office', label: 'Équipe de bureau' },
+        { value: 'field', label: 'Équipe sur le terrain' }
+      ], default: 'office', required: true },
       { key: 'bio', label: 'Biographie', type: 'textarea' },
-      { key: 'image', label: 'Image', type: 'text' },
+      { key: 'imageSlot', label: 'Photo du membre', type: 'slot-select', section: 'team' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
@@ -29,6 +33,7 @@ const ENTITY_CONFIG = {
       { key: 'title', label: 'Titre', type: 'text', required: true },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
       { key: 'icon', label: 'Marque courte', type: 'text', default: '' },
+      { key: 'imageSlot', label: 'Photo du service', type: 'slot-select', section: 'services' },
       { key: 'order', label: 'Ordre', type: 'number', default: 1 },
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
@@ -234,12 +239,21 @@ export async function openCrudForm(entity, editId) {
   let html = '';
   for (const field of cfg.fields) {
     let val = item[field.key] !== undefined ? item[field.key] : undefined;
-    if (val === undefined && field.key === 'categoryId') val = item['imageSlot'];
+    if (val === undefined && (field.key === 'categoryId' || field.key === 'imageSlot')) val = item['imageSlot'];
     if (val === undefined) val = field.default !== undefined ? field.default : '';
     html += `<div class="form-group" data-field="${field.type}">`;
     html += `<label for="crud_${field.key}">${field.label}${field.required ? ' <span style="color:var(--danger)">*</span>' : ''}</label>`;
 
-    if (field.type === 'textarea') {
+    if (field.type === 'slot-select') {
+      const sectionSlots = slots.filter(s => s.section === field.section);
+      const current = sectionSlots.find(s => s.id === val);
+      html += `<select id="crud_${field.key}" class="status-select" style="width:100%" onchange="previewSlotImage(this)">`;
+      html += '<option value="">— Aucune image —</option>';
+      if (val && !current) html += `<option value="${escapeHtml(String(val))}" selected>Image existante</option>`;
+      html += sectionSlots.map(s => `<option value="${escapeHtml(s.id)}" data-url="${escapeHtml(s.currentUrl || '')}" ${s.id === val ? 'selected' : ''}>${escapeHtml(s.label)}${s.uploadedFile ? ' (image)' : ''}</option>`).join('');
+      html += '</select>';
+      html += `<div class="blog-img-upload" style="margin-top:10px"><div class="blog-img-preview" id="crud_${field.key}_preview"><span class="blog-img-placeholder">Image</span></div><div class="blog-img-actions"><input type="file" id="crud_${field.key}_file" accept="image/*"><button type="button" class="btn-secondary" onclick="uploadSlotImage('${field.key}', '${field.section}')">Téléverser</button><span id="crud_${field.key}_status"></span></div></div>`;
+    } else if (field.type === 'textarea') {
       html += `<textarea id="crud_${field.key}" class="detail-textarea" rows="4">${escapeHtml(String(val))}</textarea>`;
     } else if (field.type === 'checkbox') {
       html += `<label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-top:0.25rem">
@@ -282,6 +296,7 @@ export async function openCrudForm(entity, editId) {
   }
 
   document.getElementById('crudFormBody').innerHTML = html;
+  document.querySelectorAll('#crudFormBody select[id$="imageSlot"]').forEach(previewSlotImage);
 
   if (entity === 'blog') {
     const titleInput = document.getElementById('crud_title');
@@ -424,12 +439,16 @@ export async function saveCrudItem() {
       method = 'PATCH';
     }
     const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(body) });
-    if (!res.ok) throw new Error('Erreur');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erreur');
+    }
     closeCrudForm();
     showToast(`${cfg.label} ${currentEditId ? 'modifié' : 'ajouté'} avec succès`, 'success');
     loadEntity(currentEntity);
   } catch (_err) {
-    showToast('Erreur lors de l\'enregistrement', 'error');
+    if (_err.message === 'Erreur') _err.message = 'Erreur lors de l\'enregistrement';
+    showToast(`Erreur : ${_err.message}`, 'error');
   }
 }
 

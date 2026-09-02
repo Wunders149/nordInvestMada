@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { requireAuth, loginLimiter, createSession, destroySession, loginUser, logActivity, getTokenFromRequest } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
-import { uploadPdf, deleteImage, getPdfThumbnailUrl } from './cloudinary.js';
+import { uploadPdf, uploadVideo, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
 import { broadcast } from './events.js';
 import { validate, loginSchema } from './validation.js';
 import nodemailer from 'nodemailer';
@@ -17,7 +17,8 @@ const router = Router();
 
 const FIELD_MAP = {
   imageSlot: 'image_slot',
-  categoryId: 'image_slot'
+  categoryId: 'image_slot',
+  groupType: 'group_type'
 };
 
 function mapFields(body, direction = 'toDb') {
@@ -35,6 +36,13 @@ function mapFields(body, direction = 'toDb') {
     result[rev[key] || key] = value;
   }
   return result;
+}
+
+function schemaError(err) {
+  if (err && (err.code === '42703' || (err.message && err.message.includes('does not exist')))) {
+    return { error: 'La base de données n\'est pas à jour. Exécutez la migration SQL (voir docs/TEAM_SERVICES_UPGRADE.sql).', code: err.code };
+  }
+  return null;
 }
 
 function camelizeKeys(obj) {
@@ -310,6 +318,8 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
       res.json({ success: true, item: camelizeKeys(result) });
     } catch (err) {
       console.error(`${entityName} create error:`, err);
+      const schema = schemaError(err);
+      if (schema) return res.status(500).json(schema);
       res.status(500).json({ error: `Failed to create ${entityName.slice(0, -1)}` });
     }
   });
@@ -332,6 +342,8 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
     } catch (err) {
       console.error(`${entityName} update error:`, err);
       if (err.code === 'PGRST116') return res.status(404).json({ error: 'Not found' });
+      const schema = schemaError(err);
+      if (schema) return res.status(500).json(schema);
       res.status(500).json({ error: `Failed to update ${entityName.slice(0, -1)}` });
     }
   });
@@ -620,6 +632,7 @@ router.get('/dossiers', requireAuth, async (req, res) => {
       size: d.size || 0,
       cloudinary_public_id: d.cloudinary_public_id,
       cloudinary_url: d.cloudinary_url,
+      video_url: d.video_url || null,
       thumbnail_url: d.cloudinary_public_id ? getPdfThumbnailUrl(d.cloudinary_public_id) : null,
       created_at: d.created_at
     }));
@@ -628,6 +641,46 @@ router.get('/dossiers', requireAuth, async (req, res) => {
     console.error('Dossiers list error:', err);
     res.status(500).json({ error: 'Failed to list dossiers' });
   }
+});
+
+router.post('/dossiers/:id/video', requireAuth, (req, res) => {
+  const videoUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 100 * 1024 * 1024 },
+    fileFilter: (request, file, cb) => {
+      if (file.mimetype.startsWith('video/')) cb(null, true);
+      else cb(new Error('Seules les vidéos sont acceptées'));
+    }
+  });
+  videoUpload.single('video')(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'La vidéo ne doit pas dépasser 100 Mo' : err.message });
+    if (!req.file) return res.status(400).json({ error: 'Aucune vidéo sélectionnée' });
+
+try {
+      const { data: dossier, error } = await supabase.from('dossiers').select('*').eq('id', req.params.id).single();
+      if (error || !dossier) return res.status(404).json({ error: 'Dossier introuvable' });
+      const result = await uploadVideo(req.file.buffer, { folder: 'dossiers-videos', publicId: `${dossier.id}-${Date.now()}` });
+      const { error: updateError } = await supabase.from('dossiers').update({ video_public_id: result.public_id, video_url: result.secure_url, updated_at: new Date().toISOString() }).eq('id', dossier.id);
+      if (updateError) {
+        const schema = schemaError(updateError);
+        deleteVideo(result.public_id).catch(cleanupErr => console.error('Vidéo non supprimée après échec:', cleanupErr));
+        if (schema) {
+          console.error('Dossier video update failed (schema):', updateError.message);
+          return res.status(500).json(schema);
+        }
+        return res.status(500).json({ error: 'Échec de l\'enregistrement de la vidéo' });
+      }
+      if (dossier.video_public_id) deleteVideo(dossier.video_public_id).catch(uploadErr => console.error('Ancienne vidéo non supprimée:', uploadErr));
+      logActivity('dossier_video_upload', `Vidéo ajoutée au dossier: ${dossier.name}`, req.admin.username);
+      broadcast('dossiers');
+      res.json({ success: true, video_url: result.secure_url });
+    } catch (uploadErr) {
+      console.error('Dossier video upload failed:', uploadErr);
+      const schema = schemaError(uploadErr);
+      if (schema) return res.status(500).json(schema);
+      res.status(500).json({ error: 'Échec de l’envoi de la vidéo' });
+    }
+  });
 });
 
 router.post('/dossiers', requireAuth, (req, res) => {
@@ -734,6 +787,10 @@ router.delete('/dossiers/:id', requireAuth, async (req, res) => {
       } catch (cloudErr) {
         console.error('Cloudinary delete error:', cloudErr);
       }
+    }
+    if (dossier.video_public_id) {
+      try { await deleteVideo(dossier.video_public_id); }
+      catch (cloudErr) { console.error('Cloudinary video delete error:', cloudErr); }
     }
 
     await supabase.from('dossiers').delete().eq('id', id);

@@ -130,7 +130,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="/css/style.css?v=20260714-pricing-mobile-1">
+<link rel="stylesheet" href="/css/style.css?v=20260901-video">
 </head>
 <body>
 
@@ -281,6 +281,15 @@
   </div>
 </section>
 
+<!-- VIDEO DE PRESENTATION -->
+<section id="presentation-video" class="presentation-video-section">
+  <div class="presentation-video-wrap reveal">
+    <video class="presentation-video" autoplay muted loop playsinline preload="metadata" controls>
+      <source src="/images/video.mp4" type="video/mp4">
+    </video>
+  </div>
+</section>
+
 <!-- SECTION DIVIDER -->
 <div class="section-divider">
   <svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C360,60 720,0 1440,30 L1440,60 L0,60 Z" fill="var(--bg-secondary)"/></svg>
@@ -366,7 +375,7 @@
       <h2 data-i18n-html="team.title">Des experts<br>à votre service.</h2>
       <p class="section-lead" data-i18n="team.lead">Une équipe de 34 techniciens et ingénieurs passionnés, engagés à concrétiser vos projets à travers tout Madagascar et à l'international.</p>
     </div>
-    <div id="teamGrid" class="team-grid"><div class="loading-spinner" style="margin:24px auto"></div></div>
+    <div id="teamGrid" class="team-groups"><div class="loading-spinner" style="margin:24px auto"></div></div>
   </div>
 </section>
 
@@ -874,7 +883,15 @@
   </div>
 </div>
 
+<!-- TEAM PHOTO LIGHTBOX -->
+<div id="teamLightbox" class="team-lightbox" role="dialog" aria-modal="true" aria-label="Photo de l'équipe">
+  <button type="button" class="team-lightbox-close" aria-label="Fermer la photo">&times;</button>
+  <div class="team-lightbox-media">
+    <img src="" alt="Photo de l'équipe Nord Invest Madagascar">
+  </div>
+</div>
+
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script defer src="/js/main.js?v=20260714-pricing-mobile-1"></script>
+<script defer src="/js/main.js?v=20260901-video"></script>
 </body>
 </html>

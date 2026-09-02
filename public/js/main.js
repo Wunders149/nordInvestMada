@@ -1098,16 +1098,25 @@ async function loadTeam() {
     const team = await fetchJsonArray(`${API_BASE}/api/team`);
     const grid = document.getElementById('teamGrid');
     if (!grid) return;
-    grid.innerHTML = team.map(m => {
+    const categories = [
+      { id: 'office', label: 'Équipe de bureau', intro: 'Études, conception et coordination de vos projets.' },
+      { id: 'field', label: 'Équipe sur le terrain', intro: 'Des professionnels engagés au plus près de chaque chantier.' }
+    ];
+    const memberCard = (m) => {
       const hasOwnImg = m.image && (m.image.startsWith('http') || m.image.startsWith('/'));
-      return `
-      <div class="team-card">
-        <img src="${hasOwnImg ? m.image : '/images/placeholder.svg'}" alt="${escapeHtml(m.name)}" class="team-avatar" loading="lazy"${!hasOwnImg ? ` data-image-slot="${m.image_slot || ''}"` : ''}>
-        <div class="team-name">${escapeHtml(m.name)}</div>
-        <div class="team-role">${escapeHtml(m.role)}</div>
-        <div class="team-desc">${escapeHtml(m.bio)}</div>
-      </div>
-    `;}).join('');
+      const slot = m.image_slot || m.imageSlot || '';
+      return `<article class="team-card team-card--photo">
+        <div class="team-avatar-wrap"><img src="${hasOwnImg ? m.image : '/images/placeholder.svg'}" alt="Photo de l'équipe Nord Invest Madagascar" class="team-avatar" loading="lazy"${!hasOwnImg ? ` data-image-slot="${escapeHtml(slot)}"` : ''}></div>
+      </article>`;
+    };
+    grid.innerHTML = categories.map(category => {
+      const members = team.filter(m => (m.group_type || m.groupType || 'office') === category.id);
+      if (!members.length) return '';
+      return `<div class="team-group">
+        <div class="team-group-heading"><span class="team-group-kicker">${category.id === 'office' ? '01' : '02'}</span><div><h3>${category.label}</h3><p>${category.intro}</p></div></div>
+        <div class="team-grid">${members.map(memberCard).join('')}</div>
+      </div>`;
+    }).join('') || '<p class="team-empty">Notre équipe sera bientôt présentée ici.</p>';
     loadImageSlots();
     applyGlobalMotionOrder(grid);
     initTeamReveal();
@@ -1148,6 +1157,46 @@ function initTeamTilt() {
   });
 }
 
+function initTeamLightbox() {
+  const lightbox = document.getElementById('teamLightbox');
+  if (!lightbox) return;
+  const media = lightbox.querySelector('.team-lightbox-media');
+  const img = lightbox.querySelector('.team-lightbox-media img');
+  let lastFocus = null;
+
+  function open(src) {
+    if (!src) return;
+    lastFocus = document.activeElement;
+    img.src = src;
+    lightbox.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    lightbox.classList.remove('is-open');
+    img.removeAttribute('src');
+    document.body.style.overflow = '';
+    if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+  }
+
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.team-card--photo');
+    if (!card) return;
+    const avatar = card.querySelector('.team-avatar');
+    if (avatar && avatar.currentSrc) open(avatar.currentSrc);
+  });
+
+  lightbox.querySelector('.team-lightbox-close').addEventListener('click', close);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox || !media.contains(e.target)) close();
+  });
+  lightbox.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('is-open')) close();
+  });
+}
+
 function getServiceMark(title, index) {
   const words = String(title || '')
     .replace(/&/g, ' ')
@@ -1166,14 +1215,23 @@ async function loadServices() {
     const services = await fetchJsonArray(`${API_BASE}/api/services`);
     const grid = document.getElementById('servicesGrid');
     if (!grid) return;
-    grid.innerHTML = services.map((s, i) => `
-      <div class="service-card">
+    grid.innerHTML = services.map((s, i) => {
+      const hasOwnImg = s.image && (s.image.startsWith('http') || s.image.startsWith('/'));
+      const slot = s.image_slot || s.imageSlot || '';
+      return `<article class="service-card">
+        <div class="service-media">
+          <img src="${hasOwnImg ? s.image : '/images/placeholder.svg'}" alt="${escapeHtml(s.title)}" loading="lazy"${!hasOwnImg ? ` data-image-slot="${escapeHtml(slot)}"` : ''}>
+          <span class="service-media-shade"></span>
+        </div>
+        <div class="service-content">
         <div class="service-num">${String(i + 1).padStart(2, '0')}</div>
         <div class="service-icon">${getServiceMark(s.title, i)}</div>
         <div class="service-title" data-i18n="services.card${i + 1}Title">${escapeHtml(s.title)}</div>
         <p class="service-desc" data-i18n="services.card${i + 1}Desc">${escapeHtml(s.description)}</p>
-      </div>
-    `).join('');
+        </div>
+      </article>`;
+    }).join('');
+    loadImageSlots();
     applyGlobalMotionOrder(grid);
     initImageReveal();
   } catch (err) { console.warn('Services load error:', err); showSectionError('servicesGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
@@ -2025,6 +2083,7 @@ async function loadDossiers() {
       const thumbUrl = d.thumbnail_url || '';
       const dateStr = formatDate(d.created_at);
       const dlUrl = getDownloadUrl(d.cloudinary_url || '');
+      const videoUrl = d.video_url || '';
       return `
       <div class="dossier-card" data-id="${escAttr(d.id)}" data-name="${escAttr(d.name)}" data-url="${escAttr(d.cloudinary_url || '')}">
         <div class="dossier-thumb">
@@ -2044,13 +2103,21 @@ async function loadDossiers() {
           <span class="dossier-size">${formatFileSize(d.size)}</span>
           ${dateStr ? `<span class="dossier-date">${escHtml(dateStr)}</span>` : ''}
         </div>
-        <span class="dossier-badge">PDF</span>
+<span class="dossier-badge">PDF</span>
+        ${videoUrl ? `
+        <div class="dossier-video-wrap">
+          <button type="button" class="dossier-video-btn" data-video="${escAttr(videoUrl)}" title="${getNestedTranslation('dossiers.videoButton') || 'Voir la vidéo'}">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            <span>${getNestedTranslation('dossiers.videoButton') || 'Voir la vidéo'}</span>
+          </button>
+          <div class="dossier-video" style="display:none"><video controls playsinline preload="metadata">Votre navigateur ne prend pas en charge la vidéo.</video></div>
+        </div>` : ''}
       </div>`;
     }).join('');
     applyGlobalMotionOrder(grid);
-    grid.querySelectorAll('.dossier-card').forEach(card => {
+grid.querySelectorAll('.dossier-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.dossier-download-btn')) return;
+        if (e.target.closest('.dossier-download-btn, .dossier-video-wrap, .dossier-video')) return;
         openPdfViewer(card.dataset.id, card.dataset.name, card.dataset.url);
       });
     });
@@ -2065,6 +2132,21 @@ async function loadDossiers() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+      });
+    });
+    grid.querySelectorAll('.dossier-video-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wrap = btn.closest('.dossier-video-wrap');
+        if (!wrap) return;
+        const box = wrap.querySelector('.dossier-video');
+        const videoEl = box && box.querySelector('video');
+        if (!box || !videoEl) return;
+        if (!videoEl.src) videoEl.src = btn.dataset.video;
+        btn.style.display = 'none';
+        box.style.display = '';
+        const playPromise = videoEl.play();
+        if (playPromise && playPromise.catch) playPromise.catch(() => {});
       });
     });
     // Staggered reveal animation
@@ -2476,6 +2558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   initGlobalMotion();
   initHeroSwap();
+  initTeamLightbox();
   loadBlogCategories();
   loadImageSlots();
   loadTeam();

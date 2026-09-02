@@ -5,6 +5,7 @@ import { showToast, showConfirm } from './ui.js';
 let dossiers = [];
 let filteredDossiers = [];
 let renameTargetId = null;
+let videoTargetId = null;
 
 export async function loadDossiers() {
   try {
@@ -45,6 +46,7 @@ function renderDossiersList() {
       </div>
       <div class="dossier-actions">
         <button class="btn-icon" title="Voir" data-action="view">Voir</button>
+        <button class="btn-icon" title="${d.video_url ? 'Remplacer la vidéo' : 'Ajouter une vidéo'}" data-action="video">${d.video_url ? 'Vidéo OK' : 'Vidéo'}</button>
         <button class="btn-icon" title="Renommer" data-action="rename">Nom</button>
         <button class="btn-icon danger" title="Supprimer" data-action="delete">Sup</button>
       </div>
@@ -63,6 +65,12 @@ function renderDossiersList() {
       openDossierRename(card.dataset.id, card.dataset.name);
     });
   });
+  el.querySelectorAll('[data-action="video"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      videoTargetId = e.target.closest('.dossier-card').dataset.id;
+      document.getElementById('dossierVideoUploadInput').click();
+    });
+  });
   el.querySelectorAll('[data-action="delete"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const card = e.target.closest('.dossier-card');
@@ -74,6 +82,29 @@ function renderDossiersList() {
   input.onchange = () => {
     if (input.files && input.files[0]) uploadDossier(input.files[0]);
   };
+  const videoInput = document.getElementById('dossierVideoUploadInput');
+  videoInput.onchange = () => {
+    if (videoInput.files && videoInput.files[0] && videoTargetId) uploadDossierVideo(videoTargetId, videoInput.files[0]);
+  };
+}
+
+async function uploadDossierVideo(id, file) {
+  if (file.size > 100 * 1024 * 1024) { showToast('La vidéo ne doit pas dépasser 100 Mo', 'error'); return; }
+  const formData = new FormData();
+  formData.append('video', file);
+  try {
+    const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(id)}/video`, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }, body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+    showToast('Vidéo ajoutée au dossier');
+    loadDossiers();
+  } catch (err) {
+    showToast(`Erreur : ${err.message}`, 'error');
+  } finally {
+    const input = document.getElementById('dossierVideoUploadInput');
+    if (input) input.value = '';
+    videoTargetId = null;
+  }
 }
 
 async function uploadDossier(file) {

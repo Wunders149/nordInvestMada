@@ -40,6 +40,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://unpkg.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://www.google-analytics.com', 'https://*.tile.openstreetmap.org', 'https://unpkg.com'],
+      mediaSrc: ["'self'", 'https://res.cloudinary.com', 'blob:'],
       connectSrc: ["'self'", 'https://res.cloudinary.com', 'https://cdn.jsdelivr.net', 'https://www.google-analytics.com', 'https://www.google.com', 'https://www.googletagmanager.com', 'https://unpkg.com'],
       frameSrc: ["'self'", 'https://res.cloudinary.com'],
       objectSrc: ["'self'", 'https://res.cloudinary.com'],
@@ -55,7 +56,13 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-app.use(express.static(path.join(projectRoot, 'public'), { maxAge: '1h', etag: true, lastModified: true }));
+const staticSetHeaders = (res, filePath) => {
+  const ext = path.extname(filePath).toLowerCase();
+  if (['.html', '.js', '.css', '.mjs', '.json'].includes(ext)) {
+    res.setHeader('Cache-Control', 'no-cache');
+  }
+};
+app.use(express.static(path.join(projectRoot, 'public'), { maxAge: '1h', etag: true, lastModified: true, setHeaders: staticSetHeaders }));
 app.use('/uploads', express.static(uploadsDir, { maxAge: '1h', etag: true, lastModified: true }));
 
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -600,6 +607,7 @@ app.get('/api/dossiers', async (req, res) => {
       size: d.size || 0,
       cloudinary_public_id: d.cloudinary_public_id,
       cloudinary_url: d.cloudinary_url,
+      video_url: d.video_url || null,
       thumbnail_url: d.cloudinary_public_id ? getPdfThumbnailUrl(d.cloudinary_public_id) : null,
       created_at: d.created_at
     }));

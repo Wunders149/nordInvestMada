@@ -115,6 +115,27 @@ export async function uploadPdf(buffer, { folder, publicId }) {
   });
 }
 
+export async function uploadVideo(buffer, { folder, publicId }) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `${BASE_FOLDER}/${folder}`,
+        public_id: publicId,
+        resource_type: 'video'
+      },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
+
+export async function deleteVideo(publicId) {
+  return cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
+}
+
 export function getPdfThumbnailUrl(publicId, width = 300) {
   try {
     return cloudinary.url(publicId, {

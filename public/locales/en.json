@@ -299,6 +299,7 @@
     "title": "Land files<br>for sale",
     "lead": "Browse our detailed files of available land for sale in northern Madagascar. Click a file to view it.",
     "badge": "View",
+    "videoButton": "Watch video",
     "empty": "No files available at the moment.",
     "emptySub": "Come back soon to discover our new listings.",
     "error": "Unable to load files. Try again later."
