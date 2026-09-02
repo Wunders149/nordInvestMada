@@ -2180,8 +2180,22 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
         const box = wrap.querySelector('.dossier-video-wrap');
         const videoEl = box && box.querySelector('video');
         if (!box || !videoEl) return;
+
+        const isOpen = box.classList.contains('is-open');
+        if (isOpen) {
+          videoEl.pause();
+          box.classList.remove('is-open');
+          box.style.display = 'none';
+          btn.classList.remove('is-open');
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span>' + (getNestedTranslation('dossiers.videoButton') || 'Vidéo') + '</span>';
+          return;
+        }
+
         if (!videoEl.src) videoEl.src = btn.dataset.video;
+        box.classList.add('is-open');
         box.style.display = 'block';
+        btn.classList.add('is-open');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg><span>' + (getNestedTranslation('dossiers.closeVideo') || 'Fermer') + '</span>';
         const playPromise = videoEl.play();
         if (playPromise && playPromise.catch) playPromise.catch(() => {});
       });

@@ -1406,9 +1406,37 @@ h2 {
 .dossier-action-video:focus-visible {
   border-color: rgba(16, 101, 124, 0.45);
 }
-.dossier-video { margin-top: 12px; overflow: hidden; border-radius: 12px; background: #111; }
-.dossier-video video { display: block; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #111; }
-.dossier-video-wrap { margin-top: 12px; }
+.dossier-action-video.is-open {
+  background: rgba(16, 101, 124, 0.14);
+  border-color: rgba(16, 101, 124, 0.55);
+}
+.dossier-video-wrap {
+  display: none;
+  margin-top: 12px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.dossier-video-wrap.is-open {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+.dossier-video {
+  overflow: hidden;
+  border-radius: 12px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 14px 22px rgba(0,0,0,0.12);
+}
+.dossier-video video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #111;
+}
 
 [data-theme="light"] .dossier-card {
   background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(240,235,228,0.72));
