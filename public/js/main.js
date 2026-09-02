@@ -350,6 +350,8 @@ const loaderOverlay = document.getElementById('loader-overlay');
 
 function showLoader(targetId) {
   loaderOverlay.classList.add('active');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const navigationDelay = reduceMotion ? 0 : 250;
   setTimeout(() => {
     const target = document.getElementById(targetId);
     if (target) {
@@ -360,7 +362,7 @@ function showLoader(targetId) {
     setTimeout(() => {
       loaderOverlay.classList.remove('active');
     }, 400);
-  }, 900);
+  }, navigationDelay);
 }
 
 document.querySelectorAll('.nav-links a[href^="#"], .footer-links a[href^="#"]').forEach(link => {
@@ -722,6 +724,7 @@ function openGallery(index) {
   if (counter) counter.textContent = `${index + 1} / ${galleryImages.length}`;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  modal.querySelector('.gallery-close')?.focus({ preventScroll: true });
 }
 
 function closeGallery(e) {
@@ -1369,7 +1372,7 @@ async function loadBlog() {
       const slotAttr = hasOwnImg ? '' : (p.image_slot || '');
       const isHidden = i >= 3 && posts.length > 3;
       return `
-      <div class="timeline-entry${i === 0 ? ' timeline-visible' : ''}${isHidden ? ' hidden' : ''}" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}"${isHidden ? ' style="display:none"' : ''}>
+      <div class="timeline-entry${i === 0 ? ' timeline-visible' : ''}${isHidden ? ' hidden' : ''}" role="button" tabindex="0" aria-label="${escapeHtml(p.title)}" data-index="${escapeHtml(String(p.index || ''))}" data-id="${escapeHtml(p.id)}" data-title="${escapeHtml(p.title)}" data-date="${dateStr}" data-content="${escapeHtml(p.content || '')}" data-img="${escapeHtml(imgUrl)}" data-slug="${escapeHtml(p.slug || '')}" data-image-slot="${slotAttr}"${isHidden ? ' style="display:none"' : ''}>
         <div class="timeline-marker"></div>
         <div class="timeline-card" style="--card-accent: ${cat.color || 'var(--rust)'}">
           <div class="timeline-img-wrap">
@@ -1396,6 +1399,11 @@ async function loadBlog() {
           entry.dataset.title, entry.dataset.date, entry.dataset.content,
           entry.dataset.img, entry.dataset.slug, entry.dataset.imageSlot, entry.dataset.id
         );
+      });
+      entry.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        entry.click();
       });
     });
     const entries = container.querySelectorAll('.timeline-entry:not(.hidden):not(.timeline-visible)');
@@ -1545,6 +1553,25 @@ function closeBlogPost(e) {
 }
 
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    const modal = document.querySelector('.blog-modal.active, .pdf-modal.active, .gallery-modal.active, .team-lightbox.active');
+    if (modal) {
+      const focusable = Array.from(modal.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+        .filter(el => !el.disabled && el.offsetParent !== null);
+      if (focusable.length) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    return;
+  }
   if (e.key === 'Escape') {
     const blogModal = document.getElementById('blogModal');
     const pdfModal = document.getElementById('pdfModal');
@@ -2085,7 +2112,7 @@ async function loadDossiers() {
       const dlUrl = getDownloadUrl(d.cloudinary_url || '');
       const videoUrl = d.video_url || '';
       return `
-      <div class="dossier-card" data-id="${escAttr(d.id)}" data-name="${escAttr(d.name)}" data-url="${escAttr(d.cloudinary_url || '')}">
+      <div class="dossier-card" role="button" tabindex="0" aria-label="Ouvrir ${escAttr(d.name)}" data-id="${escAttr(d.id)}" data-name="${escAttr(d.name)}" data-url="${escAttr(d.cloudinary_url || '')}">
         <div class="dossier-thumb">
           <img src="${escAttr(thumbUrl)}" alt="${escAttr(d.name)}" class="img-reveal" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="dossier-thumb-fallback" style="display:none">
@@ -2119,6 +2146,12 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
       card.addEventListener('click', (e) => {
         if (e.target.closest('.dossier-download-btn, .dossier-video-wrap, .dossier-video')) return;
         openPdfViewer(card.dataset.id, card.dataset.name, card.dataset.url);
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        if (e.target.closest('.dossier-download-btn, .dossier-video-wrap, .dossier-video')) return;
+        e.preventDefault();
+        card.click();
       });
     });
     grid.querySelectorAll('.dossier-download-btn').forEach(btn => {

@@ -853,7 +853,7 @@
 
 <!-- GALLERY MODAL -->
 <div id="galleryModal" class="gallery-modal" onclick="closeGallery(event)">
-  <span class="gallery-close" onclick="closeGallery()">&times;</span>
+  <button type="button" class="gallery-close" onclick="closeGallery()" aria-label="Fermer la galerie">&times;</button>
   <button class="gallery-nav gallery-prev" onclick="changeGallery(-1); event.stopPropagation();">&#10094;</button>
   <button class="gallery-nav gallery-next" onclick="changeGallery(1); event.stopPropagation();">&#10095;</button>
   <img id="galleryImg" class="gallery-content" src="" alt="">
