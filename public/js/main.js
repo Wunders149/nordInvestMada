@@ -2130,31 +2130,36 @@ async function loadDossiers() {
           <span class="dossier-size">${formatFileSize(d.size)}</span>
           ${dateStr ? `<span class="dossier-date">${escHtml(dateStr)}</span>` : ''}
         </div>
-<span class="dossier-badge">PDF</span>
-        ${videoUrl ? `
-        <div class="dossier-video-wrap">
-          <button type="button" class="dossier-video-btn" data-video="${escAttr(videoUrl)}" title="${getNestedTranslation('dossiers.videoButton') || 'Voir la vidéo'}">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-            <span>${getNestedTranslation('dossiers.videoButton') || 'Voir la vidéo'}</span>
+        <div class="dossier-actions">
+          <button type="button" class="dossier-action dossier-action-pdf" data-dl-url="${escAttr(dlUrl)}" title="${getNestedTranslation('pdf.download') || 'Télécharger le PDF'}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>${getNestedTranslation('pdf.download') || 'PDF'}</span>
           </button>
-          <div class="dossier-video" style="display:none"><video controls playsinline preload="metadata">Votre navigateur ne prend pas en charge la vidéo.</video></div>
-        </div>` : ''}
+          ${videoUrl ? `
+          <button type="button" class="dossier-action dossier-action-video" data-video="${escAttr(videoUrl)}" title="${getNestedTranslation('dossiers.videoButton') || 'Voir la vidéo'}">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            <span>${getNestedTranslation('dossiers.videoButton') || 'Vidéo'}</span>
+          </button>
+          <div class="dossier-video-wrap" style="display:none">
+            <div class="dossier-video"><video controls playsinline preload="metadata">Votre navigateur ne prend pas en charge la vidéo.</video></div>
+          </div>` : ''}
+        </div>
       </div>`;
     }).join('');
     applyGlobalMotionOrder(grid);
 grid.querySelectorAll('.dossier-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.dossier-download-btn, .dossier-video-wrap, .dossier-video')) return;
+        if (e.target.closest('.dossier-download-btn, .dossier-action, .dossier-video-wrap, .dossier-video')) return;
         openPdfViewer(card.dataset.id, card.dataset.name, card.dataset.url);
       });
       card.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' && e.key !== ' ') return;
-        if (e.target.closest('.dossier-download-btn, .dossier-video-wrap, .dossier-video')) return;
+        if (e.target.closest('.dossier-download-btn, .dossier-action, .dossier-video-wrap, .dossier-video')) return;
         e.preventDefault();
         card.click();
       });
     });
-    grid.querySelectorAll('.dossier-download-btn').forEach(btn => {
+    grid.querySelectorAll('.dossier-download-btn, .dossier-action-pdf').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const url = btn.dataset.dlUrl;
@@ -2167,17 +2172,16 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
         document.body.removeChild(a);
       });
     });
-    grid.querySelectorAll('.dossier-video-btn').forEach(btn => {
+    grid.querySelectorAll('.dossier-action-video').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const wrap = btn.closest('.dossier-video-wrap');
+        const wrap = btn.closest('.dossier-actions');
         if (!wrap) return;
-        const box = wrap.querySelector('.dossier-video');
+        const box = wrap.querySelector('.dossier-video-wrap');
         const videoEl = box && box.querySelector('video');
         if (!box || !videoEl) return;
         if (!videoEl.src) videoEl.src = btn.dataset.video;
-        btn.style.display = 'none';
-        box.style.display = '';
+        box.style.display = 'block';
         const playPromise = videoEl.play();
         if (playPromise && playPromise.catch) playPromise.catch(() => {});
       });
