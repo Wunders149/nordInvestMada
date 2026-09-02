@@ -1260,7 +1260,10 @@ h2 {
 .dossier-card.video-expanded .dossier-meta,
 .dossier-card.video-expanded .dossier-badge,
 .dossier-card.video-expanded .dossier-action:not(.dossier-action-video) {
-  opacity: 0.75;
+  display: none;
+}
+.dossier-card.video-expanded .dossier-actions {
+  display: none;
 }
 .dossier-thumb {
   width: 100%;
@@ -1456,6 +1459,7 @@ h2 {
   display: block;
   opacity: 1;
   transform: translateY(0);
+  margin-top: 0;
 }
 .dossier-card.video-expanded .dossier-video {
   overflow: hidden;
