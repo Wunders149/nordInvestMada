@@ -96,6 +96,26 @@ export const adminContentSchemas = {
       ...contentCommonSchema
     }).partial()
   },
+  products: {
+    create: z.object({
+      name: z.string().trim().min(1).max(200),
+      price: z.coerce.number().min(0).max(1000000000).default(0),
+      description: z.string().trim().min(1).max(8000),
+      mediaType: z.enum(['image', 'video']).default('image'),
+      mediaUrl: z.string().max(2000).default(''),
+      imageSlot: z.string().max(200).default(''),
+      ...contentCommonSchema
+    }),
+    update: z.object({
+      name: z.string().trim().min(1).max(200).optional(),
+      price: z.coerce.number().min(0).max(1000000000).optional(),
+      description: z.string().trim().min(1).max(8000).optional(),
+      mediaType: z.enum(['image', 'video']).optional(),
+      mediaUrl: z.string().max(2000).optional(),
+      imageSlot: z.string().max(200).optional(),
+      ...contentCommonSchema
+    }).partial()
+  },
   blog: {
     create: z.object({
       title: z.string().trim().min(1).max(200),

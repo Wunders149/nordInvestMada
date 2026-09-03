@@ -91,7 +91,23 @@ CREATE TABLE projects (
   updated_at TIMESTAMPTZ
 );
 
--- 8. BLOG POSTS
+-- 8. PRODUCTS
+CREATE TABLE products (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  price NUMERIC DEFAULT 0,
+  description TEXT,
+  media_type TEXT DEFAULT 'image' CHECK (media_type IN ('image', 'video')),
+  media_url TEXT,
+  image_slot TEXT,
+  "order" INTEGER DEFAULT 99,
+  visible BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ
+);
+CREATE INDEX idx_products_order ON products("order" ASC);
+
+-- 9. BLOG POSTS
 CREATE TABLE blog_posts (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -107,7 +123,7 @@ CREATE TABLE blog_posts (
 );
 CREATE INDEX idx_blog_date ON blog_posts(date DESC);
 
--- 9. ACTIVITY LOGS
+-- 10. ACTIVITY LOGS
 CREATE TABLE activity_logs (
   id TEXT PRIMARY KEY,
   action TEXT NOT NULL,

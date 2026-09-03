@@ -7,6 +7,7 @@ import { teamPositions } from './teamPositions.js';
 export const teamData = [];
 export const servicesData = [];
 export const projectsData = [];
+export const productsData = [];
 export const blogData = [];
 
 const ENTITY_CONFIG = {
@@ -55,6 +56,22 @@ const ENTITY_CONFIG = {
       { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
     ]
   },
+  products: {
+    label: 'Produit', labelPlural: 'Produits', api: 'products',
+    searchFields: ['name', 'description', 'price'],
+    fields: [
+      { key: 'name', label: 'Nom du produit', type: 'text', required: true },
+      { key: 'price', label: 'Prix (Ar)', type: 'number', required: true, default: 0 },
+      { key: 'description', label: 'Description', type: 'textarea', required: true },
+      { key: 'mediaType', label: 'Type de média', type: 'select', options: [
+        { value: 'image', label: 'Image' },
+        { value: 'video', label: 'Vidéo' }
+      ], default: 'image' },
+      { key: 'mediaUrl', label: 'Photo ou vidéo du produit', type: 'product-media', required: true },
+      { key: 'order', label: 'Ordre', type: 'number', default: 1 },
+      { key: 'visible', label: 'Visible', type: 'checkbox', default: true }
+    ]
+  },
   blog: {
     label: 'Article', labelPlural: 'Articles', api: 'blog',
     searchFields: ['title', 'excerpt'],
@@ -78,6 +95,7 @@ function getEntityItems(entity) {
   if (entity === 'team') return teamData;
   if (entity === 'services') return servicesData;
   if (entity === 'projects') return projectsData;
+  if (entity === 'products') return productsData;
   if (entity === 'blog') return blogData;
   return [];
 }
@@ -148,6 +166,7 @@ export async function loadEntity(entity) {
     if (entity === 'team') { teamData.length = 0; teamData.push(...data); }
     else if (entity === 'services') { servicesData.length = 0; servicesData.push(...data); }
     else if (entity === 'projects') { projectsData.length = 0; projectsData.push(...data); }
+    else if (entity === 'products') { productsData.length = 0; productsData.push(...data); }
     else if (entity === 'blog') { blogData.length = 0; blogData.push(...data); }
     renderEntity(entity);
   } catch (_err) { console.error(`${entity} load error:`, _err); showToast(`Erreur lors du chargement des ${cfg.labelPlural.toLowerCase()}`, 'error'); }
@@ -160,6 +179,7 @@ export function renderEntity(entity) {
   if (entity === 'team') items = teamData;
   else if (entity === 'services') items = servicesData;
   else if (entity === 'projects') items = projectsData;
+  else if (entity === 'products') items = productsData;
   else if (entity === 'blog') items = blogData;
   const container = document.getElementById(`${entity}List`);
   if (!container) return;
@@ -187,13 +207,14 @@ export function renderEntity(entity) {
 
   container.innerHTML = page.map(item => {
     const title = item.name || item.title || item.label || 'Sans titre';
-    const _subtitle = item.role || item.location || '';
     const preview = item.description || item.excerpt || item.bio || '';
+    const priceText = entity === 'products' && Number(item.price) >= 0 ? `${Number(item.price).toLocaleString('fr-FR')} Ar` : '';
 
     let thumbUrl = '';
     let thumbIcon = '';
-    if (item.image) {
-      thumbUrl = item.image.startsWith('http') || item.image.startsWith('/') ? item.image : `/images/blog/${item.image}`;
+    if (item.image || item.mediaUrl) {
+      const raw = item.image || item.mediaUrl || '';
+      thumbUrl = raw.startsWith('http') || raw.startsWith('/') ? raw : `/images/blog/${raw}`;
     } else if (item.categoryId || item.imageSlot) {
       const slotId = item.categoryId || item.imageSlot;
       const slot = slots.find(s => s.id === slotId);
@@ -203,11 +224,14 @@ export function renderEntity(entity) {
       if (entity === 'services') thumbIcon = 'Srv';
       else if (entity === 'team') thumbIcon = 'Eq';
       else if (entity === 'projects') thumbIcon = 'Prj';
+      else if (entity === 'products') thumbIcon = 'Prod';
       else if (entity === 'blog') thumbIcon = 'Blog';
     }
 
     let metaHtml = '';
-    if (entity === 'blog' && item.date) {
+    if (entity === 'products' && priceText) {
+      metaHtml = `<span class="admin-card-meta">${escapeHtml(priceText)}</span>`;
+    } else if (entity === 'blog' && item.date) {
       const d = new Date(item.date);
       metaHtml = `<span class="admin-card-meta">${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`;
     } else if (entity === 'projects' && item.category) {
@@ -313,11 +337,14 @@ export async function openCrudForm(entity, editId) {
     if (entity === 'team') items = teamData;
     else if (entity === 'services') items = servicesData;
     else if (entity === 'projects') items = projectsData;
+    else if (entity === 'products') items = productsData;
     else if (entity === 'blog') items = blogData;
     item = items.find(i => i.id === editId) || {};
   }
 
-  document.getElementById('crudModalTitle').textContent = editId ? `Modifier ${cfg.label}` : `Ajouter ${cfg.label}`;
+  const previewSubtitleText = entity === 'products'
+    ? (item.price !== undefined && item.price !== null && item.price !== '' ? `${Number(item.price).toLocaleString('fr-FR')} Ar` : '')
+    : (item.role || item.location || '');
 
   const previewHtml = `
     <div class="crud-preview-panel">
@@ -326,7 +353,7 @@ export async function openCrudForm(entity, editId) {
         <div class="crud-preview-thumb" id="crudPreviewThumb"></div>
         <div class="crud-preview-copy">
           <div class="crud-preview-title" id="crudPreviewTitle">${escapeHtml(item.name || item.title || cfg.label || 'Nouveau')}</div>
-          <div class="crud-preview-subtitle" id="crudPreviewSubtitle">${escapeHtml(item.role || item.location || '')}</div>
+          <div class="crud-preview-subtitle" id="crudPreviewSubtitle">${escapeHtml(previewSubtitleText)}</div>
           <div class="crud-preview-body" id="crudPreviewBody">${escapeHtml(item.description || item.bio || item.excerpt || '')}</div>
         </div>
       </div>
@@ -350,6 +377,20 @@ export async function openCrudForm(entity, editId) {
       html += sectionSlots.map(s => `<option value="${escapeHtml(s.id)}" data-url="${escapeHtml(s.currentUrl || '')}" ${s.id === val ? 'selected' : ''}>${escapeHtml(s.label)}${s.uploadedFile ? ' (image)' : ''}</option>`).join('');
       html += '</select>';
       html += `<div class="blog-img-upload" style="margin-top:10px"><div class="blog-img-preview" id="crud_${field.key}_preview"><span class="blog-img-placeholder">Image</span></div><div class="blog-img-actions"><input type="file" id="crud_${field.key}_file" accept="image/*"><button type="button" class="btn-secondary" onclick="uploadSlotImage('${field.key}', '${field.section}')">Téléverser</button><span id="crud_${field.key}_status"></span></div></div>`;
+    } else if (field.type === 'product-media') {
+      const mediaUrl = String(val || '');
+      const mediaType = document.getElementById('crud_mediaType')?.value || item.mediaType || 'image';
+      const mediaPreview = mediaUrl
+        ? (mediaType === 'video' ? `<video src="${escapeHtml(mediaUrl)}" controls muted></video>` : `<img src="${escapeHtml(mediaUrl)}" alt="">`)
+        : '<span class="blog-img-placeholder">Média</span>';
+      html += `<input type="hidden" id="crud_mediaUrl" value="${escapeHtml(mediaUrl)}">`;
+      html += '<div class="blog-img-upload product-media-upload">';
+      html += `<div class="blog-img-preview" id="crud_media_preview">${mediaPreview}</div>`;
+      html += '<div class="blog-img-actions">';
+      html += '<input type="file" id="crud_media_file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime">';
+      html += '<button type="button" class="btn-secondary" onclick="uploadProductMedia()">Choisir et téléverser</button>';
+      html += '<span id="crud_media_status" class="upload-status"></span>';
+      html += '</div></div>';
     } else if (field.type === 'textarea') {
       html += `<textarea id="crud_${field.key}" class="detail-textarea" rows="4">${escapeHtml(String(val))}</textarea>`;
     } else if (field.type === 'checkbox') {
@@ -396,10 +437,10 @@ export async function openCrudForm(entity, editId) {
   document.querySelectorAll('#crudFormBody select[id$="imageSlot"]').forEach(previewSlotImage);
 
   const refreshCrudPreview = () => {
-    const titleId = entity === 'team' ? 'crud_name' : 'crud_title';
+    const titleId = entity === 'team' || entity === 'products' ? 'crud_name' : 'crud_title';
     const titleEl = document.getElementById(titleId);
-    const subtitleEl = document.getElementById(entity === 'team' ? 'crud_role' : entity === 'projects' ? 'crud_location' : 'crud_description');
-    const bodyEl = document.getElementById(entity === 'team' ? 'crud_bio' : entity === 'services' ? 'crud_description' : entity === 'projects' ? 'crud_description' : 'crud_excerpt');
+    const subtitleEl = document.getElementById(entity === 'team' ? 'crud_role' : entity === 'projects' ? 'crud_location' : entity === 'products' ? 'crud_price' : 'crud_description');
+    const bodyEl = document.getElementById(entity === 'team' ? 'crud_bio' : entity === 'services' ? 'crud_description' : entity === 'projects' ? 'crud_description' : entity === 'products' ? 'crud_description' : 'crud_excerpt');
     const previewTitle = document.getElementById('crudPreviewTitle');
     const previewSubtitle = document.getElementById('crudPreviewSubtitle');
     const previewBody = document.getElementById('crudPreviewBody');
@@ -407,8 +448,11 @@ export async function openCrudForm(entity, editId) {
     const imageSlotSelect = document.getElementById('crud_imageSlot');
     const imageInput = document.getElementById('crud_image');
 
-    if (previewTitle && titleEl) previewTitle.textContent = titleEl.value || (entity === 'team' ? 'Nouveau membre' : 'Nouveau service');
-    if (previewSubtitle && subtitleEl) previewSubtitle.textContent = subtitleEl.value || (entity === 'team' ? 'Rôle' : '');
+    if (previewTitle && titleEl) previewTitle.textContent = titleEl.value || (entity === 'team' ? 'Nouveau membre' : entity === 'products' ? 'Nouveau produit' : 'Nouveau service');
+    if (previewSubtitle && subtitleEl) {
+      const value = subtitleEl.value || '';
+      previewSubtitle.textContent = entity === 'products' ? (value ? `${Number(value).toLocaleString('fr-FR')} Ar` : 'Prix') : (value || (entity === 'team' ? 'Rôle' : ''));
+    }
     if (previewBody && bodyEl) previewBody.textContent = bodyEl.value || 'Aucune description pour le moment.';
 
     let imageUrl = '';
@@ -417,12 +461,16 @@ export async function openCrudForm(entity, editId) {
       imageUrl = selected?.dataset.url || '';
     }
     if (!imageUrl && imageInput && imageInput.value) imageUrl = imageInput.value;
+    if (!imageUrl && entity === 'products') {
+      const mediaUrlInput = document.getElementById('crud_mediaUrl');
+      if (mediaUrlInput && mediaUrlInput.value) imageUrl = mediaUrlInput.value;
+    }
 
     if (previewThumb) {
       if (imageUrl) {
         previewThumb.innerHTML = `<img src="${imageUrl}" alt="prévisualisation" />`;
       } else {
-        previewThumb.textContent = (entity === 'team' ? 'Eq' : entity === 'services' ? 'Srv' : 'IMG');
+        previewThumb.textContent = (entity === 'team' ? 'Eq' : entity === 'services' ? 'Srv' : entity === 'products' ? 'Prod' : 'IMG');
         previewThumb.style.display = 'grid';
       }
     }
@@ -571,6 +619,18 @@ export async function saveCrudItem() {
     }
   }
 
+  if (currentEntity === 'products') {
+    const duplicate = productsData.some(item => item.id !== currentEditId && (item.name || '').trim().toLowerCase() === String(body.name || '').trim().toLowerCase());
+    if (duplicate) {
+      showToast('Un produit avec ce nom existe déjà', 'error');
+      return;
+    }
+    if (!body.mediaUrl) {
+      showToast('Le média du produit est requis', 'error');
+      return;
+    }
+  }
+
   const slotFields = cfg.fields.filter(f => f.type === 'slot-select');
   for (const field of slotFields) {
     const slotId = body[field.key];
@@ -626,6 +686,7 @@ export function confirmDeleteItem(entity, id) {
 export function openTeamForm(id) { openCrudForm('team', id); }
 export function openServiceForm(id) { openCrudForm('services', id); }
 export function openProjectForm(id) { openCrudForm('projects', id); }
+export function openProductForm(id) { openCrudForm('products', id); }
 export function openBlogForm(id) { openCrudForm('blog', id); }
 
 export function exportEntity(entity) {
@@ -635,6 +696,7 @@ export function exportEntity(entity) {
   if (entity === 'team') items = teamData;
   else if (entity === 'services') items = servicesData;
   else if (entity === 'projects') items = projectsData;
+  else if (entity === 'products') items = productsData;
   else if (entity === 'blog') items = blogData;
   if (!items || items.length === 0) { showToast('Aucune donnée à exporter', 'info'); return; }
   const headers = cfg.fields.map(f => f.label);
@@ -678,6 +740,49 @@ export async function uploadBlogImage() {
     fileInput.value = '';
   } catch (_err) {
     if (status) { status.textContent = 'Erreur : ' + _err.message; status.className = 'upload-status error'; }
+  }
+}
+
+export async function uploadProductMedia() {
+  const fileInput = document.getElementById('crud_media_file');
+  const status = document.getElementById('crud_media_status');
+  const hiddenInput = document.getElementById('crud_mediaUrl');
+  const preview = document.getElementById('crud_media_preview');
+  const typeInput = document.getElementById('crud_mediaType');
+  const file = fileInput?.files?.[0];
+  if (!file) {
+    if (status) { status.textContent = 'Sélectionnez un fichier'; status.className = 'upload-status error'; }
+    return;
+  }
+  const maxSize = file.type.startsWith('video/') ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    if (status) { status.textContent = `Max ${file.type.startsWith('video/') ? '100' : '10'}MB`; status.className = 'upload-status error'; }
+    return;
+  }
+  if (status) { status.textContent = 'Upload…'; status.className = 'upload-status loading'; }
+
+  const fd = new FormData();
+  fd.append('media', file);
+  try {
+    const res = await fetch(`${API_BASE}/products/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: fd
+    });
+    if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload échoué');
+    if (hiddenInput) hiddenInput.value = data.url;
+    if (typeInput) typeInput.value = data.mediaType;
+    if (preview) {
+      preview.innerHTML = data.mediaType === 'video'
+        ? `<video src="${escapeHtml(data.url)}" controls muted></video>`
+        : `<img src="${escapeHtml(data.url)}" alt="">`;
+    }
+    if (status) { status.textContent = 'Média téléversé'; status.className = 'upload-status success'; }
+    fileInput.value = '';
+  } catch (err) {
+    if (status) { status.textContent = 'Erreur : ' + err.message; status.className = 'upload-status error'; }
   }
 }
 

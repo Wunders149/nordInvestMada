@@ -17,7 +17,7 @@ import {
 } from './modules/images.js';
 import {
   loadEntity, renderEntity, openCrudForm, closeCrudForm, saveCrudItem, confirmDeleteItem,
-  previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
+  previewSlotImage, uploadSlotImage, uploadBlogImage, uploadProductMedia, openTeamForm, openServiceForm, openProjectForm, openProductForm, openBlogForm,
   exportEntity
 } from './modules/content.js';
 import { loadPricingEditor, addPricingFeature, deletePricingTier, addPricingTier, savePricing } from './modules/pricing.js';
@@ -40,7 +40,7 @@ function _switchTab(tabId) {
   const titles = {
     dashboard: 'Tableau de bord', contacts: 'Messages', quotes: 'Devis',
     subscribers: 'Newsletter', images: 'Galerie', dossiers: 'Dossiers',
-    team: 'Équipe', services: 'Services', projects: 'Projets',
+    team: 'Équipe', services: 'Services', projects: 'Projets', products: 'Produits',
     blog: 'Blog',     sections: 'Contenu des sections', pricing: 'Tarifs', settings: 'Paramètres',
     activity: "Journal d'activité"
   };
@@ -70,6 +70,7 @@ function _switchTab(tabId) {
       case 'team': (async () => { await loadTeamPositions(); loadEntity('team'); })(); break;
       case 'services': loadEntity('services'); break;
       case 'projects': loadEntity('projects'); break;
+      case 'products': loadEntity('products'); break;
       case 'blog': (async () => { await loadBlogCategories(); loadEntity('blog'); })(); break;
       case 'sections': loadSectionsEditor(); break;
       case 'pricing': loadPricingEditor(); break;
@@ -109,7 +110,7 @@ Object.assign(window, {
   loadSlots, loadImages, renderImages, assignSlot, confirmDeleteImage,
   openImageEditor, closeImageEditor, saveImageEdit,
   loadEntity, renderEntity, openCrudForm, closeCrudForm, saveCrudItem, confirmDeleteItem,
-  previewSlotImage, uploadSlotImage, uploadBlogImage, openTeamForm, openServiceForm, openProjectForm, openBlogForm,
+  previewSlotImage, uploadSlotImage, uploadBlogImage, uploadProductMedia, openTeamForm, openServiceForm, openProjectForm, openProductForm, openBlogForm,
   exportEntity,
   loadSectionsEditor, loadPricingEditor, addPricingFeature, deletePricingTier, addPricingTier, savePricing,
   loadSettings, saveSettings, testEmail,
@@ -231,7 +232,7 @@ document.getElementById('subSearch')?.addEventListener('input', renderSubscriber
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'blog', 'dossiers'];
+  const tabs = ['dashboard', 'contacts', 'quotes', 'subscribers', 'images', 'team', 'services', 'projects', 'products', 'blog', 'dossiers'];
   const num = parseInt(e.key);
   if (num >= 1 && num <= 9 && tabs[num - 1]) { switchTab(tabs[num - 1]); return; }
   if (num === 0) { switchTab('pricing'); return; }

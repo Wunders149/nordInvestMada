@@ -193,6 +193,14 @@ function getLocalPublicList(tableName) {
           image: asLocalImageUrl('projects', image)
         }, `project-${item.id}`);
       }),
+    products: () => orderPublicItems(readDataFile('products.json'))
+      .map(item => ({
+        ...item,
+        mediaType: item.mediaType || 'image',
+        mediaUrl: item.mediaUrl || item.image || '',
+        image: item.mediaUrl || item.image || '',
+        image_slot: item.image_slot || item.imageSlot || ''
+      })),
     blog_posts: () => {
       const items = readDataFile('blog.json');
       return (Array.isArray(items) ? items : [])
@@ -537,6 +545,27 @@ app.get('/api/team', (req, res) => {
 
 app.get('/api/services', (req, res) => {
   publicList(req, res, 'services', 'visible', 'order');
+});
+
+app.get('/api/products', async (req, res) => {
+  try {
+    const { data, error } = await withTimeout(supabase
+      .from('products')
+      .select('*')
+      .eq('visible', true)
+      .order('order', { ascending: true }), PUBLIC_DB_TIMEOUT_MS, 'products public list');
+    if (error) throw error;
+    res.json((data || []).map(item => ({
+      ...item,
+      mediaType: item.media_type || item.mediaType || 'image',
+      mediaUrl: item.media_url || item.mediaUrl || item.image || '',
+      image: item.media_url || item.mediaUrl || item.image || '',
+      imageSlot: item.image_slot || item.imageSlot || ''
+    })));
+  } catch (err) {
+    console.error('products public list error:', err);
+    res.json(getLocalPublicList('products'));
+  }
 });
 
 app.get('/api/projects', async (req, res) => {

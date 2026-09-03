@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { requireAuth, loginLimiter, createSession, destroySession, loginUser, logActivity, getTokenFromRequest } from './auth.js';
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
-import { uploadPdf, uploadVideo, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
+import { uploadPdf, uploadVideo, uploadImage, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
 import { broadcast } from './events.js';
 import { validate, loginSchema, adminContentSchemas } from './validation.js';
 import nodemailer from 'nodemailer';
@@ -56,6 +56,42 @@ function camelizeKeys(obj) {
     result.image = result.images[0];
   }
   return result;
+}
+
+const LOCAL_ENTITY_FILES = {
+  team_members: 'team.json',
+  services: 'services.json',
+  projects: 'projects.json',
+  products: 'products.json',
+  blog_posts: 'blog.json'
+};
+
+export function isMissingTableError(err) {
+  if (!err) return false;
+  const code = err.code || '';
+  const message = `${err.message || ''} ${err.details || ''} ${err.hint || ''}`.toLowerCase();
+  return code === 'PGRST205' || code === '42P01' || message.includes('could not find the table') || message.includes('does not exist');
+}
+
+export function readLocalEntityData(tableName) {
+  const fileName = LOCAL_ENTITY_FILES[tableName];
+  if (!fileName) return [];
+  const filePath = path.join(projectRoot, 'data', fileName);
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn(`Local fallback unavailable for ${tableName}:`, error.message);
+    return [];
+  }
+}
+
+function writeLocalEntityData(tableName, items) {
+  const fileName = LOCAL_ENTITY_FILES[tableName];
+  if (!fileName) return;
+  const filePath = path.join(projectRoot, 'data', fileName);
+  fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
 }
 
 function escapeHtml(text) {
@@ -309,7 +345,13 @@ async function notifySubscribersOnPublish(post) {
 function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], callbacks = {}) {
   router.get(`/${entityName}`, requireAuth, async (req, res) => {
     try {
-      const items = await list(tableName, { order: orderOption });
+      let items;
+      try {
+        items = await list(tableName, { order: orderOption });
+      } catch (err) {
+        if (!isMissingTableError(err)) throw err;
+        items = readLocalEntityData(tableName);
+      }
       res.json(items.map(i => camelizeKeys(i)));
     } catch (err) {
       console.error(`${entityName} list error:`, err);
@@ -328,7 +370,16 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
         newItem.images = [newItem.image];
         delete newItem.image;
       }
-      const result = await create(tableName, newItem);
+      let result;
+      try {
+        result = await create(tableName, newItem);
+      } catch (err) {
+        if (!isMissingTableError(err)) throw err;
+        const items = readLocalEntityData(tableName);
+        items.push({ ...newItem });
+        writeLocalEntityData(tableName, items);
+        result = { ...newItem };
+      }
       logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${result.name || result.title || result.id}`, req.admin.username);
       if (callbacks.onCreate) callbacks.onCreate(result, req);
       broadcast(entityName, { action: 'create', id: result.id });
@@ -351,7 +402,18 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
         data.images = [data.image];
         delete data.image;
       }
-      const item = await update(tableName, req.params.id, data);
+      let item;
+      try {
+        item = await update(tableName, req.params.id, data);
+      } catch (err) {
+        if (!isMissingTableError(err)) throw err;
+        const items = readLocalEntityData(tableName);
+        const index = items.findIndex(entry => entry.id === req.params.id);
+        if (index === -1) return res.status(404).json({ error: 'Not found' });
+        items[index] = { ...items[index], ...data };
+        writeLocalEntityData(tableName, items);
+        item = items[index];
+      }
       logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${item.name || item.title || req.params.id}`, req.admin.username);
       if (callbacks.onUpdate) callbacks.onUpdate(item, req);
       broadcast(entityName, { action: 'update', id: req.params.id });
@@ -367,9 +429,23 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
 
   router.delete(`/${entityName}/:id`, requireAuth, async (req, res) => {
     try {
-      const item = await get(tableName, req.params.id);
+      let item;
+      try {
+        item = await get(tableName, req.params.id);
+      } catch (err) {
+        if (!isMissingTableError(err)) throw err;
+        const items = readLocalEntityData(tableName);
+        item = items.find(entry => entry.id === req.params.id) || null;
+      }
       if (!item) return res.status(404).json({ error: 'Not found' });
-      await remove(tableName, req.params.id);
+
+      try {
+        await remove(tableName, req.params.id);
+      } catch (err) {
+        if (!isMissingTableError(err)) throw err;
+        const items = readLocalEntityData(tableName).filter(entry => entry.id !== req.params.id);
+        writeLocalEntityData(tableName, items);
+      }
       logActivity(`${entityName}_delete`, `${entityName.slice(0, -1)} supprimé: ${item.name || item.title || req.params.id}`, req.admin.username);
       broadcast(entityName, { action: 'delete', id: req.params.id });
       res.json({ success: true });
@@ -380,9 +456,36 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
   });
 }
 
+router.post('/products/upload', requireAuth, (req, res) => {
+  const mediaUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 100 * 1024 * 1024 },
+    fileFilter: (request, file, cb) => {
+      if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) cb(null, true);
+      else cb(new Error('Sélectionnez une image ou une vidéo'));
+    }
+  });
+  mediaUpload.single('media')(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'Le fichier ne doit pas dépasser 100 Mo' : err.message });
+    if (!req.file) return res.status(400).json({ error: 'Aucun fichier sélectionné' });
+    try {
+      const isVideo = req.file.mimetype.startsWith('video/');
+      const publicId = `product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const result = isVideo
+        ? await uploadVideo(req.file.buffer, { folder: 'products', publicId })
+        : await uploadImage(req.file.buffer, { folder: 'products', publicId, mimetype: req.file.mimetype });
+      res.json({ success: true, url: result.secure_url, mediaType: isVideo ? 'video' : 'image' });
+    } catch (uploadErr) {
+      console.error('Product media upload failed:', uploadErr);
+      res.status(500).json({ error: 'Échec de l\'upload du média' });
+    }
+  });
+});
+
 crudRoutes('team', 'team_members');
 crudRoutes('services', 'services');
 crudRoutes('projects', 'projects');
+crudRoutes('products', 'products');
 crudRoutes('blog', 'blog_posts', [['date', 'desc']], {
   onCreate: async (item) => {
     if (item.published) {

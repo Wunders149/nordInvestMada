@@ -1257,6 +1257,81 @@ async function loadProjects() {
   } catch (err) { console.warn('Projects load error:', err); showSectionError('projectsGrid', getNestedTranslation('dossiers.error') || 'Unable to load.'); }
 }
 
+async function loadProducts() {
+  try {
+    const products = await fetchJsonArray(`${API_BASE}/api/products`, { cache: 'no-store' });
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    grid.innerHTML = products.map((p, i) => {
+      const media = p.mediaUrl || p.image || '/images/placeholder.svg';
+      const isVideo = p.mediaType === 'video';
+      const mediaTag = isVideo
+        ? `<video class="product-media" muted playsinline loop controls preload="metadata"><source src="${media}" type="video/mp4"></video>`
+        : `<img src="${media}" alt="${escapeHtml(p.name || 'Produit')}" class="product-media img-reveal" loading="lazy">`;
+      const priceValue = Number(p.price || 0);
+      const price = priceValue.toLocaleString('fr-FR');
+      const priceEur = Math.round(priceValue / (exchangeRates.EUR || 5000)).toLocaleString('fr-FR');
+      const priceUsd = Math.round(priceValue / (exchangeRates.USD || 4600)).toLocaleString('fr-FR');
+      return `
+        <article class="product-card" data-product-media="${escapeHtml(media)}" data-product-media-type="${isVideo ? 'video' : 'image'}" data-product-name="${escapeHtml(p.name || 'Produit')}" style="--project-delay: ${i * 80}ms">
+          <div class="product-media-wrap" role="button" tabindex="0" aria-label="Agrandir ${escapeHtml(p.name || 'Produit')}">
+            ${mediaTag}
+            <div class="product-price" aria-label="Prix : ${price} Ariary, ${priceEur} euros, ${priceUsd} dollars">
+              <span class="product-price-line product-price-main"><b>Ar</b> ${price}</span>
+              <span class="product-price-line"><b>€</b> ${priceEur}</span>
+              <span class="product-price-line"><b>$</b> ${priceUsd}</span>
+            </div>
+          </div>
+          <div class="product-content">
+            <h3>${escapeHtml(p.name || 'Produit')}</h3>
+            <p>${escapeHtml(p.description || '')}</p>
+          </div>
+        </article>
+      `;
+    }).join('') || '<p class="empty-state-inline">Aucun produit disponible pour le moment.</p>';
+    grid.querySelectorAll('.product-media-wrap').forEach(mediaWrap => {
+      const open = () => {
+        const card = mediaWrap.closest('.product-card');
+        if (card) openProductLightbox(card.dataset.productMedia, card.dataset.productMediaType, card.dataset.productName);
+      };
+      mediaWrap.addEventListener('click', event => {
+        if (event.target.closest('video') && event.target.closest('video').controls) return;
+        open();
+      });
+      mediaWrap.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
+      });
+    });
+    initImageReveal();
+  } catch (err) {
+    console.warn('Products load error:', err);
+    const grid = document.getElementById('productsGrid');
+    if (grid) grid.innerHTML = '<p class="empty-state-inline">Impossible de charger les produits.</p>';
+  }
+}
+
+function openProductLightbox(src, mediaType, name) {
+  const modal = document.getElementById('productLightbox');
+  const media = document.getElementById('productLightboxMedia');
+  if (!modal || !media || !src) return;
+  media.innerHTML = mediaType === 'video'
+    ? `<video src="${escapeHtml(src)}" controls autoplay playsinline></video>`
+    : `<img src="${escapeHtml(src)}" alt="${escapeHtml(name || 'Produit')}" />`;
+  modal.querySelector('.product-lightbox-title').textContent = name || 'Produit';
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  modal.querySelector('.product-lightbox-close')?.focus({ preventScroll: true });
+}
+
+function closeProductLightbox(event) {
+  if (event && event.target !== event.currentTarget) return;
+  const modal = document.getElementById('productLightbox');
+  const media = document.getElementById('productLightboxMedia');
+  if (media) media.innerHTML = '';
+  if (modal) modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
 function initProjectCardMotion() {
   const cards = document.querySelectorAll('.project-card');
   if (!cards.length) return;
@@ -1568,9 +1643,11 @@ document.addEventListener('keydown', (e) => {
     const blogModal = document.getElementById('blogModal');
     const pdfModal = document.getElementById('pdfModal');
     const galleryModal = document.getElementById('galleryModal');
+    const productLightbox = document.getElementById('productLightbox');
     if (blogModal?.classList.contains('active')) closeBlogPost();
     else if (pdfModal?.classList.contains('active')) closePdfViewer();
     else if (galleryModal?.classList.contains('active')) closeGallery();
+    else if (productLightbox?.classList.contains('active')) closeProductLightbox();
   }
 });
 
@@ -2654,6 +2731,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load translations first, then apply admin section content on top so admin edits override i18n
   await loadTranslations(currentLang);
   await loadConfigData();
+  loadProducts();
   initImageReveal();
   initMaps();
   initBudgetCurrencyConversion();
@@ -2726,6 +2804,7 @@ const EVENT_MAP = {
   'team': loadTeam,
   'services': loadServices,
   'projects': () => { loadProjects(); refreshProjectMap(); },
+  'products': loadProducts,
   'blog': loadBlog,
   'blog-categories': loadBlogCategories,
   'pricing': loadPricingData,

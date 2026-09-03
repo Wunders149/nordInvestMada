@@ -64,6 +64,10 @@
           <span class="nav-icon">Prj</span>
           Projets
         </button>
+        <button class="nav-btn" data-tab="products">
+          <span class="nav-icon">Prod</span>
+          Produits
+        </button>
         <button class="nav-btn" data-tab="blog">
           <span class="nav-icon">Blog</span>
           Blog
@@ -113,6 +117,7 @@
       <div class="top-header-actions" id="topHeaderActions">
         <button class="header-action is-primary" type="button" onclick="switchTab('team')">+ Membre</button>
         <button class="header-action" type="button" onclick="switchTab('services')">+ Service</button>
+        <button class="header-action" type="button" onclick="switchTab('products')">+ Produit</button>
         <button class="header-action" type="button" onclick="switchTab('blog')">+ Article</button>
       </div>
       <div class="top-header-right">
@@ -497,6 +502,21 @@
           </div>
         </div>
         <div id="projectsList" class="admin-card-grid"></div>
+      </section>
+
+      <!-- ─── PRODUCTS TAB ─── -->
+      <section id="tab-products" class="tab-content">
+        <div class="tab-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">Rech.</span>
+            <input type="text" id="productsSearch" class="search-input" placeholder="Rechercher un produit..." oninput="renderEntity('products')">
+          </div>
+          <div class="tab-toolbar-actions">
+            <button class="btn-secondary" id="productsExport" onclick="exportEntity('products')" style="display:none">Export CSV</button>
+            <button class="btn-secondary" onclick="openProductForm()">+ Ajouter</button>
+          </div>
+        </div>
+        <div id="productsList" class="admin-card-grid"></div>
       </section>
 
       <!-- ─── BLOG TAB ─── -->
