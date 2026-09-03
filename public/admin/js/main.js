@@ -1,4 +1,4 @@
-import { checkAuth, markDirty, markClean, contentPage as _contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state, contacts, quotes, subscribers } from './modules/api.js';
+import { checkAuth, installAuthGuard, markDirty, markClean, contentPage as _contentPage, loadedTabs, isDirty, API_BASE, getHeaders, state, contacts, quotes, subscribers } from './modules/api.js';
 import { initDarkMode, showConfirm, showToast, confirmNavigation, exportToCsv, renderPagination, openLightbox, closeLightbox, updateDarkBtn, confirmCallback } from './modules/ui.js';
 import { loadStats, renderCharts, renderDashboard } from './modules/dashboard.js';
 import {
@@ -55,7 +55,13 @@ function _switchTab(tabId) {
   if (!loadedTabs.has(tabId)) {
     loadedTabs.add(tabId);
     switch (tabId) {
-      case 'dashboard': renderDashboard(); break;
+      case 'dashboard':
+        (async () => {
+          await Promise.all([loadContacts(), loadQuotes()]);
+          renderDashboard();
+          renderCharts();
+        })();
+        break;
       case 'contacts': loadContacts(); break;
       case 'quotes': loadQuotes(); break;
       case 'subscribers': loadSubscribers(); break;
@@ -124,12 +130,16 @@ const overlay = document.getElementById('sidebarOverlay');
 
 if (sidebarToggle && sidebar && overlay) {
   sidebarToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('open');
+    const isOpen = sidebar.classList.toggle('open');
+    overlay.classList.toggle('open', isOpen);
+    sidebarToggle.setAttribute('aria-expanded', String(isOpen));
+    sidebarToggle.setAttribute('aria-label', isOpen ? 'Fermer le menu' : 'Ouvrir le menu');
   });
   overlay.addEventListener('click', () => {
     sidebar.classList.remove('open');
     overlay.classList.remove('open');
+    sidebarToggle.setAttribute('aria-expanded', 'false');
+    sidebarToggle.setAttribute('aria-label', 'Ouvrir le menu');
   });
 }
 
@@ -234,6 +244,7 @@ document.addEventListener('keydown', (e) => {
 
 // ─── Init ───
 if (checkAuth()) {
+  installAuthGuard();
   initDarkMode();
   loadStats();
 

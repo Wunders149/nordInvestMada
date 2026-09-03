@@ -67,14 +67,15 @@ export async function bulkDeleteQuotes() {
   if (ids.length === 0) return;
   showConfirm('Supprimer plusieurs devis', `Supprimer ${ids.length} devis(s) ? Cette action est irréversible.`, async () => {
     try {
-      await Promise.all(ids.map(id =>
+      const results = await Promise.all(ids.map(id =>
         fetch(`${API_BASE}/quotes/${id}`, { method: 'DELETE', headers: getHeaders() })
       ));
-      ids.forEach(id => { const idx = quotes.findIndex(x => x.id === id); if (idx >= 0) quotes.splice(idx, 1); });
+      const succeeded = ids.filter((_id, index) => results[index].ok);
+      succeeded.forEach(id => { const idx = quotes.findIndex(x => x.id === id); if (idx >= 0) quotes.splice(idx, 1); });
       selectedQuoteIds.clear();
       document.getElementById('quoteSelectAll').checked = false;
       renderQuotes(); loadStats();
-      showToast(`${ids.length} devis(s) supprimé(s)`, 'success');
+      showToast(`${succeeded.length}/${ids.length} devis(s) supprimé(s)`, succeeded.length === ids.length ? 'success' : 'error');
     } catch (_err) { showToast('Erreur', 'error'); }
   });
 }
@@ -106,7 +107,7 @@ export function renderQuotes() {
   tbody.innerHTML = page.map(q => `
     <tr>
       <td onclick="event.stopPropagation()" style="width:36px">
-        <input type="checkbox" class="quote-check" value="${q.id}" ${selectedQuoteIds.has(q.id) ? 'checked' : ''} onchange="toggleQuoteSelect('${q.id}', this.checked)">
+        <input type="checkbox" class="quote-check" aria-label="Sélectionner le devis de ${escapeHtml(q.name)}" value="${q.id}" ${selectedQuoteIds.has(q.id) ? 'checked' : ''} onchange="toggleQuoteSelect('${q.id}', this.checked)">
       </td>
       <td data-label="Date">${formatDate(q.date)}</td>
       <td data-label="N° Devis"><code>${escapeHtml(q.quoteNumber)}</code></td>

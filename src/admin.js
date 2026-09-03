@@ -7,7 +7,7 @@ import { requireAuth, loginLimiter, createSession, destroySession, loginUser, lo
 import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
 import { uploadPdf, uploadVideo, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
 import { broadcast } from './events.js';
-import { validate, loginSchema } from './validation.js';
+import { validate, loginSchema, adminContentSchemas } from './validation.js';
 import nodemailer from 'nodemailer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -64,6 +64,22 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, m => map[m]);
 }
 
+function sanitizeHtmlValue(value) {
+  if (typeof value !== 'string') return value;
+  return value
+    .replace(/<\/?(script|iframe|object|embed|style|link|meta)[^>]*>/gi, '')
+    .replace(/\s(on[a-z]+|formaction|srcdoc)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src)\s*=\s*(["'])\s*javascript:[^"']*\2/gi, '$1="#"');
+}
+
+function sanitizeSectionContent(value) {
+  if (Array.isArray(value)) return value.map(sanitizeSectionContent);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitizeSectionContent(item)]));
+  }
+  return sanitizeHtmlValue(value);
+}
+
 // ─── LOGIN ───
 router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
   const { username, password } = req.body;
@@ -82,7 +98,7 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
     maxAge: 24 * 60 * 60 * 1000,
     path: '/api/admin'
   });
-  res.json({ success: true, token });
+  res.json({ success: true });
 });
 
 // ─── LOGOUT ───
@@ -199,7 +215,8 @@ router.get('/stats', requireAuth, async (req, res) => {
     const { count: totalContacts } = await supabase.from('contacts').select('*', { count: 'exact', head: true });
     const { count: unreadContacts } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('read', false);
     const { count: totalQuotes } = await supabase.from('quotes').select('*', { count: 'exact', head: true });
-    const { count: pendingQuotes } = await supabase.from('quotes').select('*', { count: 'exact', head: true }).in('status', ['pending', null]);
+    const { count: pendingQuotesByStatus } = await supabase.from('quotes').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    const { count: pendingQuotesWithoutStatus } = await supabase.from('quotes').select('*', { count: 'exact', head: true }).is('status', null);
     const { count: totalSubscribers } = await supabase.from('subscribers').select('*', { count: 'exact', head: true });
 
     const now = new Date();
@@ -212,7 +229,7 @@ router.get('/stats', requireAuth, async (req, res) => {
       totalContacts: totalContacts || 0,
       unreadContacts: unreadContacts || 0,
       totalQuotes: totalQuotes || 0,
-      pendingQuotes: pendingQuotes || 0,
+      pendingQuotes: (pendingQuotesByStatus || 0) + (pendingQuotesWithoutStatus || 0),
       totalSubscribers: totalSubscribers || 0,
       contactsThisMonth: contactsThisMonth || 0,
       lastUpdate: new Date().toISOString()
@@ -300,7 +317,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
     }
   });
 
-  router.post(`/${entityName}`, requireAuth, async (req, res) => {
+  router.post(`/${entityName}`, requireAuth, validate(adminContentSchemas[entityName].create), async (req, res) => {
     try {
       const newItem = {
         id: `${entityName.slice(0, -1)}_${Date.now()}`,
@@ -324,7 +341,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
     }
   });
 
-  router.patch(`/${entityName}/:id`, requireAuth, async (req, res) => {
+  router.patch(`/${entityName}/:id`, requireAuth, validate(adminContentSchemas[entityName].update), async (req, res) => {
     try {
       const data = {
         ...mapFields(req.body),
@@ -686,6 +703,7 @@ try {
 router.post('/dossiers', requireAuth, (req, res) => {
   const pdfUpload = multer({
     storage: multer.memoryStorage(),
+    limits: { fileSize: 25 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       if (file.mimetype === 'application/pdf') {
         cb(null, true);
@@ -697,7 +715,8 @@ router.post('/dossiers', requireAuth, (req, res) => {
   pdfUpload.single('pdf')(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
-        return res.status(400).json({ error: `Upload error: ${err.message}` });
+        const message = err.code === 'LIMIT_FILE_SIZE' ? 'Le fichier PDF ne doit pas dépasser 25 Mo' : `Upload error: ${err.message}`;
+        return res.status(400).json({ error: message });
       }
       return res.status(400).json({ error: err.message });
     }
@@ -913,7 +932,7 @@ router.put('/sections', requireAuth, async (req, res) => {
     }
     const settingLang = lang || 'fr';
     const key = `sections_content_${settingLang}`;
-    await setSetting(key, sections);
+    await setSetting(key, sanitizeSectionContent(sections));
     logActivity('sections_update', `Contenu des sections mis à jour (${settingLang})`, req.admin.username);
     broadcast('config');
     res.json({ success: true });

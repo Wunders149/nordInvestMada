@@ -1831,7 +1831,7 @@ function applySectionContent(cfg) {
     setElText('.pricing-tabs > .tab-btn:nth-child(3) .pricing-tab-label', s.pricing.tab3);
     if (s.pricing.note) {
       const note = document.querySelector('.pricing-footer');
-      if (note) note.innerHTML = s.pricing.note;
+      if (note) note.innerHTML = sanitizeHtml(s.pricing.note);
     }
   }
 
@@ -1914,7 +1914,7 @@ function setElHtml(selector, html) {
   if (!html) return;
   const el = document.querySelector(selector);
   if (!el) return;
-  el.innerHTML = html;
+  el.innerHTML = sanitizeHtml(html);
 }
 
 function showSectionError(containerId, message) {

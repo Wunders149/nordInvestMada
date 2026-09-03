@@ -71,14 +71,15 @@ export async function bulkMarkRead() {
   const ids = [...selectedContactIds];
   if (ids.length === 0) return;
   try {
-    await Promise.all(ids.map(id =>
+    const results = await Promise.all(ids.map(id =>
       fetch(`${API_BASE}/contacts/${id}`, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ read: true }) })
     ));
-    ids.forEach(id => { const c = contacts.find(x => x.id === id); if (c) c.read = true; });
+    const succeeded = ids.filter((_id, index) => results[index].ok);
+    succeeded.forEach(id => { const c = contacts.find(x => x.id === id); if (c) c.read = true; });
     selectedContactIds.clear();
     document.getElementById('contactSelectAll').checked = false;
     renderContacts(); loadStats();
-    showToast(`${ids.length} message(s) marqué(s) comme lu`, 'success');
+    showToast(`${succeeded.length}/${ids.length} message(s) marqué(s) comme lu`, succeeded.length === ids.length ? 'success' : 'error');
   } catch (_err) { showToast('Erreur', 'error'); }
 }
 
@@ -87,14 +88,15 @@ export async function bulkDeleteContacts() {
   if (ids.length === 0) return;
   showConfirm('Supprimer plusieurs messages', `Supprimer ${ids.length} message(s) ? Cette action est irréversible.`, async () => {
     try {
-      await Promise.all(ids.map(id =>
+      const results = await Promise.all(ids.map(id =>
         fetch(`${API_BASE}/contacts/${id}`, { method: 'DELETE', headers: getHeaders() })
       ));
-      ids.forEach(id => { const idx = contacts.findIndex(x => x.id === id); if (idx >= 0) contacts.splice(idx, 1); });
+      const succeeded = ids.filter((_id, index) => results[index].ok);
+      succeeded.forEach(id => { const idx = contacts.findIndex(x => x.id === id); if (idx >= 0) contacts.splice(idx, 1); });
       selectedContactIds.clear();
       document.getElementById('contactSelectAll').checked = false;
       renderContacts(); loadStats();
-      showToast(`${ids.length} message(s) supprimé(s)`, 'success');
+      showToast(`${succeeded.length}/${ids.length} message(s) supprimé(s)`, succeeded.length === ids.length ? 'success' : 'error');
     } catch (_err) { showToast('Erreur', 'error'); }
   });
 }
@@ -141,7 +143,7 @@ export function renderContacts() {
   tbody.innerHTML = page.map(c => `
     <tr class="${!c.read ? 'unread' : ''}" style="cursor:pointer" onclick="openContactDetail('${c.id}')">
       <td onclick="event.stopPropagation()" style="width:36px">
-        <input type="checkbox" class="contact-check" value="${c.id}" ${selectedContactIds.has(c.id) ? 'checked' : ''} onchange="toggleContactSelect('${c.id}', this.checked)">
+        <input type="checkbox" class="contact-check" aria-label="Sélectionner le message de ${escapeHtml(c.name)}" value="${c.id}" ${selectedContactIds.has(c.id) ? 'checked' : ''} onchange="toggleContactSelect('${c.id}', this.checked)">
       </td>
       <td data-label="Date">${formatDate(c.date)}</td>
       <td data-label="Nom"><strong>${escapeHtml(c.name)}</strong></td>

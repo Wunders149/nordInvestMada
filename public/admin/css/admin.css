@@ -2755,7 +2755,14 @@ input:focus, select:focus, textarea:focus,
     min-width: 70px;
     flex-shrink: 0;
   }
-  .responsive-table td[style*="width:36px"] { display: none; }
+  .responsive-table td[style*="width:36px"] {
+    display: flex;
+    justify-content: flex-start;
+    min-height: 2.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 0;
+  }
+  .responsive-table td[style*="width:36px"]::before { content: 'Sélection'; }
   .responsive-table .actions-cell {
     display: flex;
     gap: 0.5rem;

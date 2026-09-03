@@ -34,17 +34,31 @@ export function markDirty() { isDirty = true; }
 export function markClean() { isDirty = false; }
 
 export function checkAuth() {
-  token = localStorage.getItem('adminToken');
-  if (!token && !sessionStorage.getItem('adminLoggedIn')) {
-    window.location.href = '/admin/login.html';
-    return false;
-  }
+  token = '';
+  localStorage.removeItem('adminToken');
+  sessionStorage.removeItem('adminLoggedIn');
   return true;
 }
 
-export function setToken(t) { token = t; localStorage.setItem('adminToken', t); }
+export function setToken(t) { token = t || ''; }
 export function clearToken() {
   token = '';
   localStorage.removeItem('adminToken');
   sessionStorage.removeItem('adminLoggedIn');
+}
+
+export function installAuthGuard() {
+  if (window.__adminAuthGuardInstalled) return;
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = async (...args) => {
+    const response = await nativeFetch(...args);
+    const requestUrl = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+    const isAdminRequest = requestUrl.includes('/api/admin/') || requestUrl.includes('/api/images') || requestUrl.includes('/api/upload');
+    if (isAdminRequest && response.status === 401) {
+      clearToken();
+      window.location.href = '/admin/login.html';
+    }
+    return response;
+  };
+  window.__adminAuthGuardInstalled = true;
 }

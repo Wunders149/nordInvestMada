@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/images/favicon_io/apple-touch-icon.png">
 </head>
 <body class="dashboard-page">
-  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">Menu</button>
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">Menu</button>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <!-- ═══ SIDEBAR ═══ -->
@@ -140,7 +140,7 @@
           </div>
           <div class="summary-metric">
             <strong id="summaryMetricPublished">0</strong>
-            <span>Contenus</span>
+            <span>Abonnés</span>
           </div>
         </div>
       </div>
@@ -441,9 +441,9 @@
         <div id="dossiersList" class="admin-card-grid"></div>
 
         <!-- Rename modal -->
-        <div id="dossierRenameModal" class="modal-overlay" style="display:none">
+        <div id="dossierRenameModal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="dossierRenameTitle">
           <div class="modal-box" style="max-width:420px">
-            <h3>Renommer le dossier</h3>
+            <h3 id="dossierRenameTitle">Renommer le dossier</h3>
             <input type="text" id="dossierRenameInput" class="search-input" style="width:100%;margin:1rem 0" placeholder="Nouveau nom...">
             <div style="display:flex;gap:0.5rem;justify-content:flex-end">
               <button class="btn-ghost" onclick="closeDossierRename()">Annuler</button>
@@ -571,9 +571,9 @@
   </div>
 
   <!-- ─── KEYBOARD SHORTCUTS MODAL ─── -->
-  <div class="modal-overlay" id="shortcutsModal">
+  <div class="modal-overlay" id="shortcutsModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="shortcutsTitle">
     <div class="modal-box shortcuts-box">
-      <h3>⌨️ Raccourcis clavier</h3>
+      <h3 id="shortcutsTitle">⌨️ Raccourcis clavier</h3>
       <div class="shortcuts-grid">
         <div class="shortcut-row"><kbd>1</kbd><span>Tableau de bord</span></div>
         <div class="shortcut-row"><kbd>2</kbd><span>Messages</span></div>
@@ -602,7 +602,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- ─── CONFIRM MODAL ─── -->
-  <div class="modal-overlay" id="confirmModal">
+  <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="confirmTitle">
     <div class="modal-box">
       <div class="modal-icon danger">!</div>
       <h3 id="confirmTitle">Confirmer</h3>
@@ -615,12 +615,12 @@
   </div>
 
   <!-- ─── CONTACT DETAIL MODAL ─── -->
-  <div class="modal-overlay detail-modal" id="contactDetailModal">
+  <div class="modal-overlay detail-modal" id="contactDetailModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="detailName">
     <div class="modal-box detail-box">
       <div class="detail-header">
         <h3 id="detailName"></h3>
         <span id="detailDate" class="detail-date"></span>
-        <button class="modal-close" id="detailClose">x</button>
+        <button class="modal-close" id="detailClose" aria-label="Fermer">x</button>
       </div>
       <div class="detail-body">
         <div class="detail-grid">
@@ -677,11 +677,11 @@
   </div>
 
   <!-- ─── CRUD FORM MODAL ─── -->
-  <div class="modal-overlay" id="crudModal">
+  <div class="modal-overlay" id="crudModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="crudModalTitle">
     <div class="modal-box crud-modal">
       <div class="crud-modal-header">
         <h3 id="crudModalTitle"></h3>
-        <button class="modal-close" onclick="closeCrudForm()">x</button>
+        <button class="modal-close" aria-label="Fermer" onclick="closeCrudForm()">x</button>
       </div>
       <div id="crudFormBody"></div>
       <div class="modal-actions crud-modal-actions">

@@ -38,6 +38,88 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 });
 
+const contentCommonSchema = {
+  order: z.coerce.number().int().min(0).max(100000).optional(),
+  visible: z.boolean().optional()
+};
+
+export const adminContentSchemas = {
+  team: {
+    create: z.object({
+      name: z.string().trim().min(1).max(200),
+      role: z.string().trim().min(1).max(200),
+      groupType: z.enum(['office', 'field']).default('office'),
+      bio: z.string().max(5000).default(''),
+      imageSlot: z.string().max(200).default(''),
+      ...contentCommonSchema
+    }),
+    update: z.object({
+      name: z.string().trim().min(1).max(200).optional(),
+      role: z.string().trim().min(1).max(200).optional(),
+      groupType: z.enum(['office', 'field']).optional(),
+      bio: z.string().max(5000).optional(),
+      imageSlot: z.string().max(200).optional(),
+      ...contentCommonSchema
+    }).partial()
+  },
+  services: {
+    create: z.object({
+      title: z.string().trim().min(1).max(200),
+      description: z.string().trim().min(1).max(5000),
+      icon: z.string().max(40).default(''),
+      imageSlot: z.string().max(200).default(''),
+      ...contentCommonSchema
+    }),
+    update: z.object({
+      title: z.string().trim().min(1).max(200).optional(),
+      description: z.string().trim().min(1).max(5000).optional(),
+      icon: z.string().max(40).optional(),
+      imageSlot: z.string().max(200).optional(),
+      ...contentCommonSchema
+    }).partial()
+  },
+  projects: {
+    create: z.object({
+      title: z.string().trim().min(1).max(200),
+      location: z.string().max(200).default(''),
+      description: z.string().max(5000).default(''),
+      category: z.enum(['construction', 'rehabilitation', 'forage']).optional(),
+      image: z.string().max(2000).default(''),
+      ...contentCommonSchema
+    }),
+    update: z.object({
+      title: z.string().trim().min(1).max(200).optional(),
+      location: z.string().max(200).optional(),
+      description: z.string().max(5000).optional(),
+      category: z.enum(['construction', 'rehabilitation', 'forage']).optional(),
+      image: z.string().max(2000).optional(),
+      ...contentCommonSchema
+    }).partial()
+  },
+  blog: {
+    create: z.object({
+      title: z.string().trim().min(1).max(200),
+      slug: z.string().trim().max(220).regex(/^[a-z0-9-]*$/, 'Slug invalide').default(''),
+      date: z.string().max(40).default(''),
+      excerpt: z.string().max(2000).default(''),
+      content: z.string().max(50000).default(''),
+      categoryId: z.string().max(200).default(''),
+      image: z.string().max(2000).default(''),
+      published: z.boolean().default(true)
+    }),
+    update: z.object({
+      title: z.string().trim().min(1).max(200).optional(),
+      slug: z.string().trim().max(220).regex(/^[a-z0-9-]*$/, 'Slug invalide').optional(),
+      date: z.string().max(40).optional(),
+      excerpt: z.string().max(2000).optional(),
+      content: z.string().max(50000).optional(),
+      categoryId: z.string().max(200).optional(),
+      image: z.string().max(2000).optional(),
+      published: z.boolean().optional()
+    }).partial()
+  }
+};
+
 export function validate(schema) {
   return (req, res, next) => {
     const result = schema.safeParse(req.body);
