@@ -2172,6 +2172,28 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
         document.body.removeChild(a);
       });
     });
+    const setVideoButtonState = (button, isOpen) => {
+      if (!button) return;
+      button.classList.toggle('is-open', isOpen);
+      const label = isOpen ? (getNestedTranslation('dossiers.closeVideo') || 'Fermer') : (getNestedTranslation('dossiers.videoButton') || 'Vidéo');
+      const icon = isOpen ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+      button.innerHTML = `${icon}<span>${label}</span>`;
+    };
+
+    const closeVideoModal = (activeButton = null) => {
+      const modalVideo = videoModal.querySelector('video');
+      if (modalVideo) modalVideo.pause();
+      videoModal.classList.remove('active');
+
+      if (activeButton) {
+        setVideoButtonState(activeButton, false);
+        return;
+      }
+
+      const openButtons = grid.querySelectorAll('.dossier-action-video.is-open');
+      openButtons.forEach((button) => setVideoButtonState(button, false));
+    };
+
     const videoModal = (() => {
       let modal = document.getElementById('dossierVideoModal');
       if (!modal) {
@@ -2186,15 +2208,11 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
         `;
         modal.addEventListener('click', (event) => {
           if (event.target === modal) {
-            const video = modal.querySelector('video');
-            if (video) video.pause();
-            modal.classList.remove('active');
+            closeVideoModal();
           }
         });
         modal.querySelector('.dossier-video-modal-close').addEventListener('click', () => {
-          const video = modal.querySelector('video');
-          if (video) video.pause();
-          modal.classList.remove('active');
+          closeVideoModal();
         });
         document.body.appendChild(modal);
       }
@@ -2206,12 +2224,14 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
         e.stopPropagation();
         const modalVideo = videoModal.querySelector('video');
         const isOpen = videoModal.classList.contains('active');
+        const activeButton = grid.querySelector('.dossier-action-video.is-open');
 
-        if (isOpen) {
-          modalVideo.pause();
-          videoModal.classList.remove('active');
-          btn.classList.remove('is-open');
-          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span>' + (getNestedTranslation('dossiers.videoButton') || 'Vidéo') + '</span>';
+        if (activeButton && activeButton !== btn) {
+          setVideoButtonState(activeButton, false);
+        }
+
+        if (isOpen && activeButton === btn) {
+          closeVideoModal(btn);
           return;
         }
 
@@ -2219,8 +2239,7 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
           modalVideo.src = btn.dataset.video;
         }
         videoModal.classList.add('active');
-        btn.classList.add('is-open');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg><span>' + (getNestedTranslation('dossiers.closeVideo') || 'Fermer') + '</span>';
+        setVideoButtonState(btn, true);
         const playPromise = modalVideo.play();
         if (playPromise && playPromise.catch) playPromise.catch(() => {});
       });
