@@ -913,9 +913,8 @@ h2 {
   gap: 20px;
   width: max-content;
   animation: servicesTrackSlide 32s linear infinite;
-}
-.services-showcase:hover .services-track {
-  animation-play-state: paused;
+  animation-iteration-count: infinite;
+  will-change: transform;
 }
 .service-card {
   flex: 0 0 min(26vw, 360px);
@@ -2716,9 +2715,8 @@ h1 { animation-delay: 0.2s; }
   gap: 18px;
   width: max-content;
   animation: teamTrackSlide 28s linear infinite;
-}
-.team-showcase:hover .team-track {
-  animation-play-state: paused;
+  animation-iteration-count: infinite;
+  will-change: transform;
 }
 .team-card {
   flex: 0 0 220px;

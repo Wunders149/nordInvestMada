@@ -1203,23 +1203,6 @@ function initTeamLightbox() {
   });
 }
 
-function getServiceMark(title, index, customIcon = '') {
-  const icon = String(customIcon || '').trim();
-  if (icon) {
-    return icon.slice(0, 2).toUpperCase();
-  }
-  const words = String(title || '')
-    .replace(/&/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
-  const letters = words
-    .filter(w => w.length > 2)
-    .slice(0, 2)
-    .map(w => w[0])
-    .join('');
-  return (letters || String(index + 1).padStart(2, '0')).toUpperCase();
-}
-
 async function loadServices() {
   try {
     const services = await fetchJsonArray(`${API_BASE}/api/services`);
@@ -1237,7 +1220,6 @@ async function loadServices() {
         </div>
         <div class="service-content">
         <div class="service-num">${String(index + 1).padStart(2, '0')}</div>
-        <div class="service-icon">${getServiceMark(service.title, index, service.icon)}</div>
         <div class="service-title" data-i18n="services.card${index + 1}Title">${escapeHtml(service.title)}</div>
         <p class="service-desc" data-i18n="services.card${index + 1}Desc">${escapeHtml(service.description)}</p>
         </div>
