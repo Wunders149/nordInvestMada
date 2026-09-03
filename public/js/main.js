@@ -1203,7 +1203,11 @@ function initTeamLightbox() {
   });
 }
 
-function getServiceMark(title, index) {
+function getServiceMark(title, index, customIcon = '') {
+  const icon = String(customIcon || '').trim();
+  if (icon) {
+    return icon.slice(0, 2).toUpperCase();
+  }
   const words = String(title || '')
     .replace(/&/g, ' ')
     .split(/\s+/)
@@ -1225,16 +1229,17 @@ async function loadServices() {
       const hasOwnImg = s.image && (s.image.startsWith('http') || s.image.startsWith('/'));
       const slot = s.image_slot || s.imageSlot || '';
       const index = i % services.length;
+      const service = { ...s, title: s.title || 'Service', description: s.description || '' };
       return `<article class="service-card">
         <div class="service-media">
-          <img src="${hasOwnImg ? s.image : '/images/placeholder.svg'}" alt="${escapeHtml(s.title)}" loading="lazy"${!hasOwnImg ? ` data-image-slot="${escapeHtml(slot)}"` : ''}>
+          <img src="${hasOwnImg ? service.image : '/images/placeholder.svg'}" alt="${escapeHtml(service.title)}" loading="lazy"${!hasOwnImg ? ` data-image-slot="${escapeHtml(slot)}"` : ''}>
           <span class="service-media-shade"></span>
         </div>
         <div class="service-content">
         <div class="service-num">${String(index + 1).padStart(2, '0')}</div>
-        <div class="service-icon">${getServiceMark(s.title, index)}</div>
-        <div class="service-title" data-i18n="services.card${index + 1}Title">${escapeHtml(s.title)}</div>
-        <p class="service-desc" data-i18n="services.card${index + 1}Desc">${escapeHtml(s.description)}</p>
+        <div class="service-icon">${getServiceMark(service.title, index, service.icon)}</div>
+        <div class="service-title" data-i18n="services.card${index + 1}Title">${escapeHtml(service.title)}</div>
+        <p class="service-desc" data-i18n="services.card${index + 1}Desc">${escapeHtml(service.description)}</p>
         </div>
       </article>`;
     }).join('');
