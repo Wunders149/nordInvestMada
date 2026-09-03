@@ -74,6 +74,58 @@ const ENTITY_CONFIG = {
 let currentEntity = null;
 let currentEditId = null;
 
+function getEntityItems(entity) {
+  if (entity === 'team') return teamData;
+  if (entity === 'services') return servicesData;
+  if (entity === 'projects') return projectsData;
+  if (entity === 'blog') return blogData;
+  return [];
+}
+
+export async function reorderEntityItems(entity, sourceId, targetId = null, direction = null) {
+  const cfg = ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  const items = [...getEntityItems(entity)].sort((a, b) => {
+    const left = Number.isFinite(a?.order) ? Number(a.order) : 99;
+    const right = Number.isFinite(b?.order) ? Number(b.order) : 99;
+    return left - right;
+  });
+  const sourceIndex = items.findIndex(item => item.id === sourceId);
+  if (sourceIndex === -1) return;
+
+  let targetIndex = sourceIndex;
+  if (targetId) {
+    const index = items.findIndex(item => item.id === targetId);
+    if (index !== -1) targetIndex = index;
+  } else if (direction === 'up') {
+    targetIndex = Math.max(0, sourceIndex - 1);
+  } else if (direction === 'down') {
+    targetIndex = Math.min(items.length - 1, sourceIndex + 1);
+  }
+
+  if (targetIndex === sourceIndex) return;
+
+  const [moved] = items.splice(sourceIndex, 1);
+  items.splice(targetIndex, 0, moved);
+
+  try {
+    await Promise.all(items.map((item, index) => fetch(`${API_BASE}/${cfg.api}/${item.id}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify({ order: index + 1 })
+    }).then(async res => {
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Réordonnancement impossible');
+      }
+    })));
+    showToast('Ordre mis à jour', 'success');
+    await loadEntity(entity);
+  } catch (_err) {
+    showToast('Erreur lors du réordonnancement', 'error');
+  }
+}
+
 export async function loadEntity(entity) {
   const cfg = ENTITY_CONFIG[entity];
   if (!cfg) return;
@@ -165,7 +217,8 @@ export function renderEntity(entity) {
       metaHtml = `<span class="admin-card-meta">${escapeHtml(item.role)}</span>`;
     }
 
-    return `<div class="admin-card">
+    return `<div class="admin-card" draggable="true" data-entity="${entity}" data-id="${item.id}" data-order="${Number(item.order) || 0}">
+      <div class="admin-card-drag" title="Réordonner" aria-label="Réordonner">⋮⋮</div>
       <div class="admin-card-body">
         <div class="admin-card-top">
           <div class="admin-card-thumb${thumbUrl ? ' has-img' : ''}">
@@ -180,11 +233,41 @@ export function renderEntity(entity) {
       </div>
       <div class="admin-card-actions">
         <span class="badge ${item.visible !== false ? 'badge-success' : 'badge-warning'}">${item.visible !== false ? 'Visible' : 'Masqué'}</span>
+        <button class="admin-card-order-btn" data-order-action="up" data-entity="${entity}" data-id="${item.id}" title="Monter">↑</button>
+        <button class="admin-card-order-btn" data-order-action="down" data-entity="${entity}" data-id="${item.id}" title="Descendre">↓</button>
         <button class="admin-card-btn" onclick="openCrudForm('${entity}', '${item.id}')" title="Modifier">Modifier</button>
         <button class="admin-card-btn admin-card-btn--danger" onclick="confirmDeleteItem('${entity}', '${item.id}')" title="Supprimer">Supprimer</button>
       </div>
     </div>`;
   }).join('');
+
+  container.querySelectorAll('.admin-card-order-btn').forEach(button => {
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const { entity: entityName, id, orderAction } = button.dataset;
+      await reorderEntityItems(entityName, id, null, orderAction);
+    });
+  });
+
+  container.querySelectorAll('.admin-card').forEach(card => {
+    card.addEventListener('dragstart', (event) => {
+      event.dataTransfer?.setData('text/plain', card.dataset.id);
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    card.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', async (event) => {
+      event.preventDefault();
+      card.classList.remove('drag-over');
+      const sourceId = event.dataTransfer?.getData('text/plain');
+      if (!sourceId || sourceId === card.dataset.id) return;
+      await reorderEntityItems(entity, sourceId, card.dataset.id, null);
+    });
+  });
 
   const paginationId = `${entity}Pagination`;
   let pagEl = document.getElementById(paginationId);
@@ -235,6 +318,20 @@ export async function openCrudForm(entity, editId) {
   }
 
   document.getElementById('crudModalTitle').textContent = editId ? `Modifier ${cfg.label}` : `Ajouter ${cfg.label}`;
+
+  const previewHtml = `
+    <div class="crud-preview-panel">
+      <div class="crud-preview-header">Aperçu</div>
+      <div class="crud-preview-card">
+        <div class="crud-preview-thumb" id="crudPreviewThumb"></div>
+        <div class="crud-preview-copy">
+          <div class="crud-preview-title" id="crudPreviewTitle">${escapeHtml(item.name || item.title || cfg.label || 'Nouveau')}</div>
+          <div class="crud-preview-subtitle" id="crudPreviewSubtitle">${escapeHtml(item.role || item.location || '')}</div>
+          <div class="crud-preview-body" id="crudPreviewBody">${escapeHtml(item.description || item.bio || item.excerpt || '')}</div>
+        </div>
+      </div>
+    </div>
+  `;
 
   let html = '';
   for (const field of cfg.fields) {
@@ -295,8 +392,47 @@ export async function openCrudForm(entity, editId) {
     html += '</div>';
   }
 
-  document.getElementById('crudFormBody').innerHTML = html;
+  document.getElementById('crudFormBody').innerHTML = `${previewHtml}${html}`;
   document.querySelectorAll('#crudFormBody select[id$="imageSlot"]').forEach(previewSlotImage);
+
+  const refreshCrudPreview = () => {
+    const titleId = entity === 'team' ? 'crud_name' : 'crud_title';
+    const titleEl = document.getElementById(titleId);
+    const subtitleEl = document.getElementById(entity === 'team' ? 'crud_role' : entity === 'projects' ? 'crud_location' : 'crud_description');
+    const bodyEl = document.getElementById(entity === 'team' ? 'crud_bio' : entity === 'services' ? 'crud_description' : entity === 'projects' ? 'crud_description' : 'crud_excerpt');
+    const previewTitle = document.getElementById('crudPreviewTitle');
+    const previewSubtitle = document.getElementById('crudPreviewSubtitle');
+    const previewBody = document.getElementById('crudPreviewBody');
+    const previewThumb = document.getElementById('crudPreviewThumb');
+    const imageSlotSelect = document.getElementById('crud_imageSlot');
+    const imageInput = document.getElementById('crud_image');
+
+    if (previewTitle && titleEl) previewTitle.textContent = titleEl.value || (entity === 'team' ? 'Nouveau membre' : 'Nouveau service');
+    if (previewSubtitle && subtitleEl) previewSubtitle.textContent = subtitleEl.value || (entity === 'team' ? 'Rôle' : '');
+    if (previewBody && bodyEl) previewBody.textContent = bodyEl.value || 'Aucune description pour le moment.';
+
+    let imageUrl = '';
+    if (imageSlotSelect) {
+      const selected = imageSlotSelect.options[imageSlotSelect.selectedIndex];
+      imageUrl = selected?.dataset.url || '';
+    }
+    if (!imageUrl && imageInput && imageInput.value) imageUrl = imageInput.value;
+
+    if (previewThumb) {
+      if (imageUrl) {
+        previewThumb.innerHTML = `<img src="${imageUrl}" alt="prévisualisation" />`;
+      } else {
+        previewThumb.textContent = (entity === 'team' ? 'Eq' : entity === 'services' ? 'Srv' : 'IMG');
+        previewThumb.style.display = 'grid';
+      }
+    }
+  };
+
+  document.querySelectorAll('#crudFormBody input, #crudFormBody textarea, #crudFormBody select').forEach(el => {
+    el.addEventListener('input', refreshCrudPreview);
+    el.addEventListener('change', refreshCrudPreview);
+  });
+  refreshCrudPreview();
 
   if (entity === 'blog') {
     const titleInput = document.getElementById('crud_title');
@@ -419,14 +555,34 @@ export async function saveCrudItem() {
     }
   }
 
+  if (currentEntity === 'team') {
+    const duplicate = teamData.some(item => item.id !== currentEditId && (item.name || '').trim().toLowerCase() === String(body.name || '').trim().toLowerCase());
+    if (duplicate) {
+      showToast('Un membre avec ce nom existe déjà', 'error');
+      return;
+    }
+  }
+
+  if (currentEntity === 'services') {
+    const duplicate = servicesData.some(item => item.id !== currentEditId && (item.title || '').trim().toLowerCase() === String(body.title || '').trim().toLowerCase());
+    if (duplicate) {
+      showToast('Un service avec ce titre existe déjà', 'error');
+      return;
+    }
+  }
+
   const slotFields = cfg.fields.filter(f => f.type === 'slot-select');
   for (const field of slotFields) {
     const slotId = body[field.key];
     if (slotId) {
       const slot = slots.find(s => s.id === slotId);
-      if (slot && !slot.uploadedFile) {
-        const proceed = confirm(`Le slot "${slot.label}" n'a pas d'image uploadée. Voulez-vous quand même enregistrer ?`);
-        if (!proceed) return;
+      if (!slot) {
+        showToast(`Le slot sélectionné pour "${field.label}" est introuvable.`, 'error');
+        return;
+      }
+      if (!slot.uploadedFile && !slot.currentUrl) {
+        showToast(`Le slot "${slot.label}" n'a pas d'image associée. Ajoutez une image avant d'enregistrer.`, 'error');
+        return;
       }
     }
   }
