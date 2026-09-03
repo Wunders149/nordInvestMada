@@ -110,7 +110,11 @@
   <div class="main-content">
     <header class="top-header">
       <h1 id="pageTitle">Tableau de bord <small>Vue d'ensemble</small></h1>
-      <div class="top-header-actions" id="topHeaderActions"></div>
+      <div class="top-header-actions" id="topHeaderActions">
+        <button class="header-action is-primary" type="button" onclick="switchTab('team')">+ Membre</button>
+        <button class="header-action" type="button" onclick="switchTab('services')">+ Service</button>
+        <button class="header-action" type="button" onclick="switchTab('blog')">+ Article</button>
+      </div>
       <div class="top-header-right">
         <a href="/" target="_blank" class="btn-ghost" style="font-size:0.75rem;padding:0.35rem 0.75rem;text-decoration:none" title="Voir le site public">Site public</a>
         <span style="font-size:0.75rem;color:var(--gray-400)" id="lastUpdate"></span>
@@ -119,6 +123,28 @@
     </header>
 
     <div class="page-content">
+      <div class="workspace-summary" aria-label="Résumé rapide du CMS">
+        <div class="summary-panel">
+          <span class="summary-kicker">Workspace</span>
+          <h2>Centre de gestion</h2>
+          <p>Contrôlez les messages, projets, équipe, services et contenu public depuis un seul espace de publication.</p>
+        </div>
+        <div class="summary-metrics">
+          <div class="summary-metric">
+            <strong id="summaryMetricContacts">0</strong>
+            <span>Contacts</span>
+          </div>
+          <div class="summary-metric">
+            <strong id="summaryMetricQuotes">0</strong>
+            <span>Devis</span>
+          </div>
+          <div class="summary-metric">
+            <strong id="summaryMetricPublished">0</strong>
+            <span>Contenus</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ─── STATS ─── -->
       <div class="stats-bar" id="statsBar">
         <div class="stat-card contacts-card">

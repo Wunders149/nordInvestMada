@@ -13,6 +13,12 @@ export async function loadStats() {
     document.getElementById('statQuotes').textContent = data.totalQuotes;
     document.getElementById('statPending').textContent = data.pendingQuotes;
     document.getElementById('statSubscribers').textContent = data.totalSubscribers;
+    const summaryContacts = document.getElementById('summaryMetricContacts');
+    const summaryQuotes = document.getElementById('summaryMetricQuotes');
+    const summaryPublished = document.getElementById('summaryMetricPublished');
+    if (summaryContacts) summaryContacts.textContent = data.totalContacts;
+    if (summaryQuotes) summaryQuotes.textContent = data.totalQuotes;
+    if (summaryPublished) summaryPublished.textContent = String((data.totalContacts || 0) + (data.totalQuotes || 0) + (data.totalSubscribers || 0));
     document.querySelectorAll('.stat-value').forEach(el => el.style.opacity = '');
     const badge = document.getElementById('navBadgeUnread');
     if (data.unreadContacts > 0) { badge.textContent = data.unreadContacts; badge.style.display = ''; }
