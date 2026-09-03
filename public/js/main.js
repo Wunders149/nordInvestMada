@@ -2139,10 +2139,7 @@ async function loadDossiers() {
           <button type="button" class="dossier-action dossier-action-video" data-video="${escAttr(videoUrl)}" title="${getNestedTranslation('dossiers.videoButton') || 'Voir la vidéo'}">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
             <span>${getNestedTranslation('dossiers.videoButton') || 'Vidéo'}</span>
-          </button>
-          <div class="dossier-video-wrap" style="display:none">
-            <div class="dossier-video"><video controls playsinline preload="metadata">Votre navigateur ne prend pas en charge la vidéo.</video></div>
-          </div>` : ''}
+          </button>` : ''}
         </div>
       </div>`;
     }).join('');
