@@ -1221,22 +1221,24 @@ async function loadServices() {
     const services = await fetchJsonArray(`${API_BASE}/api/services`);
     const grid = document.getElementById('servicesGrid');
     if (!grid) return;
-    grid.innerHTML = services.map((s, i) => {
+    const serviceCards = [...services, ...services].map((s, i) => {
       const hasOwnImg = s.image && (s.image.startsWith('http') || s.image.startsWith('/'));
       const slot = s.image_slot || s.imageSlot || '';
+      const index = i % services.length;
       return `<article class="service-card">
         <div class="service-media">
           <img src="${hasOwnImg ? s.image : '/images/placeholder.svg'}" alt="${escapeHtml(s.title)}" loading="lazy"${!hasOwnImg ? ` data-image-slot="${escapeHtml(slot)}"` : ''}>
           <span class="service-media-shade"></span>
         </div>
         <div class="service-content">
-        <div class="service-num">${String(i + 1).padStart(2, '0')}</div>
-        <div class="service-icon">${getServiceMark(s.title, i)}</div>
-        <div class="service-title" data-i18n="services.card${i + 1}Title">${escapeHtml(s.title)}</div>
-        <p class="service-desc" data-i18n="services.card${i + 1}Desc">${escapeHtml(s.description)}</p>
+        <div class="service-num">${String(index + 1).padStart(2, '0')}</div>
+        <div class="service-icon">${getServiceMark(s.title, index)}</div>
+        <div class="service-title" data-i18n="services.card${index + 1}Title">${escapeHtml(s.title)}</div>
+        <p class="service-desc" data-i18n="services.card${index + 1}Desc">${escapeHtml(s.description)}</p>
         </div>
       </article>`;
     }).join('');
+    grid.innerHTML = `<div class="services-showcase"><div class="services-track">${serviceCards}</div></div>`;
     loadImageSlots();
     applyGlobalMotionOrder(grid);
     initImageReveal();

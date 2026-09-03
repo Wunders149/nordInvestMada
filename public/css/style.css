@@ -881,17 +881,52 @@ h2 {
 #services .section-tag::before { background: var(--rust-light); }
 #services .section-lead { color: var(--text-secondary); }
 .services-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  display: block;
   margin-top: 60px;
 }
+.services-showcase {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 0 18px;
+}
+.services-showcase::before,
+.services-showcase::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 90px;
+  z-index: 2;
+  pointer-events: none;
+}
+.services-showcase::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-secondary), rgba(15, 17, 22, 0));
+}
+.services-showcase::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-secondary), rgba(15, 17, 22, 0));
+}
+.services-track {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  width: max-content;
+  animation: servicesTrackSlide 32s linear infinite;
+}
+.services-showcase:hover .services-track {
+  animation-play-state: paused;
+}
 .service-card {
+  flex: 0 0 min(26vw, 360px);
   background: var(--bg-card);
-  padding: 40px 32px;
+  padding: 0;
   border-top: 2px solid transparent;
   border-radius: var(--radius);
   transition: background 0.3s, border-color 0.3s, transform 0.3s;
   cursor: default;
   position: relative;
+  overflow: hidden;
 }
 .service-card:hover {
   background: rgba(192,64,42,0.1);
@@ -911,6 +946,10 @@ h2 {
   color: var(--text-primary); margin-bottom: 12px;
 }
 .service-desc { font-size: 0.85rem; line-height: 1.65; color: var(--text-secondary); }
+@keyframes servicesTrackSlide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
 /* â”€â”€â”€ PRICING â”€â”€â”€ */
 #pricing { background: var(--bg-primary); }
@@ -7498,7 +7537,7 @@ nav.nav-compact .nav-logo-img {
   .team-lightbox-close { top: 14px; right: 14px; width: 42px; height: 42px; }
 }
 
-.services-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.services-grid { display: block; }
 .service-card { position: relative; min-height: 385px; padding: 0; display: flex; flex-direction: column; border: 0; background: var(--bg-card); }
 .service-media { position: relative; height: 158px; overflow: hidden; background: linear-gradient(135deg, #562016, var(--rust)); }
 .service-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 700ms cubic-bezier(.2,.8,.2,1); }
@@ -7511,7 +7550,7 @@ nav.nav-compact .nav-logo-img {
 .service-desc { margin-bottom: 0; }
 
 @media (max-width: 900px) {
-  .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .service-card { flex-basis: min(70vw, 340px); }
 }
 @media (max-width: 600px) {
   .nav-logo-img, nav.nav-compact .nav-logo-img { width: 48px; height: 48px; }
@@ -7519,7 +7558,7 @@ nav.nav-compact .nav-logo-img {
   .team-group + .team-group { margin-top: 45px; }
   .team-group-heading { align-items: flex-start; }
   .team-group-heading p { line-height: 1.45; }
-  .services-grid { grid-template-columns: 1fr; }
+  .service-card { flex-basis: min(82vw, 300px); }
 }
 
 /* ─── Premium card system: a consistent, editorial finish across the site ─── */
