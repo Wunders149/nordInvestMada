@@ -2172,34 +2172,56 @@ grid.querySelectorAll('.dossier-card').forEach(card => {
         document.body.removeChild(a);
       });
     });
+    const videoModal = (() => {
+      let modal = document.getElementById('dossierVideoModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'dossierVideoModal';
+        modal.className = 'dossier-video-modal';
+        modal.innerHTML = `
+          <div class="dossier-video-modal-frame">
+            <button type="button" class="dossier-video-modal-close" aria-label="Fermer la vidéo">×</button>
+            <video controls playsinline autoplay></video>
+          </div>
+        `;
+        modal.addEventListener('click', (event) => {
+          if (event.target === modal) {
+            const video = modal.querySelector('video');
+            if (video) video.pause();
+            modal.classList.remove('active');
+          }
+        });
+        modal.querySelector('.dossier-video-modal-close').addEventListener('click', () => {
+          const video = modal.querySelector('video');
+          if (video) video.pause();
+          modal.classList.remove('active');
+        });
+        document.body.appendChild(modal);
+      }
+      return modal;
+    })();
+
     grid.querySelectorAll('.dossier-action-video').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const card = btn.closest('.dossier-card');
-        const wrap = btn.closest('.dossier-actions');
-        if (!card || !wrap) return;
-        const box = wrap.querySelector('.dossier-video-wrap');
-        const videoEl = box && box.querySelector('video');
-        if (!box || !videoEl) return;
+        const modalVideo = videoModal.querySelector('video');
+        const isOpen = videoModal.classList.contains('active');
 
-        const isOpen = box.classList.contains('is-open');
         if (isOpen) {
-          videoEl.pause();
-          box.classList.remove('is-open');
-          box.style.display = 'none';
-          card.classList.remove('video-expanded');
+          modalVideo.pause();
+          videoModal.classList.remove('active');
           btn.classList.remove('is-open');
           btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span>' + (getNestedTranslation('dossiers.videoButton') || 'Vidéo') + '</span>';
           return;
         }
 
-        if (!videoEl.src) videoEl.src = btn.dataset.video;
-        box.classList.add('is-open');
-        box.style.display = 'block';
-        card.classList.add('video-expanded');
+        if (!modalVideo.src || modalVideo.src !== btn.dataset.video) {
+          modalVideo.src = btn.dataset.video;
+        }
+        videoModal.classList.add('active');
         btn.classList.add('is-open');
         btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg><span>' + (getNestedTranslation('dossiers.closeVideo') || 'Fermer') + '</span>';
-        const playPromise = videoEl.play();
+        const playPromise = modalVideo.play();
         if (playPromise && playPromise.catch) playPromise.catch(() => {});
       });
     });
