@@ -3170,6 +3170,83 @@ body.dark .modal-box .modal-icon {
   text-transform: uppercase;
 }
 
+/* ─── CMS interaction polish ─── */
+.tab-content.active {
+  animation: cmsTabIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cmsTabIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(139,58,42,0.28);
+  outline-offset: 2px;
+}
+
+.tab-toolbar {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+  box-shadow: 0 3px 12px rgba(15,23,42,0.025);
+}
+
+.admin-card {
+  min-height: 190px;
+}
+
+.admin-card-actions {
+  min-height: 3.25rem;
+}
+
+.admin-card-actions .admin-card-btn {
+  border: 1px solid transparent;
+}
+
+.admin-card-actions .admin-card-btn:hover {
+  border-color: var(--border-strong);
+}
+
+.admin-card-drag {
+  opacity: 0.55;
+  transition: opacity var(--transition);
+}
+
+.admin-card:hover .admin-card-drag,
+.admin-card:focus-within .admin-card-drag {
+  opacity: 1;
+}
+
+.table-wrapper,
+.gallery-manager,
+.upload-area,
+.widget-card {
+  box-shadow: 0 4px 18px rgba(15,23,42,0.035);
+}
+
+@media (max-width: 768px) {
+  .tab-toolbar {
+    padding: 0.625rem;
+    gap: 0.625rem;
+  }
+
+  .tab-toolbar-actions,
+  .admin-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .admin-card-actions .admin-card-btn {
+    flex: 1;
+    min-width: 5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-content.active { animation: none; }
+}
+
 /* ══════════════════════════════════════════════
    SECTIONS EDITOR
    ══════════════════════════════════════════════ */
