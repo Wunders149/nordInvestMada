@@ -1112,14 +1112,17 @@ async function loadTeam() {
         <div class="team-avatar-wrap"><img src="${hasOwnImg ? m.image : '/images/placeholder.svg'}" alt="Photo de l'équipe Nord Invest Madagascar" class="team-avatar" loading="lazy"${!hasOwnImg ? ` data-image-slot="${escapeHtml(slot)}"` : ''}></div>
       </article>`;
     };
-    grid.innerHTML = categories.map(category => {
-      const members = team.filter(m => (m.group_type || m.groupType || 'office') === category.id);
+    const teamCarouselGroup = (members, category) => {
       if (!members.length) return '';
+      const repeatedCards = [...members, ...members].map(memberCard).join('');
       return `<div class="team-group">
         <div class="team-group-heading"><span class="team-group-kicker">${category.id === 'office' ? '01' : '02'}</span><div><h3>${category.label}</h3><p>${category.intro}</p></div></div>
-        <div class="team-grid">${members.map(memberCard).join('')}</div>
+        <div class="team-showcase" aria-label="${category.label}">
+          <div class="team-track">${repeatedCards}</div>
+        </div>
       </div>`;
-    }).join('') || '<p class="team-empty">Notre équipe sera bientôt présentée ici.</p>';
+    };
+    grid.innerHTML = categories.map(category => teamCarouselGroup(team.filter(m => (m.group_type || m.groupType || 'office') === category.id), category)).join('') || '<p class="team-empty">Notre équipe sera bientôt présentée ici.</p>';
     loadImageSlots();
     applyGlobalMotionOrder(grid);
     initTeamReveal();
