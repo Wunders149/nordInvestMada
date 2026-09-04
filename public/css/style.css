@@ -6177,6 +6177,49 @@ nav.nav-compact .nav-logo-img {
   border-left: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+.hero-scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  color: rgba(255,255,255,0.62);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.hero-scroll-cue:hover,
+.hero-scroll-cue:focus-visible {
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.hero-scroll-cue-line {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 1px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.26);
+}
+
+.hero-scroll-cue-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 16px;
+  background: var(--rust-light);
+  animation: heroCueSweep 2.2s ease-in-out infinite;
+}
+
+@keyframes heroCueSweep {
+  0%, 100% { transform: translateX(-18px); opacity: 0.35; }
+  50% { transform: translateX(42px); opacity: 1; }
+}
+
 #hero .stat-val {
   font-size: clamp(1.75rem, 2.5vw, 2.45rem);
   color: #fff;
@@ -6626,6 +6669,11 @@ nav.nav-compact .nav-logo-img {
 
   .hero-stats {
     margin-top: 26px;
+  }
+
+  .hero-scroll-cue {
+    margin-top: 20px;
+    font-size: 0.6rem;
   }
 
   .hero-stats > div {
@@ -7342,7 +7390,7 @@ body.site-ready #hero h1 em {
   animation: heroExcellenceGlow 2.7s ease-in-out 1.2s infinite;
 }
 
-body.site-ready #hero .hero-img {
+body.site-ready #hero .hero-img.is-active {
   animation: heroImageDrift 14s ease-in-out 1.1s infinite;
   will-change: transform;
 }

@@ -896,14 +896,22 @@ async function handleNewsletter(e) {
 (function initHeroParallax() {
   const heroRight = document.querySelector('.hero-right[data-parallax]');
   if (!heroRight) return;
-  const heroImg = heroRight.querySelector('.hero-img');
   const heroBadge = heroRight.querySelector('.hero-badge');
   const shapes = heroRight.querySelectorAll('.shape');
+
+  const getActiveImage = () => heroRight.querySelector('.hero-slide.is-active');
+  const resetParallax = () => {
+    const heroImg = getActiveImage();
+    if (heroImg) heroImg.style.transform = '';
+    if (heroBadge) heroBadge.style.transform = '';
+    shapes.forEach(shape => shape.style.transform = '');
+  };
 
   heroRight.addEventListener('mousemove', (e) => {
     const rect = heroRight.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
+    const heroImg = getActiveImage();
 
     if (heroImg) {
       heroImg.style.transform = `scale(1.08) translate(${x * -35}px, ${y * -35}px)`;
@@ -918,9 +926,7 @@ async function handleNewsletter(e) {
   });
 
   heroRight.addEventListener('mouseleave', () => {
-    if (heroImg) heroImg.style.transform = 'scale(1) translate(0, 0)';
-    if (heroBadge) heroBadge.style.transform = 'translate(0, 0)';
-    shapes.forEach(shape => shape.style.transform = 'translate(0, 0)');
+    resetParallax();
   });
 
   heroRight.addEventListener('touchmove', (e) => {
@@ -929,6 +935,7 @@ async function handleNewsletter(e) {
     const rect = heroRight.getBoundingClientRect();
     const x = (touch.clientX - rect.left) / rect.width - 0.5;
     const y = (touch.clientY - rect.top) / rect.height - 0.5;
+    const heroImg = getActiveImage();
     if (heroImg) {
       heroImg.style.transform = `scale(1.05) translate(${x * -20}px, ${y * -20}px)`;
     }
@@ -942,9 +949,7 @@ async function handleNewsletter(e) {
   }, { passive: true });
 
   heroRight.addEventListener('touchend', () => {
-    if (heroImg) heroImg.style.transform = 'scale(1) translate(0, 0)';
-    if (heroBadge) heroBadge.style.transform = 'translate(0, 0)';
-    shapes.forEach(shape => shape.style.transform = 'translate(0, 0)');
+    resetParallax();
   });
 })();
 
