@@ -127,6 +127,7 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
   const token = await createSession(user);
   logActivity('login', 'Connexion réussie', user.username);
   const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  res.clearCookie('admin_token', { path: '/api/admin' });
   res.cookie('admin_token', token, {
     httpOnly: true,
     secure: isSecure,
