@@ -1,4 +1,4 @@
-import { API_BASE, API_IMAGES_BASE, getHeaders, contentPage, slots, token, clearToken } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, contentPage, slots, clearToken } from './api.js';
 import { escapeHtml } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid, renderPagination, exportToCsv } from './ui.js';
 import { blogCategories } from './blogCategories.js';
@@ -538,7 +538,6 @@ export async function uploadSlotImage(fieldKey, section) {
   try {
     const res = await fetch(`${API_IMAGES_BASE}/upload`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
       body: fd
     });
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
@@ -727,7 +726,6 @@ export async function uploadBlogImage() {
   try {
     const res = await fetch(`${API_IMAGES_BASE}/upload`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
       body: fd
     });
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }
@@ -766,7 +764,6 @@ export async function uploadProductMedia() {
   try {
     const res = await fetch(`${API_BASE}/products/upload`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
       body: fd
     });
     if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }

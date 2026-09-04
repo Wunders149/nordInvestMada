@@ -1,4 +1,4 @@
-import { getHeaders, token, slots, images, clearToken, API_IMAGES_BASE } from './api.js';
+import { getHeaders, slots, images, clearToken, API_IMAGES_BASE } from './api.js';
 import { escapeHtml, humanSize } from './helpers.js';
 import { showToast, showConfirm, showSkeletonGrid, emptyStateGrid } from './ui.js';
 
@@ -194,7 +194,6 @@ export async function saveImageEdit() {
       fd.append('image', replaceFile);
       const replaceRes = await fetch(`${API_IMAGES_BASE}/images/${encodeURIComponent(section)}/${encodeURIComponent(currentName)}/replace`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
         body: fd
       });
       const replaceData = await replaceRes.json();
@@ -269,7 +268,7 @@ document.getElementById('imageUploadForm')?.addEventListener('submit', async (e)
     fd.append('newSlotLabel', document.getElementById('newSlotLabel').value.trim());
     fd.append('image', file);
 
-    const res = await fetch(`${API_IMAGES_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
+    const res = await fetch(`${API_IMAGES_BASE}/upload`, { method: 'POST', body: fd });
     if (res.status === 401) { localStorage.removeItem('adminToken'); window.location.href = '/admin/login.html'; return; }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');

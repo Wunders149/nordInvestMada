@@ -93,7 +93,7 @@ async function uploadDossierVideo(id, file) {
   const formData = new FormData();
   formData.append('video', file);
   try {
-    const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(id)}/video`, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }, body: formData });
+    const res = await fetch(`${API_BASE}/dossiers/${encodeURIComponent(id)}/video`, { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload échoué');
     showToast('Vidéo ajoutée au dossier');
@@ -113,7 +113,6 @@ async function uploadDossier(file) {
   try {
     const res = await fetch(`${API_BASE}/dossiers`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
       body: formData
     });
     if (!res.ok) {

@@ -132,7 +132,7 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
     secure: isSecure,
     sameSite: 'strict',
     maxAge: 24 * 60 * 60 * 1000,
-    path: '/api/admin'
+    path: '/api'
   });
   res.json({ success: true });
 });
@@ -142,6 +142,7 @@ router.post('/logout', requireAuth, async (req, res) => {
   logActivity('logout', 'Déconnexion', req.admin.username);
   const token = getTokenFromRequest(req);
   if (token) await destroySession(token);
+  res.clearCookie('admin_token', { path: '/api' });
   res.clearCookie('admin_token', { path: '/api/admin' });
   res.json({ success: true });
 });

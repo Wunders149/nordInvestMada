@@ -1,4 +1,4 @@
-import { API_BASE, API_IMAGES_BASE, getHeaders, token, clearToken } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, clearToken } from './api.js';
 import { showToast, showConfirm as _showConfirm } from './ui.js';
 
 export const blogCategories = [];
@@ -117,7 +117,6 @@ export async function catUploadClick(index) {
     try {
       const res = await fetch(`${API_IMAGES_BASE}/upload`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
         body: fd
       });
       if (res.status === 401) { clearToken(); window.location.href = '/admin/login.html'; return; }

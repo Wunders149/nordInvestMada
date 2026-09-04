@@ -1,4 +1,4 @@
-import { API_BASE, API_IMAGES_BASE, getHeaders, clearToken, markClean, token } from './api.js';
+import { API_BASE, API_IMAGES_BASE, getHeaders, clearToken, markClean } from './api.js';
 import { showToast } from './ui.js';
 import { escapeHtml } from './helpers.js';
 
@@ -398,7 +398,6 @@ window.uploadToSectionSlot = async function(slotId) {
     try {
       const res = await fetch(`${API_IMAGES_BASE}/upload`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
         body: fd
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Upload failed'); }
