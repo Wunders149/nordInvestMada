@@ -51,7 +51,8 @@ export function installAuthGuard() {
   if (window.__adminAuthGuardInstalled) return;
   const nativeFetch = window.fetch.bind(window);
   window.fetch = async (...args) => {
-    const response = await nativeFetch(...args);
+    const [input, init] = args;
+    const response = await nativeFetch(input, { ...(init || {}), credentials: 'same-origin' });
     const requestUrl = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
     const isAdminRequest = requestUrl.includes('/api/admin/') || requestUrl.includes('/api/images') || requestUrl.includes('/api/upload');
     if (isAdminRequest && response.status === 401) {

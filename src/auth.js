@@ -48,7 +48,8 @@ export async function createSession(user) {
   const session = { token, user_id: user.id, username: user.username, expires };
 
   try {
-    await supabase.from('sessions').insert(session);
+    const { error } = await supabase.from('sessions').insert(session);
+    if (error) throw error;
   } catch (err) {
     console.warn('Session DB write failed, using memory-only:', err.message);
   }
