@@ -2949,16 +2949,13 @@ h1 { animation-delay: 0.2s; }
   background: linear-gradient(270deg, var(--bg-primary), rgba(15, 17, 22, 0));
 }
 .team-track {
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 18px;
-  width: max-content;
-  animation: teamTrackSlide 28s linear infinite;
-  animation-iteration-count: infinite;
-  will-change: transform;
+  width: auto;
 }
 .team-card {
-  flex: 0 0 220px;
+  min-width: 0;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius);
@@ -2977,11 +2974,6 @@ h1 { animation-delay: 0.2s; }
   background: rgba(192,64,42,0.08);
   border-color: rgba(192,64,42,0.2);
 }
-@keyframes teamTrackSlide {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
 /* Avatar spring pop-in + idle pulse */
 .team-avatar {
   width: 80px; height: 80px;
