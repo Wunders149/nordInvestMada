@@ -1009,6 +1009,19 @@ h2 {
 .price-val {
   text-align: center; margin-bottom: 24px;
 }
+.price-starting {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 10px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+.price-card.featured .price-starting {
+  color: rgba(255,255,255,0.8);
+}
 .price-main {
   display: flex; align-items: baseline; justify-content: center; gap: 8px;
   margin-bottom: 8px;

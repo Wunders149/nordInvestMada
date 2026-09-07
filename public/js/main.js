@@ -1746,6 +1746,7 @@ async function loadPricingData() {
           ${!isFlat && badge ? `<div class="price-badge" data-i18n="pricing.badge.${badgeKey}">${badge}</div>` : ''}
           ${!isFlat ? `<div class="price-tier">${escapeHtml(t.name)}</div>` : ''}
           <div class="price-val">
+            <div class="price-starting">À partir de</div>
             <div class="price-main">
               <span class="price-num">${priceStr}</span>
               <span class="price-currency">Ar</span>
