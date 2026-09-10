@@ -13,7 +13,15 @@ const SMTP_PORT = Number.parseInt(process.env.SMTP_PORT || (isBrevo ? '2525' : '
 const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const SMTP_TIMEOUT_MS = Number.parseInt(process.env.SMTP_TIMEOUT_MS || '15000', 10) || 15000;
 const SMTP_TOTAL_TIMEOUT_MS = SMTP_TIMEOUT_MS + 15000;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_USER;
+const DEFAULT_ADMIN_EMAILS = [
+  'contact@nordinvestmada.com',
+  'nordinvestmadagascar@gmail.com'
+];
+const configuredAdminEmails = String(process.env.ADMIN_EMAIL || '')
+  .split(',')
+  .map(email => email.trim())
+  .filter(Boolean);
+const ADMIN_EMAIL = [...new Set([...DEFAULT_ADMIN_EMAILS, ...configuredAdminEmails])].join(',');
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const MAIL_PROVIDER = (process.env.MAIL_PROVIDER || '').toLowerCase();
