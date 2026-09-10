@@ -38,6 +38,6 @@ services:
       - key: SMTP_FROM
         sync: false
       - key: ADMIN_EMAIL
-        value: nordinvestmadagascar@gmail.com
+        value: contact@nordinvestmada.com,nordinvestmadagascar@gmail.com
       - key: GOOGLE_ANALYTICS_ID
         sync: false
