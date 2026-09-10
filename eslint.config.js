@@ -1,6 +1,6 @@
-import globals from 'globals';
+const globals = require('globals');
 
-export default [
+module.exports = [
   {
     ignores: ['node_modules/', 'dist/', 'build/', 'uploads/', 'data/', 'public/locales/']
   },
@@ -8,7 +8,7 @@ export default [
     files: ['src/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module',
+      sourceType: 'commonjs',
       globals: {
         ...globals.node
       }

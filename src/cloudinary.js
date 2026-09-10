@@ -1,5 +1,5 @@
-import { v2 as cloudinary } from 'cloudinary';
-import dotenv from 'dotenv';
+const { v2: cloudinary } = require('cloudinary');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
@@ -11,7 +11,7 @@ cloudinary.config({
 
 const BASE_FOLDER = 'nord-invest';
 
-export function getCloudinaryUrl(publicId, options = {}) {
+function getCloudinaryUrl(publicId, options = {}) {
   return cloudinary.url(publicId, {
     quality: 'auto',
     fetch_format: 'auto',
@@ -20,7 +20,7 @@ export function getCloudinaryUrl(publicId, options = {}) {
   });
 }
 
-export async function uploadImage(buffer, { folder, publicId, mimetype: _mimetype }) {
+async function uploadImage(buffer, { folder, publicId, mimetype: _mimetype }) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -39,11 +39,11 @@ export async function uploadImage(buffer, { folder, publicId, mimetype: _mimetyp
   });
 }
 
-export async function deleteImage(publicId) {
+async function deleteImage(publicId) {
   return cloudinary.uploader.destroy(publicId);
 }
 
-export async function listImagesByFolder(folder) {
+async function listImagesByFolder(folder) {
   try {
     const result = await cloudinary.api.resources_by_asset_folder(
       `${BASE_FOLDER}/${folder}`,
@@ -59,10 +59,10 @@ const CLOUDINARY_MAPPING_KEY = 'cloudinary_mapping';
 
 let mappingCache = null;
 
-export async function getCloudinaryMapping() {
+async function getCloudinaryMapping() {
   if (mappingCache) return mappingCache;
   try {
-    const { supabase } = await import('./supabase.js');
+    const { supabase } = require('./supabase.js');
     const { data, error } = await supabase.from('settings').select('value').eq('key', CLOUDINARY_MAPPING_KEY).single();
     if (error && error.code === 'PGRST116') {
       mappingCache = {};
@@ -77,7 +77,7 @@ export async function getCloudinaryMapping() {
   }
 }
 
-export async function setCloudinaryMapping(id, entry) {
+async function setCloudinaryMapping(id, entry) {
   const map = await getCloudinaryMapping();
   if (entry === null) {
     delete map[id];
@@ -85,26 +85,24 @@ export async function setCloudinaryMapping(id, entry) {
     map[id] = entry;
   }
   mappingCache = map;
-  const { supabase } = await import('./supabase.js');
+  const { supabase } = require('./supabase.js');
   await supabase.from('settings').upsert(
     { key: CLOUDINARY_MAPPING_KEY, value: map, updated_at: new Date().toISOString() },
     { onConflict: 'key' }
   );
 }
 
-export async function clearCloudinaryMapping() {
+async function clearCloudinaryMapping() {
   mappingCache = null;
 }
 
-export async function uploadPdf(buffer, { folder, publicId }) {
+async function uploadPdf(buffer, { folder, publicId }) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: `${BASE_FOLDER}/${folder}`,
         public_id: publicId,
-        resource_type: 'image',
-        quality: 'auto',
-        fetch_format: 'auto'
+        resource_type: 'raw'
       },
       (err, result) => {
         if (err) reject(err);
@@ -115,7 +113,7 @@ export async function uploadPdf(buffer, { folder, publicId }) {
   });
 }
 
-export async function uploadVideo(buffer, { folder, publicId }) {
+async function uploadVideo(buffer, { folder, publicId }) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -132,11 +130,11 @@ export async function uploadVideo(buffer, { folder, publicId }) {
   });
 }
 
-export async function deleteVideo(publicId) {
+async function deleteVideo(publicId) {
   return cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
 }
 
-export function getPdfThumbnailUrl(publicId, width = 300) {
+function getPdfThumbnailUrl(publicId, width = 300) {
   try {
     return cloudinary.url(publicId, {
       width,
@@ -151,7 +149,7 @@ export function getPdfThumbnailUrl(publicId, width = 300) {
   }
 }
 
-export function getPdfUrl(publicId) {
+function getPdfUrl(publicId) {
   try {
     return cloudinary.url(publicId, { secure: true });
   } catch {
@@ -159,7 +157,7 @@ export function getPdfUrl(publicId) {
   }
 }
 
-export function getPdfDownloadUrl(publicId) {
+function getPdfDownloadUrl(publicId) {
   try {
     return cloudinary.url(publicId, {
       flags: 'attachment',
@@ -170,4 +168,20 @@ export function getPdfDownloadUrl(publicId) {
   }
 }
 
-export { cloudinary, BASE_FOLDER };
+module.exports = {
+  cloudinary,
+  BASE_FOLDER,
+  getCloudinaryUrl,
+  uploadImage,
+  deleteImage,
+  listImagesByFolder,
+  getCloudinaryMapping,
+  setCloudinaryMapping,
+  clearCloudinaryMapping,
+  uploadPdf,
+  uploadVideo,
+  deleteVideo,
+  getPdfThumbnailUrl,
+  getPdfUrl,
+  getPdfDownloadUrl
+};

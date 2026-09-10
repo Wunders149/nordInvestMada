@@ -1,10 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { supabase, getSiteConfig } from './supabase.js';
-import { hashPassword } from './auth.js';
+const fs = require('fs');
+const path = require('path');
+const { supabase, getSiteConfig } = require('./supabase.js');
+const { hashPassword } = require('./auth.js');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const dataDir = process.env.DATA_DIR || path.join(projectRoot, 'data');
 

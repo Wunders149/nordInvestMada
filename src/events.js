@@ -1,13 +1,13 @@
 const clients = new Set();
 
-export function addClient(res) {
+function addClient(res) {
   clients.add(res);
   res.on('close', () => {
     clients.delete(res);
   });
 }
 
-export function broadcast(event, data = {}) {
+function broadcast(event, data = {}) {
   const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   for (const client of clients) {
     try {
@@ -18,7 +18,7 @@ export function broadcast(event, data = {}) {
   }
 }
 
-export function broadcastToAll(data = {}) {
+function broadcastToAll(data = {}) {
   const message = `data: ${JSON.stringify(data)}\n\n`;
   for (const client of clients) {
     try {
@@ -29,7 +29,7 @@ export function broadcastToAll(data = {}) {
   }
 }
 
-export function heartbeat() {
+function heartbeat() {
   for (const client of clients) {
     try {
       client.write(': heartbeat\n\n');
@@ -39,6 +39,8 @@ export function heartbeat() {
   }
 }
 
-export function getClientCount() {
+function getClientCount() {
   return clients.size;
 }
+
+module.exports = { addClient, broadcast, broadcastToAll, heartbeat, getClientCount };

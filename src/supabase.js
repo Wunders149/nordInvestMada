@@ -1,5 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+const { createClient } = require('@supabase/supabase-js');
+const { fetch, Headers } = require('undici');
+const WebSocket = require('ws');
+const dotenv = require('dotenv');
+
+globalThis.fetch = fetch;
+globalThis.Headers = Headers;
 
 dotenv.config();
 
@@ -11,11 +16,12 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { autoRefreshToken: false, persistSession: false }
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+  realtime: { transport: WebSocket }
 });
 
-export async function list(table, options = {}) {
+async function list(table, options = {}) {
   let query = supabase.from(table).select(options.select || '*');
   if (options.filters) {
     for (const [col, val] of Object.entries(options.filters)) {
@@ -34,7 +40,7 @@ export async function list(table, options = {}) {
   return data || [];
 }
 
-export async function get(table, id, idColumn = 'id') {
+async function get(table, id, idColumn = 'id') {
   const { data, error } = await supabase.from(table).select('*').eq(idColumn, id).single();
   if (error) {
     if (error.code === 'PGRST116') return null;
@@ -43,25 +49,25 @@ export async function get(table, id, idColumn = 'id') {
   return data;
 }
 
-export async function create(table, data) {
+async function create(table, data) {
   const { data: result, error } = await supabase.from(table).insert(data).select().single();
   if (error) throw error;
   return result;
 }
 
-export async function update(table, id, data, idColumn = 'id') {
+async function update(table, id, data, idColumn = 'id') {
   const { data: result, error } = await supabase.from(table).update(data).eq(idColumn, id).select().single();
   if (error) throw error;
   return result;
 }
 
-export async function remove(table, id, idColumn = 'id') {
+async function remove(table, id, idColumn = 'id') {
   const { error } = await supabase.from(table).delete().eq(idColumn, id);
   if (error) throw error;
   return true;
 }
 
-export async function getSiteConfig() {
+async function getSiteConfig() {
   const { data, error } = await supabase.from('site_config').select('*').eq('id', 1).single();
   if (error) {
     if (error.code === 'PGRST116') return {};
@@ -70,7 +76,7 @@ export async function getSiteConfig() {
   return data || {};
 }
 
-export async function upsertSiteConfig(data) {
+async function upsertSiteConfig(data) {
   data.id = 1;
   data.updated_at = new Date().toISOString();
   const { error } = await supabase.from('site_config').upsert(data, { onConflict: 'id' });
@@ -78,7 +84,7 @@ export async function upsertSiteConfig(data) {
   return true;
 }
 
-export async function logActivity(action, details, username) {
+async function logActivity(action, details, username) {
   try {
     const id = `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     await supabase.from('activity_logs').insert({
@@ -93,7 +99,7 @@ export async function logActivity(action, details, username) {
   }
 }
 
-export async function getSetting(key) {
+async function getSetting(key) {
   const { data, error } = await supabase.from('settings').select('value').eq('key', key).single();
   if (error) {
     if (error.code === 'PGRST116') return null;
@@ -102,7 +108,7 @@ export async function getSetting(key) {
   return data?.value;
 }
 
-export async function setSetting(key, value) {
+async function setSetting(key, value) {
   const { error } = await supabase.from('settings').upsert(
     { key, value, updated_at: new Date().toISOString() },
     { onConflict: 'key' }
@@ -111,7 +117,7 @@ export async function setSetting(key, value) {
   return true;
 }
 
-export async function getAllSettings() {
+async function getAllSettings() {
   const { data, error } = await supabase.from('settings').select('key, value');
   if (error) throw error;
   const result = {};
@@ -120,3 +126,18 @@ export async function getAllSettings() {
   }
   return result;
 }
+
+module.exports = {
+  supabase,
+  list,
+  get,
+  create,
+  update,
+  remove,
+  getSiteConfig,
+  upsertSiteConfig,
+  logActivity,
+  getSetting,
+  setSetting,
+  getAllSettings
+};

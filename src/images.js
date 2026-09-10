@@ -1,14 +1,12 @@
-import { Router } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { requireAuth, logActivity } from './auth.js';
-import { supabase } from './supabase.js';
-import { uploadImage, deleteImage, getCloudinaryMapping, setCloudinaryMapping } from './cloudinary.js';
-import { broadcast } from './events.js';
+const { Router } = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { requireAuth, logActivity } = require('./auth.js');
+const { supabase } = require('./supabase.js');
+const { uploadImage, deleteImage, getCloudinaryMapping, setCloudinaryMapping } = require('./cloudinary.js');
+const { broadcast } = require('./events.js');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const imagesDir = path.join(projectRoot, 'public', 'images');
 const dataDir = path.join(projectRoot, 'data');
@@ -611,4 +609,4 @@ router.post('/images/slots', requireAuth, async (req, res) => {
   }
 });
 
-export { router as imageRouter };
+module.exports = { imageRouter: router };
