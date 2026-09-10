@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
 import { adminRouter, mergeSectionsWithDefaults, fillSectionsFromLocale } from './admin.js';
-import { mailConfig, sendEmail, logMailFailure, verifyTransporter, isSmtpConfigured } from './mailer.js';
+import { mailConfig, sendEmail, logMailFailure, verifyTransporter, isMailConfigured } from './mailer.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig, getSetting } from './supabase.js';
 import { addClient, broadcast as _broadcast, heartbeat as sseHeartbeat } from './events.js';
@@ -390,15 +390,18 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
   }
 
   const emailSent = customerEmailSent;
+  const bothEmailsSent = adminEmailSent && customerEmailSent;
   res.status(emailSent ? 200 : 202).json({
     success: true,
     emailSent,
     adminEmailSent,
     customerEmailSent,
-    emailError: emailSent ? null : 'Email delivery failed',
-    message: emailSent
+    emailError: bothEmailsSent ? null : 'Email delivery partially failed',
+    message: bothEmailsSent
       ? 'Votre demande a été envoyée. Vous recevrez un email de confirmation.'
-      : 'Votre demande a été reçue (l\'email de confirmation n\'a pas pu être envoyé).'
+      : emailSent
+        ? 'Votre demande a été reçue et votre confirmation a été envoyée, mais notre équipe doit être informée manuellement.'
+        : 'Votre demande a été reçue (l\'email de confirmation n\'a pas pu être envoyé).'
   });
 });
 
@@ -809,9 +812,9 @@ app.listen(PORT, () => {
   console.log(`✓ SMTP: ${mailConfig.provider === 'resend' ? 'Resend (HTTP API)' : mailConfig.display}`);
   console.log('✓ API endpoints available at: /api/*');
 
-  // Warn loudly at startup if SMTP is misconfigured
-  if (!isSmtpConfigured()) {
-    console.warn('⚠️  EMAIL EST DÉSACTIVÉ : ajoutez SMTP_USER, SMTP_PASS (et éventuellement SMTP_HOST/SMTP_PORT) dans .env');
+  // Warn loudly at startup if the selected mail provider is misconfigured
+  if (!isMailConfigured()) {
+    console.warn(`⚠️  EMAIL EST DÉSACTIVÉ : configurez ${mailConfig.provider === 'resend' ? 'RESEND_API_KEY' : 'SMTP_USER et SMTP_PASS'} dans .env`);
   }
 
   // Verify SMTP connectivity asynchronously (non-blocking)

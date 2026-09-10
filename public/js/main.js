@@ -501,7 +501,7 @@ function handleSubmit(e) {
     return result;
   })
   .then(result => {
-    const emailDeliveryFailed = result.emailSent === false;
+    const emailDeliveryFailed = result.emailSent === false || result.adminEmailSent === false;
     btn.textContent = emailDeliveryFailed
       ? 'Demande reçue'
       : (getNestedTranslation('contact.sent') || 'Message envoyé');

@@ -319,14 +319,17 @@ async function notifySubscribersOnPublish(post) {
       </div>
     `;
 
-    await sendEmail({
-      from: `"Nord Invest Madagascar" <${mailConfig.from}>`,
-      bcc: emails.join(','),
-      subject: `Nouvel article : ${title}`,
-      html
-    });
+    const maxBccRecipients = 49;
+    for (let index = 0; index < emails.length; index += maxBccRecipients) {
+      await sendEmail({
+        from: mailConfig.from,
+        bcc: emails.slice(index, index + maxBccRecipients).join(','),
+        subject: `Nouvel article : ${title}`,
+        html
+      });
+    }
 
-    console.log(`Blog notification sent to ${emails.length} subscribers for: ${title}`);
+    console.log(`Blog notification sent to ${emails.length} subscribers in ${Math.ceil(emails.length / maxBccRecipients)} batches for: ${title}`);
   } catch (err) {
     logMailFailure('notification blog aux abonnés', err);
   }
@@ -372,7 +375,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
         result = { ...newItem };
       }
       logActivity(`${entityName}_create`, `${entityName.slice(0, -1)} créé: ${result.name || result.title || result.id}`, req.admin.username);
-      if (callbacks.onCreate) callbacks.onCreate(result, req);
+      if (callbacks.onCreate) await callbacks.onCreate(result, req);
       broadcast(entityName, { action: 'create', id: result.id });
       res.json({ success: true, item: camelizeKeys(result) });
     } catch (err) {
@@ -393,6 +396,17 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
         data.images = [data.image];
         delete data.image;
       }
+      let previousItem = null;
+      try {
+        previousItem = await get(tableName, req.params.id);
+      } catch (err) {
+        if (err.code === 'PGRST116') {
+          previousItem = null;
+        } else {
+          if (!isMissingTableError(err)) throw err;
+          previousItem = readLocalEntityData(tableName).find(entry => entry.id === req.params.id) || null;
+        }
+      }
       let item;
       try {
         item = await update(tableName, req.params.id, data);
@@ -406,7 +420,7 @@ function crudRoutes(entityName, tableName, orderOption = [['order', 'asc']], cal
         item = items[index];
       }
       logActivity(`${entityName}_update`, `${entityName.slice(0, -1)} modifié: ${item.name || item.title || req.params.id}`, req.admin.username);
-      if (callbacks.onUpdate) callbacks.onUpdate(item, req);
+      if (callbacks.onUpdate) await callbacks.onUpdate(item, req, previousItem);
       broadcast(entityName, { action: 'update', id: req.params.id });
       res.json({ success: true, item: camelizeKeys(item) });
     } catch (err) {
@@ -480,12 +494,12 @@ crudRoutes('products', 'products');
 crudRoutes('blog', 'blog_posts', [['date', 'desc']], {
   onCreate: async (item) => {
     if (item.published) {
-      notifySubscribersOnPublish(item);
+      await notifySubscribersOnPublish(item);
     }
   },
-  onUpdate: async (item) => {
-    if (item.published) {
-      notifySubscribersOnPublish(item);
+  onUpdate: async (item, _req, previousItem) => {
+    if (item.published && previousItem?.published !== true) {
+      await notifySubscribersOnPublish(item);
     }
   }
 });

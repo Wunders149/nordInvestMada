@@ -18,8 +18,9 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_USER;
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const MAIL_PROVIDER = (process.env.MAIL_PROVIDER || '').toLowerCase();
 const RESEND_FROM = process.env.RESEND_FROM || 'Nord Invest Madagascar <contact@nordinvestmada.com>';
-const configured = Boolean(SMTP_USER && SMTP_PASS);
-const useResend = MAIL_PROVIDER === 'resend' || (MAIL_PROVIDER !== 'smtp' && !configured && RESEND_API_KEY);
+const smtpConfigured = Boolean(SMTP_USER && SMTP_PASS);
+const useResend = MAIL_PROVIDER === 'resend' || (MAIL_PROVIDER !== 'smtp' && !smtpConfigured && RESEND_API_KEY);
+const configured = useResend ? Boolean(RESEND_API_KEY) : smtpConfigured;
 
 if (useResend) {
   if (!RESEND_API_KEY) {
@@ -59,7 +60,7 @@ export const mailConfig = {
     : `${SMTP_USER} @ ${SMTP_HOST}:${SMTP_PORT}`
 };
 
-export function isSmtpConfigured() {
+export function isMailConfigured() {
   return configured;
 }
 
@@ -75,12 +76,25 @@ function withTimeout(promise, ms, label) {
 
 export async function verifyTransporter() {
   if (useResend) {
+    if (!RESEND_API_KEY) {
+      console.error('[mailer] Vérification Resend impossible : RESEND_API_KEY manquant');
+      return false;
+    }
     try {
       const res = await withTimeout(fetch('https://api.resend.com/domains', {
         headers: { Authorization: `Bearer ${RESEND_API_KEY}` }
       }), SMTP_TIMEOUT_MS, 'Vérification Resend');
       if (!res.ok) {
         console.error(`[mailer] Échec de vérification Resend (HTTP ${res.status})`);
+        return false;
+      }
+      const data = await res.json().catch(() => ({}));
+      const senderDomain = getSenderAddress(RESEND_FROM).split('@').pop();
+      const senderVerified = Array.isArray(data.data) && data.data.some(domain =>
+        domain.name?.toLowerCase() === senderDomain && domain.status === 'verified'
+      );
+      if (!senderVerified) {
+        console.error(`[mailer] Domaine expéditeur Resend non vérifié : ${senderDomain}`);
         return false;
       }
       console.log('[mailer] Resend API vérifié avec succès');
@@ -109,11 +123,19 @@ function toRecipientArray(value) {
   return String(value).split(',').map(s => s.trim()).filter(Boolean);
 }
 
+function getSenderAddress(value) {
+  const match = String(value || '').match(/<([^>]+)>/);
+  return (match ? match[1] : value || '').trim().toLowerCase();
+}
+
 async function sendViaResend(options) {
   if (!RESEND_API_KEY) {
     throw new Error('MAIL_PROVIDER=resend mais RESEND_API_KEY manquant : définissez-le dans .env');
   }
   const to = toRecipientArray(options.to) || (options.bcc ? toRecipientArray(ADMIN_EMAIL) : undefined);
+  if (!to?.length) {
+    throw new Error('Destinataire principal manquant : définissez to ou ADMIN_EMAIL pour un envoi BCC');
+  }
   const payload = {
     from: RESEND_FROM,
     to,
