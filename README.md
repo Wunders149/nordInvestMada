@@ -75,7 +75,9 @@ Edit the `.env` file with your credentials:
 NODE_ENV=development
 PORT=3000
 
-# Email Configuration (Gmail SMTP)
+# Email Configuration (SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 ADMIN_EMAIL=admin@nordinvest.mg
@@ -183,7 +185,9 @@ npm start     # production
 | `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
 | `NODE_ENV` | No | `development` or `production` |
 | `PORT` | No | Server port (default 3000) |
-| `SMTP_USER` | Yes | Gmail address (SMTP username) |
+| `SMTP_HOST` | No | SMTP server (default `smtp.gmail.com`) |
+| `SMTP_PORT` | No | SMTP port (default `587`, `465` uses implicit TLS) |
+| `SMTP_USER` | Yes | Gmail address (or SMTP username) |
 | `SMTP_PASS` | Yes | Gmail app password (or SMTP key) |
 | `ADMIN_EMAIL` | No | Where to receive contact alerts |
 | `GOOGLE_ANALYTICS_ID` | No | GA4 measurement ID |

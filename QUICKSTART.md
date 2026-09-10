@@ -51,8 +51,8 @@ cp .env.example .env
 
 **D. Edit .env and add:**
 ```env
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=xxxx xxxx xxxx xxxx  # Paste your 16-char app password
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=xxxx xxxx xxxx xxxx  # Paste your 16-char app password
 ADMIN_EMAIL=admin@nordinvest.mg
 ```
 
@@ -145,8 +145,8 @@ console.log(result);
 ```env
 NODE_ENV=development          # Set to 'production' when live
 PORT=3000                     # Server port
-EMAIL_USER=your-email@gmail.com   # Your Gmail
-EMAIL_PASS=xxxx xxxx xxxx xxxx    # Gmail app password (NOT regular password!)
+SMTP_USER=your-email@gmail.com   # Your Gmail
+SMTP_PASS=xxxx xxxx xxxx xxxx    # Gmail app password (NOT regular password!)
 ADMIN_EMAIL=admin@nordinvest.mg   # Where to receive alerts
 GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX  # Your GA measurement ID
 SITE_URL=https://www.nordinvest.mg  # Your domain
@@ -159,7 +159,7 @@ SITE_URL=https://www.nordinvest.mg  # Your domain
 ### **Emails not sending?**
 - ❌ Using regular Gmail password → ✅ Use App Password instead
 - ❌ 2FA not enabled → ✅ Enable 2-factor authentication
-- ❌ Wrong email in .env → ✅ Double-check EMAIL_USER and EMAIL_PASS
+- ❌ Wrong email in .env → ✅ Double-check SMTP_USER and SMTP_PASS
 
 ### **CORS errors?**
 - ❌ API_BASE is wrong in index.html → ✅ Should be `http://localhost:3000`

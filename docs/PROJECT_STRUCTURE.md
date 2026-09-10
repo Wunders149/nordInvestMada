@@ -211,8 +211,8 @@ NODE_ENV=development
 PORT=3000
 
 # Email
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=xxxx xxxx xxxx xxxx
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=xxxx xxxx xxxx xxxx
 ADMIN_EMAIL=admin@nordinvest.mg
 
 # Analytics

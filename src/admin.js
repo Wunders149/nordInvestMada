@@ -8,7 +8,7 @@ import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteC
 import { uploadPdf, uploadVideo, uploadImage, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
 import { broadcast } from './events.js';
 import { validate, loginSchema, adminContentSchemas } from './validation.js';
-import nodemailer from 'nodemailer';
+import { mailConfig, sendEmail, logMailFailure } from './mailer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -292,18 +292,6 @@ router.get('/activity', requireAuth, async (req, res) => {
 });
 
 // ─── EMAIL NOTIFICATION FOR BLOG PUBLISH ───
-function createBlogTransporter() {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
-}
-
 async function notifySubscribersOnPublish(post) {
   try {
     const { data: subs } = await supabase.from('subscribers').select('email');
@@ -331,9 +319,8 @@ async function notifySubscribersOnPublish(post) {
       </div>
     `;
 
-    const transporter = createBlogTransporter();
-    await transporter.sendMail({
-      from: `"Nord Invest Madagascar" <${process.env.SMTP_USER}>`,
+    await sendEmail({
+      from: `"Nord Invest Madagascar" <${mailConfig.user}>`,
       bcc: emails.join(','),
       subject: `Nouvel article : ${title}`,
       html
@@ -341,7 +328,7 @@ async function notifySubscribersOnPublish(post) {
 
     console.log(`Blog notification sent to ${emails.length} subscribers for: ${title}`);
   } catch (err) {
-    console.error('Failed to send blog notification emails:', err.message);
+    logMailFailure('notification blog aux abonnés', err);
   }
 }
 
@@ -717,27 +704,18 @@ router.post('/test-email', requireAuth, async (req, res) => {
   if (!to) return res.status(400).json({ error: 'Email destinataire requis' });
 
   try {
-    const nodemailer = (await import('nodemailer')).default;
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
+    await sendEmail({
+      from: mailConfig.user,
       to,
       subject: 'Test — Nord Invest Madagascar',
-      html: `<h2>Test d'envoi d'email</h2><p>Cet email confirme que votre configuration SMTP Gmail fonctionne correctement.</p><p><small>${new Date().toISOString()}</small></p>`
+      html: `<h2>Test d'envoi d'email</h2><p>Cet email confirme que votre configuration SMTP fonctionne correctement.</p><p><small>${new Date().toISOString()}</small></p>`
     });
     logActivity('email_test', `Email test envoyé à ${to}`, req.admin.username);
     res.json({ success: true, message: 'Email test envoyé avec succès' });
   } catch (err) {
-    logActivity('email_test_failed', `Échec envoi test à ${to}: ${err.message}`, req.admin.username);
-    res.status(500).json({ error: `Échec: ${err.message}` });
+    logMailFailure(`test email vers ${to}`, err);
+    logActivity('email_test_failed', `Échec envoi test à ${to}: ${err.response || err.message}`, req.admin.username);
+    res.status(500).json({ error: `Échec: ${err.response || err.message}` });
   }
 });
 

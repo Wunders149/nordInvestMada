@@ -5,12 +5,12 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
 import { adminRouter, mergeSectionsWithDefaults, fillSectionsFromLocale } from './admin.js';
+import { mailConfig, sendEmail, logMailFailure, verifyTransporter, isSmtpConfigured } from './mailer.js';
 import { imageRouter } from './images.js';
 import { supabase, getSiteConfig, getSetting } from './supabase.js';
 import { addClient, broadcast as _broadcast, heartbeat as sseHeartbeat } from './events.js';
@@ -107,17 +107,6 @@ const pricingLimiter = rateLimit({
   message: { error: 'Trop de requêtes. Réessayez dans 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false
-});
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
 });
 
 // Load static config.json and dynamic site_config
@@ -344,49 +333,58 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
   }
 
   let emailSent = false;
-  try {
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
-      subject: `Nouvelle demande de contact - ${projectType}`,
-      html: `
-        <h2>Nouvelle Demande de Contact</h2>
-        <p><strong>Nom:</strong> ${escapeHtml(name)}</p>
-        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-        <p><strong>Téléphone:</strong> ${escapeHtml(phone || 'Non fourni')}</p>
-        <p><strong>Type de Service:</strong> ${escapeHtml(serviceType || projectType)}</p>
-        <p><strong>Type de Projet:</strong> ${escapeHtml(projectType)}</p>
-        <p><strong>Budget Estimé:</strong> ${escapeHtml(budget || 'Non spécifié')}</p>
-        <p><strong>Message:</strong></p>
-        <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
-        <hr>
-        <p><em>Date: ${new Date().toLocaleString('fr-FR')}</em></p>
-      `
-    });
 
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: email,
-      subject: 'Confirmation - Nord Invest Madagascar',
-      html: `
-        <h2>Merci de votre intérêt!</h2>
-        <p>Bonjour ${escapeHtml(name)},</p>
-        <p>Nous avons bien reçu votre demande de contact. Notre équipe vous répondra sous 24 heures ouvrables.</p>
-        <p><strong>Récapitulatif de votre demande:</strong></p>
-        <ul>
-          <li>Type de projet: ${escapeHtml(projectType)}</li>
-          <li>Service demandé: ${escapeHtml(serviceType || projectType)}</li>
-          <li>Budget: ${escapeHtml(budget || 'Non spécifié')}</li>
-        </ul>
-        <p>En attendant, n'hésitez pas à nous contacter directement:</p>
-        <p>Tél. <strong>032 82 312 80</strong></p>
-        <p>Email contact@nordinvest.mg</p>
-        <p>Cordialement,<br>L'équipe Nord Invest Madagascar</p>
-      `
-    });
+  const adminNotification = {
+    from: mailConfig.user,
+    to: mailConfig.adminEmail,
+    subject: `Nouvelle demande de contact - ${projectType}`,
+    html: `
+      <h2>Nouvelle Demande de Contact</h2>
+      <p><strong>Nom:</strong> ${escapeHtml(name)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      <p><strong>Téléphone:</strong> ${escapeHtml(phone || 'Non fourni')}</p>
+      <p><strong>Type de Service:</strong> ${escapeHtml(serviceType || projectType)}</p>
+      <p><strong>Type de Projet:</strong> ${escapeHtml(projectType)}</p>
+      <p><strong>Budget Estimé:</strong> ${escapeHtml(budget || 'Non spécifié')}</p>
+      <p><strong>Message:</strong></p>
+      <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
+      <hr>
+      <p><em>Date: ${new Date().toLocaleString('fr-FR')}</em></p>
+    `
+  };
+
+  const customerConfirmation = {
+    from: mailConfig.user,
+    to: email,
+    subject: 'Confirmation - Nord Invest Madagascar',
+    html: `
+      <h2>Merci de votre intérêt!</h2>
+      <p>Bonjour ${escapeHtml(name)},</p>
+      <p>Nous avons bien reçu votre demande de contact. Notre équipe vous répondra sous 24 heures ouvrables.</p>
+      <p><strong>Récapitulatif de votre demande:</strong></p>
+      <ul>
+        <li>Type de projet: ${escapeHtml(projectType)}</li>
+        <li>Service demandé: ${escapeHtml(serviceType || projectType)}</li>
+        <li>Budget: ${escapeHtml(budget || 'Non spécifié')}</li>
+      </ul>
+      <p>En attendant, n'hésitez pas à nous contacter directement:</p>
+      <p>Tél. <strong>032 82 312 80</strong></p>
+      <p>Email contact@nordinvest.mg</p>
+      <p>Cordialement,<br>L'équipe Nord Invest Madagascar</p>
+    `
+  };
+
+  try {
+    await sendEmail(adminNotification);
+  } catch (mailErr) {
+    logMailFailure('notification admin (contact)', mailErr);
+  }
+
+  try {
+    await sendEmail(customerConfirmation);
     emailSent = true;
   } catch (mailErr) {
-    console.warn('Email sending failed:', mailErr.message);
+    logMailFailure('confirmation client (contact)', mailErr);
   }
 
   res.json({
@@ -414,14 +412,14 @@ app.post('/api/newsletter', newsletterLimiter, validate(newsletterSchema), async
   }
 
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+    await sendEmail({
+      from: mailConfig.user,
+      to: mailConfig.adminEmail,
       subject: 'Nouvel abonné newsletter',
       html: `<p>Nouvel abonné : <strong>${escapeHtml(subscriberEmail)}</strong></p>`
     });
   } catch (mailErr) {
-    console.warn('Newsletter email notification failed:', mailErr.message);
+    logMailFailure('notification admin (newsletter)', mailErr);
   }
 
   res.json({ success: true, message: 'Inscription réussie' });
@@ -450,10 +448,10 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
 
   let emailSent = false;
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
+    await sendEmail({
+      from: mailConfig.user,
       to: email,
-      cc: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+      cc: mailConfig.adminEmail,
       subject: `Demande de Devis - ${quoteNumber}`,
       html: `
         <h2>Demande de Devis - Nord Invest Madagascar</h2>
@@ -479,7 +477,7 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
     });
     emailSent = true;
   } catch (mailErr) {
-    console.warn('Email sending failed:', mailErr.message);
+    logMailFailure('demande de devis', mailErr);
   }
 
   res.json({
@@ -799,7 +797,18 @@ app.listen(PORT, () => {
   console.log(`✓ Nord Invest Madagascar server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`✓ Uploads directory: ${uploadsDir}`);
+  console.log(`✓ SMTP: ${isSmtpConfigured() ? `${mailConfig.user} @ ${mailConfig.host}:${mailConfig.port}` : 'NON configuré (définir SMTP_USER et SMTP_PASS)'}`);
   console.log('✓ API endpoints available at: /api/*');
+
+  // Warn loudly at startup if SMTP is misconfigured
+  if (!isSmtpConfigured()) {
+    console.warn('⚠️  EMAIL EST DÉSACTIVÉ : ajoutez SMTP_USER, SMTP_PASS (et éventuellement SMTP_HOST/SMTP_PORT) dans .env');
+  }
+
+  // Verify SMTP connectivity asynchronously (non-blocking)
+  verifyTransporter().then(ok => {
+    if (!ok) console.warn('⚠️  Le serveur SMTP ne valide pas les identifiants. Les emails ne partiront pas.');
+  });
 
   // SSE heartbeat every 25s to keep connections alive
   setInterval(() => sseHeartbeat(), 25000);
