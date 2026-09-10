@@ -333,6 +333,7 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
   }
 
   let emailSent = false;
+  let emailError = null;
 
   const adminNotification = {
     from: mailConfig.from,
@@ -377,6 +378,7 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
   try {
     await sendEmail(adminNotification);
   } catch (mailErr) {
+    emailError = mailErr.response || mailErr.message;
     logMailFailure('notification admin (contact)', mailErr);
   }
 
@@ -384,12 +386,14 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
     await sendEmail(customerConfirmation);
     emailSent = true;
   } catch (mailErr) {
+    emailError = mailErr.response || mailErr.message;
     logMailFailure('confirmation client (contact)', mailErr);
   }
 
   res.json({
     success: true,
     emailSent,
+    emailError,
     message: emailSent
       ? 'Votre demande a été envoyée. Vous recevrez un email de confirmation.'
       : 'Votre demande a été reçue (l\'email de confirmation n\'a pas pu être envoyé).'
@@ -447,6 +451,7 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
   }
 
   let emailSent = false;
+  let emailError = null;
   try {
     await sendEmail({
       from: mailConfig.from,
@@ -477,12 +482,14 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
     });
     emailSent = true;
   } catch (mailErr) {
+    emailError = mailErr.response || mailErr.message;
     logMailFailure('demande de devis', mailErr);
   }
 
   res.json({
     success: true,
     emailSent,
+    emailError,
     quoteNumber,
     message: emailSent
       ? 'Votre demande de devis a été envoyée. Vous recevrez un email de confirmation.'
