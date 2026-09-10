@@ -188,7 +188,7 @@ npm start     # production
 | `PORT` | No | Server port (default 3000) |
 | `MAIL_PROVIDER` | No | `resend` (HTTP API, recommended) or `smtp` |
 | `RESEND_API_KEY` | Yes* | Resend HTTP API key (*required when `MAIL_PROVIDER=resend`) |
-| `RESEND_FROM` | No | Sender for Resend (default `onboarding@resend.dev` — delivers to inbox with no setup) |
+| `RESEND_FROM` | No | Sender for Resend (default `contact@nordinvestmada.com`, a domain verified in Resend) |
 | `SMTP_HOST` | No | SMTP server (default `smtp.gmail.com`, auto-detects `smtp-relay.brevo.com` for Brevo logins) |
 | `SMTP_PORT` | No | SMTP port (default `587`; Brevo defaults to `2525` since many hosts block 587/465) |
 | `SMTP_USER` | Yes | Gmail address (or SMTP username/login) |

@@ -26,7 +26,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_FROM
-        value: "Nord Invest Madagascar <onboarding@resend.dev>"
+        value: "Nord Invest Madagascar <contact@nordinvestmada.com>"
       - key: SMTP_HOST
         value: smtp-relay.brevo.com
       - key: SMTP_PORT
@@ -38,6 +38,6 @@ services:
       - key: SMTP_FROM
         sync: false
       - key: ADMIN_EMAIL
-        sync: false
+        value: nordinvestmadagascar@gmail.com
       - key: GOOGLE_ANALYTICS_ID
         sync: false
