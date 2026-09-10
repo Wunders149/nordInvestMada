@@ -21,6 +21,12 @@ services:
         sync: false
       - key: ADMIN_PASS
         sync: false
+      - key: MAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        value: "Nord Invest Madagascar <onboarding@resend.dev>"
       - key: SMTP_HOST
         value: smtp-relay.brevo.com
       - key: SMTP_PORT

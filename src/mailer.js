@@ -15,9 +15,20 @@ const SMTP_TIMEOUT_MS = Number.parseInt(process.env.SMTP_TIMEOUT_MS || '15000', 
 const SMTP_TOTAL_TIMEOUT_MS = SMTP_TIMEOUT_MS + 15000;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_USER;
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const MAIL_PROVIDER = (process.env.MAIL_PROVIDER || '').toLowerCase();
+const RESEND_FROM = process.env.RESEND_FROM || 'Nord Invest Madagascar <onboarding@resend.dev>';
+const useResend = MAIL_PROVIDER === 'resend' || (MAIL_PROVIDER !== 'smtp' && !configured && RESEND_API_KEY);
+
 const configured = Boolean(SMTP_USER && SMTP_PASS);
 
-if (!configured) {
+if (useResend) {
+  if (!RESEND_API_KEY) {
+    console.warn('[mailer] MAIL_PROVIDER=resend mais RESEND_API_KEY manquant : veuillez le définir dans .env');
+  } else {
+    console.log(`[mailer] Fournisseur e-mail : Resend (HTTP API), from=${RESEND_FROM}`);
+  }
+} else if (!configured) {
   console.warn('[mailer] SMTP non configuré : définissez SMTP_USER et SMTP_PASS dans .env');
 }
 
@@ -36,12 +47,17 @@ const transporter = nodemailer.createTransport({
 });
 
 export const mailConfig = {
+  provider: useResend ? 'resend' : 'smtp',
   host: SMTP_HOST,
   port: SMTP_PORT,
   user: SMTP_USER,
-  from: SMTP_FROM,
+  from: useResend ? RESEND_FROM : SMTP_FROM,
   adminEmail: ADMIN_EMAIL,
-  configured
+  resendFrom: RESEND_FROM,
+  configured,
+  display: useResend
+    ? `Resend (from: ${RESEND_FROM})`
+    : `${SMTP_USER} @ ${SMTP_HOST}:${SMTP_PORT}`
 };
 
 export function isSmtpConfigured() {
@@ -59,6 +75,22 @@ function withTimeout(promise, ms, label) {
 }
 
 export async function verifyTransporter() {
+  if (useResend) {
+    try {
+      const res = await withTimeout(fetch('https://api.resend.com/domains', {
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}` }
+      }), SMTP_TIMEOUT_MS, 'Vérification Resend');
+      if (!res.ok) {
+        console.error(`[mailer] Échec de vérification Resend (HTTP ${res.status})`);
+        return false;
+      }
+      console.log('[mailer] Resend API vérifié avec succès');
+      return true;
+    } catch (err) {
+      console.error('[mailer] Échec de vérification Resend:', err.message);
+      return false;
+    }
+  }
   if (!configured) {
     console.warn('[mailer] Vérification SMTP ignorée : configuration manquante');
     return false;
@@ -73,7 +105,46 @@ export async function verifyTransporter() {
   }
 }
 
+function toRecipientArray(value) {
+  if (!value) return undefined;
+  return String(value).split(',').map(s => s.trim()).filter(Boolean);
+}
+
+async function sendViaResend(options) {
+  if (!RESEND_API_KEY) {
+    throw new Error('MAIL_PROVIDER=resend mais RESEND_API_KEY manquant : définissez-le dans .env');
+  }
+  const payload = {
+    from: RESEND_FROM,
+    to: toRecipientArray(options.to),
+    subject: options.subject,
+    html: options.html,
+    text: options.text
+  };
+  if (options.cc) payload.cc = toRecipientArray(options.cc);
+  if (options.bcc) payload.bcc = toRecipientArray(options.bcc);
+
+  const res = await withTimeout(fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  }), SMTP_TOTAL_TIMEOUT_MS, 'Envoi Resend');
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`Resend refusé (HTTP ${res.status}): ${data.message || res.statusText}`);
+  }
+  const recipients = options.to || options.cc
+    ? `${options.to || ''}${options.cc ? `, cc: ${options.cc}` : ''}`
+    : `bcc: ${String(options.bcc || '').split(',').length} destinataires`;
+  console.log(`[mailer] Email envoyé via Resend (${recipients}) id=${data.id}`);
+  return { messageId: data.id };
+}
+
 export async function sendEmail(options) {
+  if (useResend) return sendViaResend(options);
   if (!configured) {
     const err = new Error('SMTP non configuré : définissez SMTP_USER et SMTP_PASS dans .env');
     console.error('[mailer]', err.message);

@@ -702,17 +702,17 @@ router.put('/settings', requireAuth, async (req, res) => {
 router.post('/test-email', requireAuth, async (req, res) => {
   const { to } = req.body;
   if (!to) return res.status(400).json({ error: 'Email destinataire requis' });
-  const smtpInfo = { host: mailConfig.host, port: mailConfig.port, from: mailConfig.from, configured: mailConfig.configured };
+  const smtpInfo = { provider: mailConfig.provider, host: mailConfig.host, port: mailConfig.port, from: mailConfig.from, configured: mailConfig.configured };
 
   try {
-    await sendEmail({
+    const info = await sendEmail({
       from: mailConfig.from,
       to,
       subject: 'Test — Nord Invest Madagascar',
       html: `<h2>Test d'envoi d'email</h2><p>Cet email confirme que votre configuration SMTP fonctionne correctement.</p><p><small>${new Date().toISOString()}</small></p>`
     });
     logActivity('email_test', `Email test envoyé à ${to}`, req.admin.username);
-    res.json({ success: true, message: 'Email test envoyé avec succès', smtp: smtpInfo });
+    res.json({ success: true, message: 'Email test envoyé avec succès', smtp: smtpInfo, messageId: info.messageId || null });
   } catch (err) {
     logMailFailure(`test email vers ${to}`, err);
     logActivity('email_test_failed', `Échec envoi test à ${to}: ${err.response || err.message}`, req.admin.username);

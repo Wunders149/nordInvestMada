@@ -797,7 +797,7 @@ app.listen(PORT, () => {
   console.log(`✓ Nord Invest Madagascar server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`✓ Uploads directory: ${uploadsDir}`);
-  console.log(`✓ SMTP: ${isSmtpConfigured() ? `${mailConfig.user} @ ${mailConfig.host}:${mailConfig.port}` : 'NON configuré (définir SMTP_USER et SMTP_PASS)'}`);
+  console.log(`✓ SMTP: ${mailConfig.provider === 'resend' ? 'Resend (HTTP API)' : mailConfig.display}`);
   console.log('✓ API endpoints available at: /api/*');
 
   // Warn loudly at startup if SMTP is misconfigured
