@@ -493,13 +493,25 @@ function handleSubmit(e) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(formData)
   })
-  .then(response => response.json())
-  .then(_result => {
-    btn.textContent = getNestedTranslation('contact.sent') || 'Message envoyé';
-    btn.style.background = '#2a7a4a';
+  .then(async response => {
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.error || `Request failed (${response.status})`);
+    }
+    return result;
+  })
+  .then(result => {
+    const emailDeliveryFailed = result.emailSent === false;
+    btn.textContent = emailDeliveryFailed
+      ? 'Demande reçue'
+      : (getNestedTranslation('contact.sent') || 'Message envoyé');
+    btn.style.background = emailDeliveryFailed ? '#9a6700' : '#2a7a4a';
     messageDiv.textContent = getNestedTranslation('contact.sentMessage') || 'Votre demande a été reçue.';
     messageDiv.style.display = 'block';
-    messageDiv.style.color = '#2a7a4a';
+    if (emailDeliveryFailed) {
+      messageDiv.textContent = result.message || 'Votre demande a été reçue, mais l’email de confirmation n’a pas pu être envoyé.';
+    }
+    messageDiv.style.color = emailDeliveryFailed ? '#9a6700' : '#2a7a4a';
     form.reset();
 
     if (typeof gtag !== 'undefined') {

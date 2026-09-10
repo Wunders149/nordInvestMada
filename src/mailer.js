@@ -18,9 +18,8 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_USER;
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const MAIL_PROVIDER = (process.env.MAIL_PROVIDER || '').toLowerCase();
 const RESEND_FROM = process.env.RESEND_FROM || 'Nord Invest Madagascar <contact@nordinvestmada.com>';
-const useResend = MAIL_PROVIDER === 'resend' || (MAIL_PROVIDER !== 'smtp' && !configured && RESEND_API_KEY);
-
 const configured = Boolean(SMTP_USER && SMTP_PASS);
+const useResend = MAIL_PROVIDER === 'resend' || (MAIL_PROVIDER !== 'smtp' && !configured && RESEND_API_KEY);
 
 if (useResend) {
   if (!RESEND_API_KEY) {

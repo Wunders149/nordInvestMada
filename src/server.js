@@ -332,8 +332,8 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
     console.warn('Contact DB save failed:', dbErr.message);
   }
 
-  let emailSent = false;
-  let emailError = null;
+  let adminEmailSent = false;
+  let customerEmailSent = false;
 
   const adminNotification = {
     from: mailConfig.from,
@@ -377,23 +377,25 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
 
   try {
     await sendEmail(adminNotification);
+    adminEmailSent = true;
   } catch (mailErr) {
-    emailError = mailErr.response || mailErr.message;
     logMailFailure('notification admin (contact)', mailErr);
   }
 
   try {
     await sendEmail(customerConfirmation);
-    emailSent = true;
+    customerEmailSent = true;
   } catch (mailErr) {
-    emailError = mailErr.response || mailErr.message;
     logMailFailure('confirmation client (contact)', mailErr);
   }
 
-  res.json({
+  const emailSent = customerEmailSent;
+  res.status(emailSent ? 200 : 202).json({
     success: true,
     emailSent,
-    emailError,
+    adminEmailSent,
+    customerEmailSent,
+    emailError: emailSent ? null : 'Email delivery failed',
     message: emailSent
       ? 'Votre demande a été envoyée. Vous recevrez un email de confirmation.'
       : 'Votre demande a été reçue (l\'email de confirmation n\'a pas pu être envoyé).'
