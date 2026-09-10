@@ -127,12 +127,21 @@ export async function testEmail() {
     } finally {
       clearTimeout(timeout);
     }
-    if (!res.ok) throw new Error(data.error);
+    if (!res.ok) {
+      const e = new Error(data.error);
+      e.diagnostic = data.diagnostic;
+      throw e;
+    }
     status.textContent = 'Email envoyé avec succès';
     status.style.color = 'var(--success)';
     showToast('Email test envoyé', 'success');
   } catch (err) {
-    const msg = err.name === 'AbortError' ? 'Délai dépassé — serveur SMTP ne répond pas' : err.message;
+    let msg = err.name === 'AbortError' ? 'Délai dépassé — serveur SMTP ne répond pas' : err.message;
+    if (err.diagnostic && Array.isArray(err.diagnostic.results)) {
+      const reachable = err.diagnostic.results.filter(r => r.reachable).map(r => r.port);
+      const blocked = err.diagnostic.results.filter(r => !r.reachable).map(r => `${r.port}(${r.error})`);
+      msg += ` | Ports OK: ${reachable.join(', ') || 'aucun'} | Bloqués: ${blocked.join(', ') || 'aucun'}`;
+    }
     status.textContent = 'Erreur : ' + msg;
     status.style.color = 'var(--danger)';
     showToast('Échec: ' + msg, 'error');

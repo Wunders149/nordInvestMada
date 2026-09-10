@@ -1,3 +1,4 @@
+import net from 'net';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 
@@ -10,6 +11,7 @@ const SMTP_HOST = process.env.SMTP_HOST || (/@smtp-brevo\.com$/i.test(SMTP_USER 
 const SMTP_PORT = Number.parseInt(process.env.SMTP_PORT || '587', 10) || 587;
 const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const SMTP_TIMEOUT_MS = Number.parseInt(process.env.SMTP_TIMEOUT_MS || '15000', 10) || 15000;
+const SMTP_TOTAL_TIMEOUT_MS = SMTP_TIMEOUT_MS + 15000;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_USER;
 
 const configured = Boolean(SMTP_USER && SMTP_PASS);
@@ -23,8 +25,8 @@ const transporter = nodemailer.createTransport({
   port: SMTP_PORT,
   secure: SMTP_PORT === 465 || SMTP_SECURE,
   requireTLS: SMTP_PORT !== 465,
-  connectionTimeout: SMTP_TIMEOUT_MS,
-  greetingTimeout: SMTP_TIMEOUT_MS,
+  connectionTimeout: Math.floor(SMTP_TIMEOUT_MS / 2),
+  greetingTimeout: Math.floor(SMTP_TIMEOUT_MS / 2),
   socketTimeout: SMTP_TIMEOUT_MS,
   auth: {
     user: SMTP_USER,
@@ -78,7 +80,7 @@ export async function sendEmail(options) {
   }
   const info = await withTimeout(
     transporter.sendMail(options),
-    SMTP_TIMEOUT_MS,
+    SMTP_TOTAL_TIMEOUT_MS,
     `Envoi SMTP ${SMTP_HOST}:${SMTP_PORT}`
   );
   const recipients = options.to || options.cc
@@ -86,6 +88,36 @@ export async function sendEmail(options) {
     : `bcc: ${String(options.bcc || '').split(',').length} destinataires`;
   console.log(`[mailer] Email envoyé (${recipients})`);
   return info;
+}
+
+function checkPortReachability(host, port) {
+  return new Promise(resolve => {
+    const started = Date.now();
+    let settled = false;
+    const finish = (reachable, error) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve({ port, reachable, ms: Date.now() - started, error: error || null });
+    };
+    const socket = net.connect({ host, port, timeout: 6000, autoSelectFamily: true });
+    socket.once('connect', () => finish(true));
+    socket.once('timeout', () => finish(false, 'timeout'));
+    socket.once('error', err => finish(false, err.code || err.message));
+  });
+}
+
+export async function diagnoseSmtp() {
+  const testedPorts = [...new Set([SMTP_PORT, 587, 2525, 465, 25])];
+  const results = await Promise.all(
+    testedPorts.map(port => checkPortReachability(SMTP_HOST, port))
+  );
+  return {
+    host: SMTP_HOST,
+    from: SMTP_FROM,
+    user: SMTP_USER,
+    results
+  };
 }
 
 export function logMailFailure(context, err) {

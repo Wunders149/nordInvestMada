@@ -8,7 +8,7 @@ import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteC
 import { uploadPdf, uploadVideo, uploadImage, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
 import { broadcast } from './events.js';
 import { validate, loginSchema, adminContentSchemas } from './validation.js';
-import { mailConfig, sendEmail, logMailFailure } from './mailer.js';
+import { mailConfig, sendEmail, logMailFailure, diagnoseSmtp } from './mailer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -716,7 +716,11 @@ router.post('/test-email', requireAuth, async (req, res) => {
   } catch (err) {
     logMailFailure(`test email vers ${to}`, err);
     logActivity('email_test_failed', `Échec envoi test à ${to}: ${err.response || err.message}`, req.admin.username);
-    res.status(500).json({ error: `Échec: ${err.response || err.message}`, smtp: smtpInfo });
+    let diagnostic = null;
+    try {
+      diagnostic = await diagnoseSmtp();
+    } catch { /* diagnostic is best-effort */ }
+    res.status(500).json({ error: `Échec: ${err.response || err.message}`, smtp: smtpInfo, diagnostic });
   }
 });
 
