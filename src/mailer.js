@@ -113,9 +113,10 @@ async function sendViaResend(options) {
   if (!RESEND_API_KEY) {
     throw new Error('MAIL_PROVIDER=resend mais RESEND_API_KEY manquant : définissez-le dans .env');
   }
+  const to = toRecipientArray(options.to) || (options.bcc ? toRecipientArray(ADMIN_EMAIL) : undefined);
   const payload = {
     from: RESEND_FROM,
-    to: toRecipientArray(options.to),
+    to,
     subject: options.subject,
     html: options.html,
     text: options.text
