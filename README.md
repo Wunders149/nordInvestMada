@@ -77,7 +77,7 @@ PORT=3000
 
 # Email Configuration (SMTP)
 SMTP_HOST=smtp-relay.brevo.com
-SMTP_PORT=587
+SMTP_PORT=2525
 SMTP_USER=your-brevo-login
 SMTP_PASS=your-brevo-smtp-key
 SMTP_FROM=contact@nordinvest.mg
@@ -187,7 +187,7 @@ npm start     # production
 | `NODE_ENV` | No | `development` or `production` |
 | `PORT` | No | Server port (default 3000) |
 | `SMTP_HOST` | No | SMTP server (default `smtp.gmail.com`, auto-detects `smtp-relay.brevo.com` for Brevo logins) |
-| `SMTP_PORT` | No | SMTP port (default `587`, `465` uses implicit TLS) |
+| `SMTP_PORT` | No | SMTP port (default `587`; Brevo defaults to `2525` since many hosts block 587/465) |
 | `SMTP_USER` | Yes | Gmail address (or SMTP username/login) |
 | `SMTP_PASS` | Yes | Gmail app password (or SMTP key) |
 | `SMTP_FROM` | No | "From" address (defaults to `SMTP_USER`; must be a sender verified with your provider) |

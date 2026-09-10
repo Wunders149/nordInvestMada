@@ -59,7 +59,7 @@ SMTP_FROM=your-email@gmail.com
 ADMIN_EMAIL=admin@nordinvest.mg
 ```
 
-> 💡 **Prefer Brevo?** Use `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_USER` = your Brevo SMTP login, `SMTP_PASS` = your Brevo SMTP key, and make sure `SMTP_FROM` is a sender verified in Brevo.
+> 💡 **Prefer Brevo?** Use `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=2525` (many hosts block 587 — Render allows 2525), `SMTP_USER` = your Brevo SMTP login, `SMTP_PASS` = your Brevo SMTP key, and make sure `SMTP_FROM` is a sender verified in Brevo.
 
 ### 3️⃣ Setup Google Analytics
 
