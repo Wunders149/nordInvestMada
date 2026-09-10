@@ -114,19 +114,28 @@ export async function testEmail() {
   if (!to) { showToast('Entrez un email destinataire', 'error'); return; }
   const status = document.getElementById('testEmailStatus');
   status.textContent = '⏳ Envoi...';
+  status.style.color = 'var(--gray-500)';
   try {
-    const res = await fetch(`${API_BASE}/test-email`, {
-      method: 'POST', headers: getHeaders(), body: JSON.stringify({ to })
-    });
-    const data = await res.json();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    let res, data;
+    try {
+      res = await fetch(`${API_BASE}/test-email`, {
+        method: 'POST', headers: getHeaders(), body: JSON.stringify({ to }), signal: controller.signal
+      });
+      data = await res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!res.ok) throw new Error(data.error);
     status.textContent = 'Email envoyé avec succès';
     status.style.color = 'var(--success)';
     showToast('Email test envoyé', 'success');
   } catch (err) {
-    status.textContent = 'Erreur : ' + err.message;
+    const msg = err.name === 'AbortError' ? 'Délai dépassé — serveur SMTP ne répond pas' : err.message;
+    status.textContent = 'Erreur : ' + msg;
     status.style.color = 'var(--danger)';
-    showToast('Échec: ' + err.message, 'error');
+    showToast('Échec: ' + msg, 'error');
   }
 }
 
