@@ -320,7 +320,7 @@ async function notifySubscribersOnPublish(post) {
     `;
 
     await sendEmail({
-      from: `"Nord Invest Madagascar" <${mailConfig.user}>`,
+      from: `"Nord Invest Madagascar" <${mailConfig.from}>`,
       bcc: emails.join(','),
       subject: `Nouvel article : ${title}`,
       html
@@ -705,7 +705,7 @@ router.post('/test-email', requireAuth, async (req, res) => {
 
   try {
     await sendEmail({
-      from: mailConfig.user,
+      from: mailConfig.from,
       to,
       subject: 'Test — Nord Invest Madagascar',
       html: `<h2>Test d'envoi d'email</h2><p>Cet email confirme que votre configuration SMTP fonctionne correctement.</p><p><small>${new Date().toISOString()}</small></p>`

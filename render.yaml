@@ -21,9 +21,13 @@ services:
         sync: false
       - key: ADMIN_PASS
         sync: false
+      - key: SMTP_HOST
+        value: smtp-relay.brevo.com
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
         sync: false
       - key: ADMIN_EMAIL
         sync: false

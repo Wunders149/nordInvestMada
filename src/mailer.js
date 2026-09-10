@@ -3,11 +3,12 @@ import nodemailer from 'nodemailer';
 
 dotenv.config();
 
-const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = Number.parseInt(process.env.SMTP_PORT || '587', 10) || 587;
-const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
+const SMTP_HOST = process.env.SMTP_HOST || (/@smtp-brevo\.com$/i.test(SMTP_USER || '') ? 'smtp-relay.brevo.com' : 'smtp.gmail.com');
+const SMTP_PORT = Number.parseInt(process.env.SMTP_PORT || '587', 10) || 587;
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || SMTP_USER;
 
 const configured = Boolean(SMTP_USER && SMTP_PASS);
@@ -31,6 +32,7 @@ export const mailConfig = {
   host: SMTP_HOST,
   port: SMTP_PORT,
   user: SMTP_USER,
+  from: SMTP_FROM,
   adminEmail: ADMIN_EMAIL,
   configured
 };

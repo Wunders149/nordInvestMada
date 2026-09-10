@@ -335,7 +335,7 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
   let emailSent = false;
 
   const adminNotification = {
-    from: mailConfig.user,
+    from: mailConfig.from,
     to: mailConfig.adminEmail,
     subject: `Nouvelle demande de contact - ${projectType}`,
     html: `
@@ -354,7 +354,7 @@ app.post('/api/contact', contactLimiter, validate(contactSchema), async (req, re
   };
 
   const customerConfirmation = {
-    from: mailConfig.user,
+    from: mailConfig.from,
     to: email,
     subject: 'Confirmation - Nord Invest Madagascar',
     html: `
@@ -413,7 +413,7 @@ app.post('/api/newsletter', newsletterLimiter, validate(newsletterSchema), async
 
   try {
     await sendEmail({
-      from: mailConfig.user,
+      from: mailConfig.from,
       to: mailConfig.adminEmail,
       subject: 'Nouvel abonné newsletter',
       html: `<p>Nouvel abonné : <strong>${escapeHtml(subscriberEmail)}</strong></p>`
@@ -449,7 +449,7 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
   let emailSent = false;
   try {
     await sendEmail({
-      from: mailConfig.user,
+      from: mailConfig.from,
       to: email,
       cc: mailConfig.adminEmail,
       subject: `Demande de Devis - ${quoteNumber}`,

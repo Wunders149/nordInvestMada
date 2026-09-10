@@ -51,10 +51,15 @@ cp .env.example .env
 
 **D. Edit .env and add:**
 ```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=xxxx xxxx xxxx xxxx  # Paste your 16-char app password
+SMTP_FROM=your-email@gmail.com
 ADMIN_EMAIL=admin@nordinvest.mg
 ```
+
+> 💡 **Prefer Brevo?** Use `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_USER` = your Brevo SMTP login, `SMTP_PASS` = your Brevo SMTP key, and make sure `SMTP_FROM` is a sender verified in Brevo.
 
 ### 3️⃣ Setup Google Analytics
 
@@ -145,8 +150,11 @@ console.log(result);
 ```env
 NODE_ENV=development          # Set to 'production' when live
 PORT=3000                     # Server port
-SMTP_USER=your-email@gmail.com   # Your Gmail
-SMTP_PASS=xxxx xxxx xxxx xxxx    # Gmail app password (NOT regular password!)
+SMTP_HOST=smtp.gmail.com       # Gmail, or smtp-relay.brevo.com for Brevo
+SMTP_PORT=587                  # 465 uses implicit TLS
+SMTP_USER=your-email@gmail.com # Your Gmail (or Brevo login)
+SMTP_PASS=xxxx xxxx xxxx xxxx  # Gmail app password (NOT regular password!) — for Brevo use its SMTP key
+SMTP_FROM=your-email@gmail.com # Must be a sender verified with your SMTP provider
 ADMIN_EMAIL=admin@nordinvest.mg   # Where to receive alerts
 GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX  # Your GA measurement ID
 SITE_URL=https://www.nordinvest.mg  # Your domain
