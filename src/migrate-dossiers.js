@@ -1,10 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { supabase } from './supabase.js';
-import { uploadPdf } from './cloudinary.js';
+const fs = require('fs');
+const path = require('path');
+const { supabase } = require('./supabase.js');
+const { uploadPdf } = require('./cloudinary.js');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const dossierDir = path.join(projectRoot, 'public', 'Dossier');
 

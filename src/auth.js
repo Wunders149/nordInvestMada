@@ -1,7 +1,7 @@
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
-import rateLimit from 'express-rate-limit';
-import { supabase, logActivity as dbLogActivity } from './supabase.js';
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
+const { supabase, logActivity: dbLogActivity } = require('./supabase.js');
 
 const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
@@ -41,7 +41,7 @@ async function loadSession(token) {
   }
 }
 
-export async function createSession(user) {
+async function createSession(user) {
   startCleanup();
   const token = crypto.randomBytes(32).toString('hex');
   const expires = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
@@ -59,7 +59,7 @@ export async function createSession(user) {
   return token;
 }
 
-export async function destroySession(token) {
+async function destroySession(token) {
   sessionCache.delete(token);
   try {
     await supabase.from('sessions').delete().eq('token', token);
@@ -68,7 +68,7 @@ export async function destroySession(token) {
   }
 }
 
-export async function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   let token = '';
   if (req.cookies && req.cookies.admin_token) {
     token = req.cookies.admin_token;
@@ -98,14 +98,14 @@ export async function requireAuth(req, res, next) {
   next();
 }
 
-export function getTokenFromRequest(req) {
+function getTokenFromRequest(req) {
   if (req.cookies && req.cookies.admin_token) return req.cookies.admin_token;
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) return authHeader.slice(7);
   return null;
 }
 
-export const loginLimiter = rateLimit({
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
@@ -113,7 +113,7 @@ export const loginLimiter = rateLimit({
   legacyHeaders: false
 });
 
-export async function loginUser(username, password) {
+async function loginUser(username, password) {
   try {
     const { data, error } = await supabase
       .from('admin_users')
@@ -132,10 +132,21 @@ export async function loginUser(username, password) {
   }
 }
 
-export async function hashPassword(password) {
+async function hashPassword(password) {
   return bcrypt.hash(password, 10);
 }
 
-export function logActivity(action, details, username) {
+function logActivity(action, details, username) {
   dbLogActivity(action, details, username);
 }
+
+module.exports = {
+  createSession,
+  destroySession,
+  requireAuth,
+  getTokenFromRequest,
+  loginLimiter,
+  loginUser,
+  hashPassword,
+  logActivity
+};

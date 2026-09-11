@@ -1,6 +1,6 @@
-import net from 'net';
-import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
+const net = require('net');
+const dotenv = require('dotenv');
+const nodemailer = require('nodemailer');
 
 dotenv.config();
 
@@ -54,7 +54,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-export const mailConfig = {
+const mailConfig = {
   provider: useResend ? 'resend' : 'smtp',
   host: SMTP_HOST,
   port: SMTP_PORT,
@@ -68,7 +68,7 @@ export const mailConfig = {
     : `${SMTP_USER} @ ${SMTP_HOST}:${SMTP_PORT}`
 };
 
-export function isMailConfigured() {
+function isMailConfigured() {
   return configured;
 }
 
@@ -82,7 +82,7 @@ function withTimeout(promise, ms, label) {
   ]);
 }
 
-export async function verifyTransporter() {
+async function verifyTransporter() {
   if (useResend) {
     if (!RESEND_API_KEY) {
       console.error('[mailer] Vérification Resend impossible : RESEND_API_KEY manquant');
@@ -173,7 +173,7 @@ async function sendViaResend(options) {
   return { messageId: data.id };
 }
 
-export async function sendEmail(options) {
+async function sendEmail(options) {
   if (useResend) return sendViaResend(options);
   if (!configured) {
     const err = new Error('SMTP non configuré : définissez SMTP_USER et SMTP_PASS dans .env');
@@ -209,7 +209,7 @@ function checkPortReachability(host, port) {
   });
 }
 
-export async function diagnoseSmtp() {
+async function diagnoseSmtp() {
   const testedPorts = [...new Set([SMTP_PORT, 587, 2525, 465, 25])];
   const results = await Promise.all(
     testedPorts.map(port => checkPortReachability(SMTP_HOST, port))
@@ -222,7 +222,9 @@ export async function diagnoseSmtp() {
   };
 }
 
-export function logMailFailure(context, err) {
+function logMailFailure(context, err) {
   const detail = err?.response || err?.message || String(err);
   console.error(`[mailer] Échec d'envoi (${context}):`, detail);
 }
+
+module.exports = { mailConfig, isMailConfigured, verifyTransporter, sendEmail, diagnoseSmtp, logMailFailure };

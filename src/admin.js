@@ -1,16 +1,14 @@
-import { Router } from 'express';
-import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { requireAuth, loginLimiter, createSession, destroySession, loginUser, logActivity, getTokenFromRequest } from './auth.js';
-import { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } from './supabase.js';
-import { uploadPdf, uploadVideo, uploadImage, deleteImage, deleteVideo, getPdfThumbnailUrl } from './cloudinary.js';
-import { broadcast } from './events.js';
-import { validate, loginSchema, adminContentSchemas } from './validation.js';
-import { mailConfig, sendEmail, logMailFailure, diagnoseSmtp } from './mailer.js';
+const { Router } = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const { requireAuth, loginLimiter, createSession, destroySession, loginUser, logActivity, getTokenFromRequest } = require('./auth.js');
+const { supabase, list, get, create, update, remove, getSiteConfig, upsertSiteConfig, getSetting, setSetting, getAllSettings } = require('./supabase.js');
+const { uploadPdf, uploadVideo, uploadImage, deleteImage, deleteVideo, getPdfThumbnailUrl } = require('./cloudinary.js');
+const { broadcast } = require('./events.js');
+const { validate, loginSchema, adminContentSchemas } = require('./validation.js');
+const { mailConfig, sendEmail, logMailFailure, diagnoseSmtp } = require('./mailer.js');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 
 const router = Router();
@@ -68,14 +66,14 @@ const LOCAL_ENTITY_FILES = {
   blog_posts: 'blog.json'
 };
 
-export function isMissingTableError(err) {
+function isMissingTableError(err) {
   if (!err) return false;
   const code = err.code || '';
   const message = `${err.message || ''} ${err.details || ''} ${err.hint || ''}`.toLowerCase();
   return code === 'PGRST205' || code === '42P01' || message.includes('could not find the table') || message.includes('does not exist');
 }
 
-export function readLocalEntityData(tableName) {
+function readLocalEntityData(tableName) {
   const fileName = LOCAL_ENTITY_FILES[tableName];
   if (!fileName) return [];
   const filePath = path.join(projectRoot, 'data', fileName);
@@ -1046,4 +1044,4 @@ router.put('/sections', requireAuth, async (req, res) => {
   }
 });
 
-export { router as adminRouter, mergeSectionsWithDefaults, fillSectionsFromLocale };
+module.exports = { adminRouter: router, mergeSectionsWithDefaults, fillSectionsFromLocale, isMissingTableError, readLocalEntityData };

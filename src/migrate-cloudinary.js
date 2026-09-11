@@ -1,13 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { uploadImage, getCloudinaryMapping, setCloudinaryMapping, clearCloudinaryMapping } from './cloudinary.js';
-import { supabase } from './supabase.js';
-import dotenv from 'dotenv';
+const fs = require('fs');
+const path = require('path');
+const { uploadImage, getCloudinaryMapping, setCloudinaryMapping, clearCloudinaryMapping } = require('./cloudinary.js');
+const { supabase } = require('./supabase.js');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const imagesDir = path.join(projectRoot, 'public', 'images');
 
