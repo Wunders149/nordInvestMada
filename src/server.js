@@ -455,13 +455,13 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
     console.warn('Quote DB save failed:', dbErr.message);
   }
 
-  let emailSent = false;
+  let adminEmailSent = false;
+  let customerEmailSent = false;
   let emailError = null;
   try {
     await sendEmail({
       from: mailConfig.from,
-      to: email,
-      cc: mailConfig.adminEmail,
+      to: mailConfig.adminEmail,
       subject: `Demande de Devis - ${quoteNumber}`,
       html: `
         <h2>Demande de Devis - Nord Invest Madagascar</h2>
@@ -485,18 +485,40 @@ app.post('/api/request-quote', quoteLimiter, validate(quoteSchema), async (req, 
         <p>Tél. 032 82 312 80 | Email contact@nordinvest.mg</p>
       `
     });
-    emailSent = true;
+    adminEmailSent = true;
   } catch (mailErr) {
     emailError = mailErr.response || mailErr.message;
-    logMailFailure('demande de devis', mailErr);
+    logMailFailure('notification admin (demande de devis)', mailErr);
+  }
+
+  try {
+    await sendEmail({
+      from: mailConfig.from,
+      to: email,
+      subject: `Confirmation de votre demande de devis - ${quoteNumber}`,
+      html: `
+        <h2>Merci pour votre demande de devis</h2>
+        <p>Bonjour ${escapeHtml(name)},</p>
+        <p>Nous avons bien reçu votre demande de devis.</p>
+        <p><strong>Numéro de demande :</strong> ${quoteNumber}</p>
+        <p>Notre équipe vous contactera sous 24 heures pour étudier votre projet.</p>
+        <p>Cordialement,<br>L'équipe Nord Invest Madagascar</p>
+      `
+    });
+    customerEmailSent = true;
+  } catch (mailErr) {
+    emailError = emailError || mailErr.response || mailErr.message;
+    logMailFailure('confirmation client (demande de devis)', mailErr);
   }
 
   res.json({
     success: true,
-    emailSent,
+    emailSent: customerEmailSent,
+    adminEmailSent,
+    customerEmailSent,
     emailError,
     quoteNumber,
-    message: emailSent
+    message: customerEmailSent
       ? 'Votre demande de devis a été envoyée. Vous recevrez un email de confirmation.'
       : 'Votre demande de devis a été reçue (l\'email n\'a pas pu être envoyé).'
   });
