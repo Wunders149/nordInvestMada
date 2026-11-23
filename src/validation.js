@@ -99,7 +99,7 @@ const adminContentSchemas = {
   products: {
     create: z.object({
       name: z.string().trim().min(1).max(200),
-      price: z.coerce.number().min(0).max(1000000000).default(0),
+      price: z.coerce.number().min(0).max(10000000000).default(0),
       description: z.string().trim().min(1).max(8000),
       mediaType: z.enum(['image', 'video']).default('image'),
       mediaUrl: z.string().max(2000).default(''),
@@ -108,7 +108,7 @@ const adminContentSchemas = {
     }),
     update: z.object({
       name: z.string().trim().min(1).max(200).optional(),
-      price: z.coerce.number().min(0).max(1000000000).optional(),
+      price: z.coerce.number().min(0).max(10000000000).optional(),
       description: z.string().trim().min(1).max(8000).optional(),
       mediaType: z.enum(['image', 'video']).optional(),
       mediaUrl: z.string().max(2000).optional(),
@@ -144,7 +144,7 @@ function validate(schema) {
   return (req, res, next) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      const errors = result.error.errors.map(e => ({
+      const errors = result.error.issues.map(e => ({
         field: e.path.join('.'),
         message: e.message
       }));

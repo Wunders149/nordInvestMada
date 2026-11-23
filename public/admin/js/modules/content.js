@@ -61,7 +61,7 @@ const ENTITY_CONFIG = {
     searchFields: ['name', 'description', 'price'],
     fields: [
       { key: 'name', label: 'Nom du produit', type: 'text', required: true },
-      { key: 'price', label: 'Prix (Ar)', type: 'number', required: true, default: 0 },
+      { key: 'price', label: 'Prix (Ar)', type: 'number', required: true, default: 0, min: 0, max: 10000000000, step: 1 },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
       { key: 'mediaType', label: 'Type de média', type: 'select', options: [
         { value: 'image', label: 'Image' },
@@ -428,7 +428,10 @@ export async function openCrudForm(entity, editId) {
       html += '<span id="crud_image_status"></span>';
       html += '</div></div>';
     } else {
-      html += `<input type="${field.type}" id="crud_${field.key}" class="search-input" value="${escapeHtml(String(val))}">`;
+      const numericAttributes = field.type === 'number'
+        ? `${field.min !== undefined ? ` min="${field.min}"` : ''}${field.max !== undefined ? ` max="${field.max}"` : ''}${field.step !== undefined ? ` step="${field.step}"` : ''}`
+        : '';
+      html += `<input type="${field.type}" id="crud_${field.key}" class="search-input" value="${escapeHtml(String(val))}"${numericAttributes}>`;
     }
     html += '</div>';
   }
@@ -593,10 +596,15 @@ export async function saveCrudItem() {
       body[field.key] = el.checked;
     } else if (field.type === 'number') {
       body[field.key] = parseFloat(el.value) || 0;
+      if ((field.min !== undefined && body[field.key] < field.min) || (field.max !== undefined && body[field.key] > field.max)) {
+        const range = `${field.min !== undefined ? field.min.toLocaleString('fr-FR') : 'sans minimum'} à ${field.max !== undefined ? field.max.toLocaleString('fr-FR') : 'sans maximum'}`;
+        showToast(`${field.label} doit être compris entre ${range}`, 'error');
+        return;
+      }
     } else {
       body[field.key] = el.value;
     }
-    if (field.required && !body[field.key]) {
+    if (field.required && (field.type === 'number' ? el.value === '' : !body[field.key])) {
       showToast(`Le champ "${field.label}" est requis`, 'error');
       return;
     }
@@ -656,7 +664,10 @@ export async function saveCrudItem() {
     const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(body) });
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || 'Erreur');
+      const details = Array.isArray(errData.details)
+        ? errData.details.map(detail => detail.message).filter(Boolean).join(', ')
+        : '';
+      throw new Error([errData.error, details].filter(Boolean).join(' : ') || 'Erreur');
     }
     closeCrudForm();
     showToast(`${cfg.label} ${currentEditId ? 'modifié' : 'ajouté'} avec succès`, 'success');
