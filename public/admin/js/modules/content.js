@@ -61,7 +61,7 @@ const ENTITY_CONFIG = {
     searchFields: ['name', 'description', 'price'],
     fields: [
       { key: 'name', label: 'Nom du produit', type: 'text', required: true },
-      { key: 'price', label: 'Prix (Ar)', type: 'number', required: true, default: 0, min: 0, max: 10000000000, step: 1 },
+      { key: 'price', label: 'Prix (Ar)', type: 'number', required: true, default: 0, min: 0, step: 1 },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
       { key: 'mediaType', label: 'Type de média', type: 'select', options: [
         { value: 'image', label: 'Image' },
